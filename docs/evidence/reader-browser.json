@@ -1,0 +1,226 @@
+{
+  "date": "2026-09-17T08:01:47.351Z",
+  "browser": "153.0.4234.32",
+  "network": "Toutes les destinations non locales bloquées par le navigateur de test",
+  "requests": 198,
+  "externalRequests": [],
+  "errors": [],
+  "results": [
+    {
+      "width": 320,
+      "page": "/sommaire.html",
+      "scrollWidth": 320,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 257
+    },
+    {
+      "width": 320,
+      "page": "/quran.html",
+      "scrollWidth": 320,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 720
+    },
+    {
+      "width": 320,
+      "page": "/fr/fateha.html",
+      "scrollWidth": 320,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 6934
+    },
+    {
+      "width": 320,
+      "page": "/fr/namaz-en-general.html",
+      "scrollWidth": 320,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 7201
+    },
+    {
+      "width": 320,
+      "page": "/fr/suppl_eachday.html",
+      "scrollWidth": 320,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 13955
+    },
+    {
+      "width": 320,
+      "page": "/a-propos.html",
+      "scrollWidth": 320,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 1460
+    },
+    {
+      "width": 320,
+      "page": "/tafsir.html",
+      "scrollWidth": 320,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 385
+    },
+    {
+      "width": 320,
+      "page": "/diapo-coran.html",
+      "scrollWidth": 320,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 264
+    },
+    {
+      "width": 390,
+      "page": "/sommaire.html",
+      "scrollWidth": 390,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 257
+    },
+    {
+      "width": 390,
+      "page": "/quran.html",
+      "scrollWidth": 390,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 720
+    },
+    {
+      "width": 390,
+      "page": "/fr/fateha.html",
+      "scrollWidth": 390,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 6934
+    },
+    {
+      "width": 390,
+      "page": "/fr/namaz-en-general.html",
+      "scrollWidth": 390,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 7201
+    },
+    {
+      "width": 390,
+      "page": "/fr/suppl_eachday.html",
+      "scrollWidth": 390,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 13955
+    },
+    {
+      "width": 390,
+      "page": "/a-propos.html",
+      "scrollWidth": 390,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 1460
+    },
+    {
+      "width": 390,
+      "page": "/tafsir.html",
+      "scrollWidth": 390,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 385
+    },
+    {
+      "width": 390,
+      "page": "/diapo-coran.html",
+      "scrollWidth": 390,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 264
+    },
+    {
+      "width": 430,
+      "page": "/sommaire.html",
+      "scrollWidth": 430,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 257
+    },
+    {
+      "width": 430,
+      "page": "/quran.html",
+      "scrollWidth": 430,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 720
+    },
+    {
+      "width": 430,
+      "page": "/fr/fateha.html",
+      "scrollWidth": 430,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 6934
+    },
+    {
+      "width": 430,
+      "page": "/fr/namaz-en-general.html",
+      "scrollWidth": 430,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 7201
+    },
+    {
+      "width": 430,
+      "page": "/fr/suppl_eachday.html",
+      "scrollWidth": 430,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 13955
+    },
+    {
+      "width": 430,
+      "page": "/a-propos.html",
+      "scrollWidth": 430,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 1460
+    },
+    {
+      "width": 430,
+      "page": "/tafsir.html",
+      "scrollWidth": 430,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 385
+    },
+    {
+      "width": 430,
+      "page": "/diapo-coran.html",
+      "scrollWidth": 430,
+      "images": [],
+      "scripts": 0,
+      "legacyNav": false,
+      "text": 264
+    }
+  ]
+}

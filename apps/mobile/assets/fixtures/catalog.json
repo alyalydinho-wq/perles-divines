@@ -1,0 +1,41 @@
+[
+  {
+    "id": "185ec7f2-62f0-581d-8c41-9661f74a6094",
+    "title": "ESSAI — Son synthétique 1 (20 s)",
+    "author": null,
+    "description": "Fixture technique locale, sans contenu religieux. Ne pas publier.",
+    "collection": "Essais techniques",
+    "version": 1,
+    "durationMs": 20000,
+    "sizeBytes": 80475,
+    "sha256": "93282c0cb1c56bddf9c945b6b683aca0e93bb07a3d5f6cc1ac1123b739c969f8",
+    "file": "tone-1.mp3",
+    "fixture": true
+  },
+  {
+    "id": "ce3b76da-3ecb-5f6c-9e3b-f1005d375ba3",
+    "title": "ESSAI — Son synthétique 2 (25 s)",
+    "author": null,
+    "description": "Fixture technique locale, sans contenu religieux. Ne pas publier.",
+    "collection": "Essais techniques",
+    "version": 1,
+    "durationMs": 25000,
+    "sizeBytes": 100537,
+    "sha256": "c908a6597626da97cc6c147374c9f488befff687c066bffb7c634454a9462553",
+    "file": "tone-2.mp3",
+    "fixture": true
+  },
+  {
+    "id": "552b763d-3664-5ee2-9136-95409cfd4605",
+    "title": "ESSAI — Son synthétique 3 (1 heure)",
+    "author": null,
+    "description": "Fixture technique locale, sans contenu religieux. Ne pas publier.",
+    "collection": "Essais techniques",
+    "version": 1,
+    "durationMs": 3600000,
+    "sizeBytes": 14400488,
+    "sha256": "c3cfa089dfa5c47f53eb278bdf66f8ace8fcb752e325164a1ffbd758f55906a0",
+    "file": "tone-3.mp3",
+    "fixture": true
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "date": "2026-09-17T07:55:13.677Z",
+  "source": "Serveur local de fixtures seulement ; aucune validation R2/CDN réel.",
+  "sizeBytes": 14400488,
+  "sha256": "c3cfa089dfa5c47f53eb278bdf66f8ace8fcb752e325164a1ffbd758f55906a0",
+  "checks": [
+    "HEAD 200, longueur/MIME/ETag/Accept-Ranges",
+    "206 premier fragment",
+    "206 reprise avec If-Range",
+    "Fragments assemblés : SHA-256 identique",
+    "416 hors bornes",
+    "If-Range obsolète : 200 complet"
+  ],
+  "passed": true
+}

@@ -1,0 +1,3482 @@
+{
+  "createdAt": "2026-09-17T07:50:30.855Z",
+  "importDirectory": "content\\imports\\2026-09-17T07-10-52-939Z",
+  "resources": 617,
+  "pages": 114,
+  "sourceBytes": 22119576,
+  "normalizedBytes": 21877631,
+  "missing": [
+    {
+      "id": "f17c31ec-5ac4-5ec6-8068-549f75850455",
+      "url": "https://www.perlesdivines.fr/robots.txt",
+      "referrer": null,
+      "role": "seed",
+      "status": 404,
+      "dependencies": [],
+      "fetchedAt": "2026-09-17T07:10:55.510Z",
+      "attempts": 1,
+      "mime": "text/html",
+      "sizeBytes": 837,
+      "sha256": "e9f8d2d4925b7e8d87fb24ecced756ff9ec48c779775d0b6129ac2ba57605289",
+      "finalUrl": "https://www.perlesdivines.fr/robots.txt",
+      "rawPath": "raw/e9f8d2d4925b7e8d87fb24ecced756ff9ec48c779775d0b6129ac2ba57605289",
+      "error": "HTTP 404"
+    },
+    {
+      "id": "375307c1-d0f4-5e76-83d4-06eab5d752b7",
+      "url": "https://www.perlesdivines.fr/sitemap.xml",
+      "referrer": null,
+      "role": "seed",
+      "status": 404,
+      "dependencies": [],
+      "fetchedAt": "2026-09-17T07:10:55.977Z",
+      "attempts": 1,
+      "mime": "text/html",
+      "sizeBytes": 837,
+      "sha256": "e9f8d2d4925b7e8d87fb24ecced756ff9ec48c779775d0b6129ac2ba57605289",
+      "finalUrl": "https://www.perlesdivines.fr/sitemap.xml",
+      "rawPath": "raw/e9f8d2d4925b7e8d87fb24ecced756ff9ec48c779775d0b6129ac2ba57605289",
+      "error": "HTTP 404"
+    }
+  ],
+  "brokenLinks": [],
+  "missingAnchors": [
+    {
+      "from": "https://www.perlesdivines.fr/fr/namaz-en-general.html",
+      "to": "https://www.perlesdivines.fr/fr/namaz-en-general.html#TRADUCTION"
+    },
+    {
+      "from": "https://www.perlesdivines.fr/fr/namaz-en-general.html",
+      "to": "https://www.perlesdivines.fr/fr/namaz-en-general.html#TRANSLITTERATION"
+    },
+    {
+      "from": "https://www.perlesdivines.fr/fr/azane-iqamah.html",
+      "to": "https://www.perlesdivines.fr/fr/azane-iqamah.html#TRADUCTION"
+    },
+    {
+      "from": "https://www.perlesdivines.fr/fr/azane-iqamah.html",
+      "to": "https://www.perlesdivines.fr/fr/azane-iqamah.html#TRANSLITTERATION"
+    },
+    {
+      "from": "https://www.perlesdivines.fr/fr/doua-arafah.html",
+      "to": "https://www.perlesdivines.fr/fr/doua-arafah.html#TRANSLITTERATION"
+    }
+  ],
+  "external": [
+    {
+      "url": "http://www.academyofislam.com/",
+      "referrer": "https://www.perlesdivines.fr/tafsir.html",
+      "role": "navigation"
+    },
+    {
+      "url": "http://coran.webislam.fr/",
+      "referrer": "https://www.perlesdivines.fr/diapo-coran.html",
+      "role": "navigation"
+    },
+    {
+      "url": "mailto:contact@perlesdivines.fr",
+      "referrer": "https://www.perlesdivines.fr/a-propos.html",
+      "role": "navigation"
+    }
+  ],
+  "interactions": [
+    {
+      "url": "https://www.perlesdivines.fr/sommaire.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "code": "\n  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){\n  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');\n\n  ga('create', 'UA-42454685-1', 'perlesdivines.fr');\n  ga('send', 'pageview');\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/index.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "body",
+          "attribute": "onload",
+          "value": "test()"
+        },
+        {
+          "kind": "script",
+          "code": "\n\t  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){\n\t  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n\t  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n\t  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');\n\t\n\t  ga('create', 'UA-42454685-1', 'perlesdivines.fr');\n\t  ga('send', 'pageview');\n\t  "
+        },
+        {
+          "kind": "script",
+          "code": "\n\tfunction test()\n\t{\n\tif ((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i)) || (navigator.userAgent.match(/iPad/i)) || (navigator.userAgent.match(/Android/i)) || (navigator.userAgent.match(/webOS/i))) {\n\t   window.location.href=\"mobile.html\";\n\t}\n\telse {\n\t   window.location.href=\"mobile.html\";\n\t}\n\t}\n\t"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/historique.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/quran.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/namaz.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/doua.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/zyaraate.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/specifique.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/aamal.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/tafsir.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "code": "\n  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){\n  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');\n\n  ga('create', 'UA-42454685-1', 'perlesdivines.fr');\n  ga('send', 'pageview');\n\n  "
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/diapo-coran.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "code": "\n  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){\n  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');\n\n  ga('create', 'UA-42454685-1', 'perlesdivines.fr');\n  ga('send', 'pageview');\n\n  "
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/a-propos.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "code": "\n  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){\n  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');\n\n  ga('create', 'UA-42454685-1', 'perlesdivines.fr');\n  ga('send', 'pageview');\n\n"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/namaz-en-general.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/azane-iqamah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ghofaylah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/nafilah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/shab.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ayaat.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/eid.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/maghferat.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/mayyat.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/wahshat.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/hadiya-mayyat.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/namazmahdi.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/namaz_debut_mois.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/prayer_each_night.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/zilhajj_namaz.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ayat.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/fateha.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ankaboot.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/room.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ahzab.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/yasin.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/dukhan.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/rahman.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/waqia.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/jumah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/munafiqun.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/mulk.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/aala.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/shams.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/qadr.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/zilzal.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/takasur.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/kausar.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/kafiroon.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ikhlas.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/falaq.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/nas.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/doua_azane_ikamah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/takeebat.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/naadeali.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/hadeesekisa.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/kumail.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/tawassul.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/abu_hamzah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ahad.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/alqamah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/baha.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/faraj.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ilahiazomal.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ghareeq.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/hifzeiman.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/iftetah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/jawshane.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/makarimoul-akhlak.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/marefat_imam.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/mashlool.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/mujeer.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/nudbah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/doua_voyage.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/wahda.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/doua_nowroz.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/doua_mahe_safar.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/doua_mahe_rajab.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ramadhaan_doua_priere.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/doua_mahe_ramadhan.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/doua-arafah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/doua_imam_housseyn_ashoura.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/munajatali.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/zyaraate_quotidien.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/warisa.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ashura.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/arbaeen.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ameenullah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/friday.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/saturday.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/sunday.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/monday.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/tuesday.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/wednesday.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/thursday.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/nakhudaki.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/doua_hazrat_abbas_difficultes.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ammayoujibul.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/doua-augmenter-savoir.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/aamal_moharram.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/aamal_safar.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/aamal_rajab.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/aamal_shabaan.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/aamal_ramadhan.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/aamal_zilhajj.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "ontouchstart",
+          "value": "return true;"
+        },
+        {
+          "kind": "script",
+          "src": "jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n// create the back to top button\n$('body').prepend('<a href=\"#\" class=\"back-to-top\">Back to Top</a>');\n\nvar amountScrolled = 110;\n\n$(window).scroll(function() {\n\tif ( $(window).scrollTop() > amountScrolled ) {\n\t\t$('a.back-to-top').fadeIn('slow');\n\t} else {\n\t\t$('a.back-to-top').fadeOut('slow');\n\t}\n});\n\n$('a.back-to-top, a.simple-back-to-top').click(function() {\n\tparent.history.back();\n\treturn false;\n});\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/eid_mr.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "body",
+          "attribute": "onload",
+          "value": "test()"
+        },
+        {
+          "kind": "script",
+          "code": "\n\t  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){\n\t  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n\t  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n\t  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');\n\t\n\t  ga('create', 'UA-42454685-1', 'perlesdivines.fr');\n\t  ga('send', 'pageview');\n\t  "
+        },
+        {
+          "kind": "script",
+          "code": "\n\tfunction test()\n\t{\n\tif ((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i)) || (navigator.userAgent.match(/iPad/i)) || (navigator.userAgent.match(/Android/i)) || (navigator.userAgent.match(/webOS/i))) {\n\t   window.location.href=\"mobile.html\";\n\t}\n\telse {\n\t   window.location.href=\"mobile.html\";\n\t}\n\t}\n\t"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/suppl_eachday.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ashoura-shab.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/ashoura-roz.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/rajab_lailatul_raghaib.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/rajab27.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/shabaan15.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/shabqadr_19.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/shabqadr_21.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/shabqadr_23.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    },
+    {
+      "url": "https://www.perlesdivines.fr/fr/arafah.html",
+      "items": [
+        {
+          "kind": "handler",
+          "tag": "a",
+          "attribute": "onclick",
+          "value": "window.top.window.scrollTo(0,0);"
+        },
+        {
+          "kind": "script",
+          "code": "\n<!--\nvar w=window,d=document,e=d.documentElement,g=d.getElementsByTagName('body')[0],x=w.innerWidth||e.clientWidth||g.clientWidth,y=w.innerHeight||e.clientHeight||g.clientHeight;\n//-->\n"
+        },
+        {
+          "kind": "script",
+          "src": "../jquery.js",
+          "code": ""
+        },
+        {
+          "kind": "script",
+          "code": "\n    $(window).scroll(function() {\n\tvar scrollPercent = 100 * $(window).scrollTop() / ($(document).height() - y);\n    $('#log').html(scrollPercent.toFixed(0)+'%');\n    });\n\n"
+        }
+      ]
+    }
+  ],
+  "scope": "Ressources référencées et sitemaps accessibles ; aucun fichier orphelin prétendument découvert."
+}

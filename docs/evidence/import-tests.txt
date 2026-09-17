@@ -1,0 +1,14 @@
+✔ URL : casse, ancre, déduplication et frontière des hôtes (4.8985ms)
+✔ Les octets ISO-8859-1 sont décodés sans modifier les accents (25.5959ms)
+✔ HTML, srcset et CSS imbriquée inventorient les dépendances (37.4128ms)
+✔ Nettoyage : conserve arabe, traduction, références et ancres ; retire le code et réseau distant (39.5949ms)
+✔ CSS : aucune sous-ressource distante ni expression exécutable (2.7408ms)
+✔ Une page absente devient une destination explicite (17.6453ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1368.0979

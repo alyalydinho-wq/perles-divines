@@ -1,0 +1,5 @@
+
+Algorithm : SHA256
+Hash      : 90AE805D20434428BFFCB699C290860F19BB5F66A67E6B330067E3DE801FB04A
+Path      : C:\Users\alyas\OneDrive\Documents\ChatGPT\Perles Divines 2.0\.tooling\android-commandline.zip
+

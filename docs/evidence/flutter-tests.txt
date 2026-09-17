@@ -1,0 +1,7 @@
+00:00 +0: loading C:/Users/alyas/OneDrive/Documents/ChatGPT/Perles Divines 2.0/apps/mobile/test/core_test.dart
+00:00 +0: C:/Users/alyas/OneDrive/Documents/ChatGPT/Perles Divines 2.0/apps/mobile/test/core_test.dart: Une lecture terminée ou une position invalide repart à zéro
+00:00 +1: C:/Users/alyas/OneDrive/Documents/ChatGPT/Perles Divines 2.0/apps/mobile/test/core_test.dart: Nom exportable sans traversée de répertoire ni recompression
+00:09 +2: C:/Users/alyas/OneDrive/Documents/ChatGPT/Perles Divines 2.0/apps/mobile/test/storage_test.dart: Une interruption de transaction conserve les données personnelles
+00:10 +3: C:/Users/alyas/OneDrive/Documents/ChatGPT/Perles Divines 2.0/apps/mobile/test/storage_test.dart: Favoris et position survivent à la fermeture réelle de SQLite
+00:10 +4: C:/Users/alyas/OneDrive/Documents/ChatGPT/Perles Divines 2.0/apps/mobile/test/storage_test.dart: Un média incomplet ou corrompu est refusé avant export
+00:10 +5: All tests passed!

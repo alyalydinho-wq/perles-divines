@@ -1,0 +1,16 @@
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {sha256} from './import-site/content.mjs';
+const base='http://127.0.0.1:4174';
+const original=await fs.readFile('content/fixtures/tone-3.mp3');
+const head=await fetch(`${base}/tone-3.mp3`,{method:'HEAD'});
+assert.equal(head.status,200);assert.equal(Number(head.headers.get('content-length')),original.length);
+assert.equal(head.headers.get('accept-ranges'),'bytes');assert.equal(head.headers.get('content-type'),'audio/mpeg');
+const first=await fetch(`${base}/tone-3.mp3`,{headers:{Range:'bytes=0-65535'}});assert.equal(first.status,206);
+const resumed=await fetch(`${base}/tone-3.mp3`,{headers:{Range:'bytes=65536-','If-Range':head.headers.get('etag')}});assert.equal(resumed.status,206);
+const combined=Buffer.concat([Buffer.from(await first.arrayBuffer()),Buffer.from(await resumed.arrayBuffer())]);
+assert.equal(sha256(combined),sha256(original));
+const invalid=await fetch(`${base}/tone-3.mp3`,{headers:{Range:`bytes=${original.length}-`}});assert.equal(invalid.status,416);
+const changed=await fetch(`${base}/tone-1.mp3`,{headers:{Range:'bytes=10-','If-Range':'"old-version"'}});assert.equal(changed.status,200);
+const result={date:new Date().toISOString(),source:'Serveur local de fixtures seulement ; aucune validation R2/CDN réel.',sizeBytes:original.length,sha256:sha256(combined),checks:['HEAD 200, longueur/MIME/ETag/Accept-Ranges','206 premier fragment','206 reprise avec If-Range','Fragments assemblés : SHA-256 identique','416 hors bornes','If-Range obsolète : 200 complet'],passed:true};
+await fs.writeFile('docs/evidence/fixture-range.json',JSON.stringify(result,null,2));console.log(result);
