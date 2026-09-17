@@ -4,7 +4,7 @@
 
 ### Sauvegarde GitHub
 
-Le dépôt [alyalydinho-wq/perles-divines](https://github.com/alyalydinho-wq/perles-divines) a été créé à la demande du propriétaire ; sa visibilité privée a été vérifiée via l'API GitHub. Premier commit local : `6fe3d77`, 208 fichiers source/documentation/fixtures courtes examinés (environ 3,2 Mo). La branche initiale existante `master` est conservée. SDK, builds, paramètres locaux, captures brutes et gros médias restent exclus ; les commandes de reconstruction figurent dans le README. Cette sauvegarde du code ne constitue aucune publication de l'application sur un store.
+Le dépôt [alyalydinho-wq/perles-divines](https://github.com/alyalydinho-wq/perles-divines), créé initialement en privé, a été rendu public à la demande explicite du propriétaire. Sa visibilité publique et son accès sans authentification ont été vérifiés via l'API GitHub. Premier commit local : `6fe3d77`, 208 fichiers source/documentation/fixtures courtes examinés (environ 3,2 Mo). La branche initiale existante `master` est conservée. SDK, builds, paramètres locaux, captures brutes et gros médias restent exclus ; les commandes de reconstruction figurent dans le README. Cette sauvegarde du code ne constitue aucune publication de l'application sur un store.
 
 - Cahier technique intégral lu, copié sans changement dans `specification.md`.
 - Dépôt initial vide, aucune consigne AGENTS.md trouvée dans le projet ou ses parents.
