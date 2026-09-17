@@ -1,5 +1,7 @@
 # Perles Divines
 
+Dépôt privé : [alyalydinho-wq/perles-divines](https://github.com/alyalydinho-wq/perles-divines). L'accès nécessite un compte GitHub autorisé.
+
 Développement progressif Android et iOS selon [le cahier technique](docs/specification.md). Le site original est consulté en lecture seule. Aucune modification éditoriale automatique des textes religieux.
 
 État et reprise : [docs/progress.md](docs/progress.md). Recette complète E01–E21 / T01–T38 : [docs/acceptance.md](docs/acceptance.md). Ce dépôt contient l'import initial, une preuve mobile, le socle privé d'édition et un worker de publication local. Le projet complet n'est pas terminé.

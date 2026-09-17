@@ -2,9 +2,9 @@
 
 ## Session du 17 septembre 2026
 
-### Sauvegarde GitHub demandée
+### Sauvegarde GitHub
 
-Le propriétaire a demandé la création d'un dépôt GitHub privé. Les 208 fichiers source/documentation/fixtures courtes ont été examinés pour le premier commit (environ 3,2 Mo). SDK, builds, paramètres locaux, captures brutes et gros médias restent exclus. Création distante en attente d'une authentification GitHub ; ne pas annoncer de lien tant que le dépôt n'est pas créé et vérifié privé.
+Le dépôt [alyalydinho-wq/perles-divines](https://github.com/alyalydinho-wq/perles-divines) a été créé à la demande du propriétaire ; sa visibilité privée a été vérifiée via l'API GitHub. Premier commit local : `6fe3d77`, 208 fichiers source/documentation/fixtures courtes examinés (environ 3,2 Mo). La branche initiale existante `master` est conservée. SDK, builds, paramètres locaux, captures brutes et gros médias restent exclus ; les commandes de reconstruction figurent dans le README. Cette sauvegarde du code ne constitue aucune publication de l'application sur un store.
 
 - Cahier technique intégral lu, copié sans changement dans `specification.md`.
 - Dépôt initial vide, aucune consigne AGENTS.md trouvée dans le projet ou ses parents.
