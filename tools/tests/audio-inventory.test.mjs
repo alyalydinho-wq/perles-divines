@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { inventoryAudios, metadataCsv } from "../audio-inventory/library.mjs";
-import { hashFile } from "../../services/publisher/publish.mjs";
+import { hashFile } from "../audio-inventory/media.mjs";
 
 test("Inventaire : lecture seule, doublon conservé, faux MP3 signalé, aucune attribution inventée", async (t) => {
   const base = path.resolve("artifacts/inventory-tests");

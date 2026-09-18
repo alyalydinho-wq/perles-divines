@@ -33,6 +33,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/content/
     - assets/site/
     - assets/site/pages/
     - assets/site/assets/
