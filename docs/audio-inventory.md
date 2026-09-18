@@ -15,7 +15,7 @@ Résultats dans un nouveau sous-dossier de `artifacts/audio-inventory/` :
 - `inventory.json` : chemins relatifs exacts, observations, erreurs et groupes de doublons binaires. Les doublons sont conservés ; rien n'est déplacé ou supprimé.
 - `metadata-to-review.csv` : UTF-8 avec BOM, séparateur virgule, champs entre guillemets ; colonnes du cahier. Les titres issus des fichiers sont proposés pour relecture. Auteur, thème, collection et description restent à compléter. Les valeurs commençant par un caractère de formule sont précédées d'une apostrophe pour la consultation dans un tableur ; le JSON conserve les valeurs exactes. Ce CSV n'est pas importé automatiquement dans un catalogue publié.
 
-Le processus de mesure est borné à 256 Mio et 30 secondes par fichier. L'inventaire ne décode pas chaque MP3 intégralement ; le worker effectue ce contrôle avant publication. Un fichier invalide ou modifié pendant la lecture est signalé, jamais déclaré prêt. Limites de sécurité indépendantes du nombre prévu : 100 000 MP3, 500 000 entrées parcourues, 8 Gio par fichier.
+Le processus de mesure est borné à 256 Mio et 30 secondes par fichier. L'inventaire inspecte chaque MP3 avant son association au catalogue embarqué. Un fichier invalide ou modifié pendant la lecture est signalé, jamais déclaré prêt. Limites de sécurité indépendantes du nombre prévu : 100 000 MP3, 500 000 entrées parcourues, 8 Gio par fichier.
 
 Essai reproductible sans vrais contenus :
 

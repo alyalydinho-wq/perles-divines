@@ -9,6 +9,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/store.dart';
 import 'core/track.dart';
 import 'features/downloads/download_controller.dart';
+import 'features/duas/catalog.dart';
+import 'features/duas/dua.dart';
+import 'features/duas/favorites.dart';
 import 'features/player/audio_controller.dart';
 import 'features/reader/content_install.dart';
 import 'features/reader/reader_screen.dart';
@@ -53,6 +56,7 @@ class _BootstrapScreenState extends State<BootstrapScreen> {
 
   Future<Services> prepare() async {
     final edition = await LocalEdition.install();
+    final devotionalCatalog = await LocalDevotionalCatalog.load();
     final store = AppStore();
     final downloads = DownloadController(store, baseUrl: mediaBase);
     await downloads.initialize();
@@ -71,7 +75,7 @@ class _BootstrapScreenState extends State<BootstrapScreen> {
             await rootBundle.loadString('assets/fixtures/catalog.json'),
           ) as List).map((j) => Track.fromJson(j)).toList()
         : <Track>[];
-    return Services(edition, store, downloads, audio, tracks);
+    return Services(edition, devotionalCatalog, store, downloads, audio, tracks);
   }
 
   @override
@@ -109,8 +113,16 @@ class _BootstrapScreenState extends State<BootstrapScreen> {
 }
 
 class Services {
-  Services(this.edition, this.store, this.downloads, this.audio, this.tracks);
+  Services(
+    this.edition,
+    this.devotionalCatalog,
+    this.store,
+    this.downloads,
+    this.audio,
+    this.tracks,
+  );
   final LocalEdition edition;
+  final LocalDevotionalCatalog devotionalCatalog;
   final AppStore store;
   final DownloadController downloads;
   final PerlesAudioHandler audio;
@@ -127,8 +139,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int tab = 0;
   String query = '';
+  String devotionalQuery = '';
   bool wifiOnly = true;
   Set<String> favorites = {};
+  Set<String> devotionalFavorites = {};
   StreamSubscription<String>? errors;
   Services get s => widget.services;
   @override
@@ -141,10 +155,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> settings() async {
     final wifi = await s.store.readState('wifiOnly');
     final saved = await s.store.readState('favorites');
+    final savedDevotional = await DevotionalFavorites(s.store).read();
     if (mounted) {
       setState(() {
         wifiOnly = wifi != false;
         favorites = Set<String>.from(saved ?? []);
+        devotionalFavorites = savedDevotional;
       });
     }
   }
@@ -229,6 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
             index: tab,
             children: [
               ReaderScreen(edition: s.edition),
+              devotionalCatalog(),
               catalog(),
               downloads(),
               settingsView(),
@@ -243,6 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onDestinationSelected: (i) => setState(() => tab = i),
       destinations: const [
         NavigationDestination(icon: Icon(Icons.menu_book), label: 'Sommaire'),
+        NavigationDestination(icon: Icon(Icons.auto_stories), label: 'Textes'),
         NavigationDestination(icon: Icon(Icons.headphones), label: 'Audios'),
         NavigationDestination(
           icon: Icon(Icons.library_music),
@@ -250,6 +268,61 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         NavigationDestination(icon: Icon(Icons.settings), label: 'Réglages'),
       ],
+    ),
+  );
+  Widget devotionalCatalog() {
+    final items = s.devotionalCatalog.search(devotionalQuery);
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        TextField(
+          decoration: const InputDecoration(
+            labelText: 'Rechercher dans les duʿā et ziyārāt',
+            prefixIcon: Icon(Icons.search),
+          ),
+          onChanged: (value) => setState(() => devotionalQuery = value),
+        ),
+        if (items.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Le catalogue local sera rempli avec les textes relus dans le dépôt avant la prochaine compilation.',
+            ),
+          ),
+        for (final item in items) devotionalCard(item),
+      ],
+    );
+  }
+
+  Widget devotionalCard(DevotionalText item) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(item.title, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          SelectableText(item.arabic, textDirection: TextDirection.rtl),
+          if (item.transliteration.isNotEmpty)
+            SelectableText(item.transliteration),
+          if (item.translation.isNotEmpty) SelectableText(item.translation),
+          for (final reference in item.references) Text(reference),
+          IconButton(
+            tooltip: 'Favori',
+            icon: Icon(
+              devotionalFavorites.contains(item.id)
+                  ? Icons.favorite
+                  : Icons.favorite_border,
+            ),
+            onPressed: () async {
+              final values = await DevotionalFavorites(
+                s.store,
+              ).toggle(item.id);
+              if (mounted) setState(() => devotionalFavorites = values);
+            },
+          ),
+        ],
+      ),
     ),
   );
   Widget catalog() {
@@ -450,7 +523,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const ListTile(
         title: Text('Textes préparés'),
         subtitle: Text(
-          'Édition initiale locale. La synchronisation depuis l’administration est un jalon à venir.',
+          'Les duʿā, ziyārāt et métadonnées audio sont préparés dans le dépôt puis embarqués avec l’application.',
         ),
       ),
       const ListTile(
