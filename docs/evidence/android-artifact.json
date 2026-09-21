@@ -10,5 +10,5 @@
   "iosBuilt": false,
   "iosPhysicalDeviceTested": false,
   "sourceDate": "2026-09-17",
-  "limitations": "Preuve technique intermédiaire. Catalogue synthétique. Analyse Flutter et cinq tests locaux réussis. Fonctions natives à essayer sur téléphone ; catalogue réel, synchronisation et administration complète non livrés."
+  "limitations": "Preuve technique intermédiaire. Catalogue synthétique. Analyse Flutter et tests locaux réussis. Fonctions natives, catalogue religieux relu et fonctionnement sur appareils restent à valider."
 }

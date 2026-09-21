@@ -10,8 +10,9 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'content_install.dart';
 
 class ReaderScreen extends StatefulWidget {
-  const ReaderScreen({super.key, required this.edition});
+  const ReaderScreen({super.key, required this.edition, this.initialPage});
   final LocalEdition edition;
+  final String? initialPage;
   @override
   State<ReaderScreen> createState() => _ReaderScreenState();
 }
@@ -114,7 +115,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
         },
       ),
     );
-    await _open(widget.edition.home);
+    await _open(_startFile());
+  }
+
+  String _startFile() {
+    final relative = widget.initialPage;
+    if (relative == null || relative.isEmpty) return widget.edition.home;
+    if (p.isAbsolute(relative) || relative.split('/').contains('..')) {
+      return widget.edition.home;
+    }
+    final file = p.normalize(p.join(widget.edition.directory, relative));
+    return p.isWithin(widget.edition.directory, file)
+        ? file
+        : widget.edition.home;
   }
 
   Future<void> _open(String file) async {

@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { hashFile } from "../../services/publisher/publish.mjs";
-import { inspectMp3 } from "../../services/publisher/media.mjs";
+import { hashFile, inspectMp3 } from "./media.mjs";
 import { stableId } from "../import-site/content.mjs";
 
 export async function inventoryAudios(directory, { fixture = false } = {}) {
@@ -33,7 +32,7 @@ export async function inventoryAudios(directory, { fixture = false } = {}) {
   for (const { absolute, relative } of files) {
     const before = await fs.stat(absolute);
     const row = {
-      id: stableId(`audio-draft:${relative}`),
+      id: stableId(`audio-source:${relative}`),
       relativePath: relative,
       fixture,
       status: "needs_review",

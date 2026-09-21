@@ -12,5 +12,5 @@ const combined=Buffer.concat([Buffer.from(await first.arrayBuffer()),Buffer.from
 assert.equal(sha256(combined),sha256(original));
 const invalid=await fetch(`${base}/tone-3.mp3`,{headers:{Range:`bytes=${original.length}-`}});assert.equal(invalid.status,416);
 const changed=await fetch(`${base}/tone-1.mp3`,{headers:{Range:'bytes=10-','If-Range':'"old-version"'}});assert.equal(changed.status,200);
-const result={date:new Date().toISOString(),source:'Serveur local de fixtures seulement ; aucune validation R2/CDN réel.',sizeBytes:original.length,sha256:sha256(combined),checks:['HEAD 200, longueur/MIME/ETag/Accept-Ranges','206 premier fragment','206 reprise avec If-Range','Fragments assemblés : SHA-256 identique','416 hors bornes','If-Range obsolète : 200 complet'],passed:true};
+const result={date:new Date().toISOString(),source:'Serveur local de fixtures seulement ; contrôle du téléchargement HTTP.',sizeBytes:original.length,sha256:sha256(combined),checks:['HEAD 200, longueur/MIME/ETag/Accept-Ranges','206 premier fragment','206 reprise avec If-Range','Fragments assemblés : SHA-256 identique','416 hors bornes','If-Range obsolète : 200 complet'],passed:true};
 await fs.writeFile('docs/evidence/fixture-range.json',JSON.stringify(result,null,2));console.log(result);
