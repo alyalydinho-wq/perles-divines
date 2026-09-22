@@ -4,15 +4,18 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import 'core/scope.dart';
 import 'core/services.dart';
 import 'core/store.dart';
 import 'core/track.dart';
 import 'features/downloads/download_controller.dart';
 import 'features/duas/catalog.dart';
-import 'features/home/home_screen.dart';
 import 'features/player/audio_controller.dart';
 import 'features/reader/content_install.dart';
+import 'routing.dart';
+import 'ui/site.dart';
 import 'ui/theme.dart';
 
 const fixturesEnabled = bool.fromEnvironment('PERLES_FIXTURES');
@@ -20,6 +23,17 @@ const mediaBase = String.fromEnvironment(
   'PERLES_MEDIA_BASE',
   defaultValue: 'http://127.0.0.1:4174',
 );
+
+Future<List<Track>> loadBundledTracks() async {
+  try {
+    final rows = jsonDecode(
+      await rootBundle.loadString('assets/content/audio-catalog.json'),
+    ) as List<dynamic>;
+    return [for (final row in rows) Track.fromJson(row as Map<String, dynamic>)];
+  } on FlutterError {
+    return [];
+  }
+}
 
 void runPerles() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,36 +47,9 @@ class PerlesApp extends StatefulWidget {
 }
 
 class _PerlesAppState extends State<PerlesApp> {
-  ThemeMode themeMode = ThemeMode.light;
-
-  @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'Perles Divines',
-    debugShowCheckedModeBanner: false,
-    theme: lightTheme(),
-    darkTheme: darkTheme(),
-    themeMode: themeMode,
-    home: BootstrapScreen(
-      themeMode: themeMode,
-      onThemeMode: (mode) => setState(() => themeMode = mode),
-    ),
-  );
-}
-
-class BootstrapScreen extends StatefulWidget {
-  const BootstrapScreen({
-    super.key,
-    required this.themeMode,
-    required this.onThemeMode,
-  });
-  final ThemeMode themeMode;
-  final ValueChanged<ThemeMode> onThemeMode;
-  @override
-  State<BootstrapScreen> createState() => _BootstrapScreenState();
-}
-
-class _BootstrapScreenState extends State<BootstrapScreen> {
   late Future<Services> preparation;
+  GoRouter? router;
+
   @override
   void initState() {
     super.initState();
@@ -89,7 +76,7 @@ class _BootstrapScreenState extends State<BootstrapScreen> {
         ? (jsonDecode(
             await rootBundle.loadString('assets/fixtures/catalog.json'),
           ) as List).map((j) => Track.fromJson(j)).toList()
-        : <Track>[];
+        : await loadBundledTracks();
     return Services(
       edition,
       devotionalCatalog,
@@ -101,39 +88,44 @@ class _BootstrapScreenState extends State<BootstrapScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => FutureBuilder(
+  Widget build(BuildContext context) => FutureBuilder<Services>(
     future: preparation,
     builder: (context, snapshot) {
       if (snapshot.hasData) {
-        return HomeScreen(
+        router ??= createRouter();
+        return ServicesScope(
           services: snapshot.data!,
-          themeMode: widget.themeMode,
-          onThemeMode: widget.onThemeMode,
+          child: MaterialApp.router(
+            title: 'Perles Divines',
+            debugShowCheckedModeBanner: false,
+            theme: lightTheme(),
+            routerConfig: router!,
+          ),
         );
       }
-      return Scaffold(
-        appBar: AppBar(title: const Text('Perles Divines')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (!snapshot.hasError) const CircularProgressIndicator(),
-                const SizedBox(height: 20),
-                Text(
-                  snapshot.hasError
-                      ? 'La préparation a échoué. Les contenus ne sont pas déclarés prêts.\n${snapshot.error}'
-                      : 'Préparation et vérification des textes pour la lecture hors connexion…',
-                ),
-                if (snapshot.hasError)
-                  FilledButton(
-                    onPressed: () => setState(() => preparation = prepare()),
-                    child: const Text('Réessayer'),
-                  ),
-              ],
+      return MaterialApp(
+        title: 'Perles Divines',
+        debugShowCheckedModeBanner: false,
+        theme: lightTheme(),
+        home: SitePage(
+          children: [
+            const SiteLogo(),
+            const SiteGap(height: 44),
+            if (!snapshot.hasError)
+              const CircularProgressIndicator(color: siteGreenSolid),
+            const SiteGap(),
+            SiteBlackText(
+              snapshot.hasError
+                  ? 'La préparation a échoué. Les contenus ne sont pas déclarés prêts.\n${snapshot.error}'
+                  : 'Préparation et vérification des textes pour la lecture hors connexion…',
             ),
-          ),
+            if (snapshot.hasError)
+              SiteButton(
+                label: 'Réessayer',
+                green: true,
+                onTap: () => setState(() => preparation = prepare()),
+              ),
+          ],
         ),
       );
     },

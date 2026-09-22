@@ -10,9 +10,15 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'content_install.dart';
 
 class ReaderScreen extends StatefulWidget {
-  const ReaderScreen({super.key, required this.edition, this.initialPage});
+  const ReaderScreen({
+    super.key,
+    required this.edition,
+    this.initialPage,
+    this.compact = false,
+  });
   final LocalEdition edition;
   final String? initialPage;
+  final bool compact;
   @override
   State<ReaderScreen> createState() => _ReaderScreenState();
 }
@@ -146,28 +152,29 @@ class _ReaderScreenState extends State<ReaderScreen> {
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      Row(
-        children: [
-          IconButton(
-            tooltip: 'Page précédente',
-            onPressed: () async {
-              if (await controller.canGoBack()) await controller.goBack();
-            },
-            icon: const Icon(Icons.arrow_back),
-          ),
-          TextButton(
-            onPressed: () => _open(widget.edition.home),
-            child: const Text('Sommaire'),
-          ),
-          const Spacer(),
-          IconButton(
-            tooltip: 'Haut de page',
-            onPressed: () => controller.scrollTo(0, 0),
-            icon: const Icon(Icons.vertical_align_top),
-          ),
-        ],
-      ),
-      if (anchors.isNotEmpty)
+      if (!widget.compact)
+        Row(
+          children: [
+            IconButton(
+              tooltip: 'Page précédente',
+              onPressed: () async {
+                if (await controller.canGoBack()) await controller.goBack();
+              },
+              icon: const Icon(Icons.arrow_back),
+            ),
+            TextButton(
+              onPressed: () => _open(widget.edition.home),
+              child: const Text('Sommaire'),
+            ),
+            const Spacer(),
+            IconButton(
+              tooltip: 'Haut de page',
+              onPressed: () => controller.scrollTo(0, 0),
+              icon: const Icon(Icons.vertical_align_top),
+            ),
+          ],
+        ),
+      if (!widget.compact && anchors.isNotEmpty)
         Wrap(
           children: anchors
               .map(

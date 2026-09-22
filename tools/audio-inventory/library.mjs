@@ -20,7 +20,7 @@ export async function inventoryAudios(directory, { fixture = false } = {}) {
         continue;
       }
       if (entry.isDirectory()) await walk(absolute);
-      else if (entry.isFile() && /\.mp3$/i.test(entry.name)) {
+      else if (entry.isFile() && /\.(mp3|m4a|mp4|aac)$/i.test(entry.name)) {
         if (files.length >= 100000) throw Error("CATALOG_LIMIT");
         files.push({ absolute, relative });
       }
@@ -43,7 +43,10 @@ export async function inventoryAudios(directory, { fixture = false } = {}) {
       collection: null,
       themes: [],
       suggestions: {
-        titleFromFilename: path.basename(relative).replace(/\.mp3$/i, ""),
+        titleFromFilename: path
+          .basename(relative)
+          .replace(/\.(m4a\.)?mp[34]$/i, "")
+          .replace(/\.(m4a|aac)$/i, ""),
         folderLabels: relative.split("/").slice(0, -1),
       },
       sizeBytes: before.size,

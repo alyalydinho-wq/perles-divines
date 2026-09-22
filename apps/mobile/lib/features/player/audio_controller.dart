@@ -115,7 +115,7 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     await _save();
     _intent++;
     _tracks = List.of(tracks);
-    _bundled = bundled;
+    _bundled = bundled || tracks.any((track) => track.bundled || track.fixture);
     _publishQueue();
     if (_tracks.isNotEmpty) await _load(index, autoplay: true);
   }
@@ -137,6 +137,8 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
         final local = await downloads.localFile(track);
         final source = local != null
             ? AudioSource.uri(Uri.file(local))
+            : track.bundled
+            ? AudioSource.asset('assets/${track.file}')
             : _bundled && track.fixture && track.file != 'tone-3.mp3'
             ? AudioSource.asset('assets/fixtures/${track.file}')
             : AudioSource.uri(Uri.parse('${downloads.baseUrl}/${track.file}'));

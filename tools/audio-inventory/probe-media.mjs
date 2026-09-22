@@ -6,9 +6,14 @@ try {
     skipPostHeaders: true,
     duration: true,
   });
+  const codec = format.codec ?? "";
+  const container = format.container ?? "";
+  const mp3 =
+    container === "MPEG" && /^MPEG (?:1|2|2\.5) Layer 3$/.test(codec);
+  const mpeg4Audio =
+    /M4A|MPEG-4|mp4|isom/i.test(container) && /AAC|ALAC|MPEG-4/i.test(codec);
   if (
-    format.container !== "MPEG" ||
-    !/^MPEG (?:1|2|2\.5) Layer 3$/.test(format.codec ?? "") ||
+    !(mp3 || mpeg4Audio) ||
     !Number.isFinite(format.duration) ||
     format.duration <= 0 ||
     format.hasVideo

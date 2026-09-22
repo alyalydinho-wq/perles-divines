@@ -46,4 +46,5 @@ test('le catalogue embarqué reprend les pages importées sans inventer l’arab
   assert.match(kumail.translation, /Miséricorde/);
   assert.equal(kumail.arabic, '');
   assert.equal(kumail.sourceUrl, 'https://www.perlesdivines.fr/fr/kumail.html');
+  assert.deepEqual(kumail.audioIds, ['758bc928-c06f-5fc2-999a-793464bb5c91']);
 });

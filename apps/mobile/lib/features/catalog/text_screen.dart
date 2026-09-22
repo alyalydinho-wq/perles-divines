@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../../core/track.dart';
+import '../../ui/site.dart';
 import '../duas/dua.dart';
+import '../player/audio_controller.dart';
 import '../reader/content_install.dart';
 import '../reader/reader_screen.dart';
+
+enum TextPane { arabic, translation, transliteration }
 
 class TextScreen extends StatefulWidget {
   const TextScreen({
@@ -11,6 +17,8 @@ class TextScreen extends StatefulWidget {
     required this.edition,
     required this.favorite,
     required this.onFavorite,
+    this.audio,
+    this.tracks = const [],
     this.textScale = 1.1,
   });
 
@@ -18,6 +26,8 @@ class TextScreen extends StatefulWidget {
   final LocalEdition edition;
   final bool favorite;
   final Future<void> Function() onFavorite;
+  final PerlesAudioHandler? audio;
+  final List<Track> tracks;
   final double textScale;
 
   @override
@@ -27,79 +37,91 @@ class TextScreen extends StatefulWidget {
 class _TextScreenState extends State<TextScreen> {
   late double scale = widget.textScale;
   late bool favorite = widget.favorite;
-  int pane = 0;
+  TextPane pane = TextPane.translation;
 
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-    final panes = <(String, Widget)>[
-      ('Lecture', _reading(item.introduction, item.translation, item.references)),
-      if (item.hasTransliteration)
-        ('Translittération', _reading(null, item.transliteration, const [])),
-      if (item.hasOriginalPage || item.hasArabic)
-        (
-          'Arabe',
-          item.hasOriginalPage
-              ? ReaderScreen(edition: widget.edition, initialPage: item.pagePath)
-              : _reading(null, item.arabic, const [], rtl: true),
-        ),
-    ];
-    final current = panes[pane.clamp(0, panes.length - 1)];
     return Scaffold(
-      appBar: AppBar(
-        title: Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        actions: [
-          IconButton(
-            tooltip: 'Réduire le texte',
-            onPressed: () => setState(() => scale = (scale - 0.1).clamp(0.9, 1.7)),
-            icon: const Icon(Icons.text_decrease),
-          ),
-          IconButton(
-            tooltip: 'Agrandir le texte',
-            onPressed: () => setState(() => scale = (scale + 0.1).clamp(0.9, 1.7)),
-            icon: const Icon(Icons.text_increase),
-          ),
-          IconButton(
-            tooltip: favorite ? 'Retirer des favoris' : 'Ajouter aux favoris',
-            onPressed: () async {
+      backgroundColor: siteCanvas,
+      body: Column(
+        children: [
+          SiteReaderHeader(
+            title: item.title,
+            favorite: favorite,
+            onBack: () => Navigator.of(context).maybePop(),
+            onPlay: _play,
+            onFavorite: () async {
               await widget.onFavorite();
               if (mounted) setState(() => favorite = !favorite);
             },
-            icon: Icon(favorite ? Icons.favorite : Icons.favorite_border),
+            onShare: _share,
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Chip(
-                visualDensity: VisualDensity.compact,
-                label: Text(kindLabel(item.kind)),
-              ),
-            ),
+          Expanded(child: _pane(item)),
+          SiteTextTabs(
+            selected: pane.index,
+            onSelected: (index) =>
+                setState(() => pane = TextPane.values[index]),
           ),
-          if (panes.length > 1)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SegmentedButton<int>(
-                showSelectedIcon: false,
-                segments: [
-                  for (final (i, pane) in panes.indexed)
-                    ButtonSegment(value: i, label: Text(pane.$1)),
-                ],
-                selected: {pane.clamp(0, panes.length - 1)},
-                onSelectionChanged: (value) => setState(() => pane = value.first),
-              ),
-            ),
-          const SizedBox(height: 8),
-          Expanded(child: current.$2),
         ],
       ),
     );
   }
+
+  Future<void> _play() async {
+    final audio = widget.audio;
+    if (audio == null || widget.tracks.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Aucun audio n’est encore associé à ce texte.'),
+        ),
+      );
+      return;
+    }
+    await audio.playTracks(widget.tracks);
+  }
+
+  Widget _pane(DevotionalText item) {
+    switch (pane) {
+      case TextPane.arabic:
+        if (item.hasOriginalPage) {
+          return ColoredBox(
+            color: siteCanvas,
+            child: ReaderScreen(
+              edition: widget.edition,
+              initialPage: item.pagePath,
+              compact: true,
+            ),
+          );
+        }
+        if (item.hasArabic) {
+          return _reading(null, item.arabic, const [], rtl: true);
+        }
+        return _empty(
+          'L’arabe calligraphié n’est pas en texte Unicode dans la page source. La page originale n’est pas disponible ici.',
+        );
+      case TextPane.translation:
+        return _reading(item.introduction, item.translation, item.references);
+      case TextPane.transliteration:
+        if (!item.hasTransliteration) {
+          return _empty(
+            'Aucune translittération n’est présente dans la page source.',
+          );
+        }
+        return _reading(null, item.transliteration, const []);
+    }
+  }
+
+  Widget _empty(String message) => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: siteText(color: siteBlack, fontSize: 16, lineHeight: 22),
+      ),
+    ),
+  );
 
   Widget _reading(
     String? introduction,
@@ -110,50 +132,73 @@ class _TextScreenState extends State<TextScreen> {
     final text = body.trim();
     final intro = introduction?.trim() ?? '';
     if (text.isEmpty && intro.isEmpty && references.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'Ce passage n’est pas en texte dans la page source. Ouvrez l’onglet Arabe pour la version originale.',
-          ),
-        ),
+      return _empty(
+        'Ce passage n’est pas en texte dans la page source. Ouvrez l’onglet Arabic pour la version originale.',
       );
     }
-    return SelectionArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-        children: [
-          if (intro.isNotEmpty) ...[
+    return ColoredBox(
+      color: siteCanvas,
+      child: SelectionArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(22, 16, 22, 28),
+          children: [
             Text(
-              intro,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                height: 1.45,
-                fontStyle: FontStyle.italic,
+              widget.item.title.toUpperCase(),
+              style: siteText(
+                color: siteBlack,
                 fontSize: 16 * scale,
+                lineHeight: 22,
+                weight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
+            if (intro.isNotEmpty) ...[
+              Text(
+                intro,
+                style: siteText(
+                  color: siteBlack,
+                  fontSize: 16 * scale,
+                  lineHeight: 22,
+                ).copyWith(fontStyle: FontStyle.italic),
+              ),
+              const SizedBox(height: 18),
+            ],
+            if (text.isNotEmpty)
+              Text(
+                text,
+                textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
+                style: siteText(
+                  color: siteBlack,
+                  fontSize: (rtl ? 22 : 18) * scale,
+                  lineHeight: 26,
+                ),
+              ),
+            for (final reference in references) ...[
+              const SizedBox(height: 20),
+              Text(
+                reference,
+                style: siteText(
+                  color: siteBlack,
+                  fontSize: 15 * scale,
+                  lineHeight: 22,
+                ),
+              ),
+            ],
           ],
-          if (text.isNotEmpty)
-            Text(
-              text,
-              textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                height: 1.55,
-                fontSize: 18 * scale,
-              ),
-            ),
-          for (final reference in references) ...[
-            const SizedBox(height: 20),
-            Text(
-              reference,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontSize: 15 * scale,
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
+    );
+  }
+
+  Future<void> _share() async {
+    final item = widget.item;
+    final body = item.hasTranslation
+        ? item.translation
+        : item.hasTransliteration
+        ? item.transliteration
+        : item.title;
+    await SharePlus.instance.share(
+      ShareParams(text: '${item.title}\n\n$body', title: item.title),
     );
   }
 }

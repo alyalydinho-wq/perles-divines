@@ -1,11 +1,16 @@
 import fs from 'node:fs/promises';
 import {sha256} from './import-site/content.mjs';
 import {extractCatalog} from './extract-devotional-catalog.mjs';
+import {prepareEmbeddedAudio} from './prepare-embedded-audio.mjs';
 const current=JSON.parse(await fs.readFile('content/current-import.json','utf8'));
 const inventory=JSON.parse(await fs.readFile('content/source-inventory.json','utf8'));
 const catalog=await extractCatalog({importDirectory:current.directory,inventory});
 await fs.mkdir('apps/mobile/assets/content',{recursive:true});
 await fs.writeFile('apps/mobile/assets/content/catalog.json',`${JSON.stringify(catalog,null,2)}\n`);
+const audio=await prepareEmbeddedAudio();
+if(!audio.skipped){
+  console.log(`${audio.files} pistes embarquées, ${audio.associated} associées à un texte.`);
+}
 const destination='apps/mobile/assets/site';
 await fs.mkdir(destination,{recursive:true});
 await fs.cp(`${current.directory}/normalized`,destination,{recursive:true});

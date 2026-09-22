@@ -9,11 +9,13 @@ class Track {
     required this.file,
     this.author,
     this.fixture = false,
+    this.bundled = false,
   });
   final String id, title, sha256, file;
   final String? author;
   final int version, durationMs, sizeBytes;
   final bool fixture;
+  final bool bundled;
   String get transferId => '$id-v$version';
   factory Track.fromJson(Map<String, dynamic> j) => Track(
     id: j['id'],
@@ -25,6 +27,7 @@ class Track {
     file: j['file'],
     author: j['author'],
     fixture: j['fixture'] == true,
+    bundled: j['bundled'] == true,
   );
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -36,6 +39,7 @@ class Track {
     'file': file,
     'author': author,
     'fixture': fixture,
+    'bundled': bundled,
   };
 }
 

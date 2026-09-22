@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { extractSections, indexButtons } from './import-site/devotional.mjs';
+import { applyAudioAssociations } from './audio-match.mjs';
 
 const INDEXES = [
   { url: 'https://www.perlesdivines.fr/doua.html', kind: 'dua' },
@@ -59,6 +60,7 @@ export async function extractCatalog({
       });
     }
   }
+  await applyAudioAssociations(items, 'content/audio-associations.json');
   return items;
 }
 
