@@ -128,11 +128,8 @@ void main() {
     expect(find.textContaining('InchAllah'), findsOneWidget);
     expect(find.text('www.perlesdivines.fr'), findsOneWidget);
     expect(find.text('contact@perlesdivines.fr'), findsOneWidget);
-    expect(find.byKey(const Key('site-player')), findsOneWidget);
-    expect(find.byTooltip('Lire'), findsOneWidget);
-    expect(find.byTooltip('Vitesse de lecture'), findsOneWidget);
-    expect(find.text('1x'), findsOneWidget);
-    expect(find.byType(Slider), findsOneWidget);
+    expect(find.byKey(const Key('site-player')), findsNothing);
+    expect(find.text('Aucun audio en cours'), findsNothing);
   });
 
   testWidgets('le sommaire liste les rubriques et la recherche', (tester) async {
@@ -148,7 +145,7 @@ void main() {
     expect(find.textContaining('Tafsir'), findsNothing);
     expect(find.textContaining('Diaporama'), findsNothing);
     expect(find.byKey(const Key('site-search')), findsOneWidget);
-    expect(find.byKey(const Key('site-player')), findsOneWidget);
+    expect(find.byKey(const Key('site-player')), findsNothing);
     expect(
       tester.getTopLeft(find.byKey(const Key('site-search'))).dy,
       lessThan(tester.getTopLeft(find.byType(SiteBismillah)).dy),

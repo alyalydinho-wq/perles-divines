@@ -50,8 +50,7 @@ TextStyle siteText({
 
 TextStyle get siteBodyGreen => siteText();
 TextStyle get siteBodyBlack => siteText(color: siteBlack);
-TextStyle get siteSmallGreen =>
-    siteText(fontSize: 13.33, lineHeight: 16);
+TextStyle get siteSmallGreen => siteText(fontSize: 13.33, lineHeight: 16);
 TextStyle get siteSmallBlack =>
     siteText(color: siteBlack, fontSize: 13.33, lineHeight: 16);
 
@@ -82,12 +81,7 @@ Future<void> openMailto(String email) async {
 }
 
 class SitePage extends StatelessWidget {
-  const SitePage({
-    super.key,
-    required this.children,
-    this.header,
-    this.footer,
-  });
+  const SitePage({super.key, required this.children, this.header, this.footer});
 
   final List<Widget> children;
   final List<Widget>? header;
@@ -197,10 +191,8 @@ class SiteBismillah extends StatelessWidget {
       width: 290,
       fit: BoxFit.fitWidth,
       filterQuality: FilterQuality.medium,
-      errorBuilder: (context, error, stack) => const SizedBox(
-        width: 290,
-        height: 52,
-      ),
+      errorBuilder: (context, error, stack) =>
+          const SizedBox(width: 290, height: 52),
     );
   }
 }
@@ -487,42 +479,45 @@ class SiteTextTabs extends StatelessWidget {
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: siteWhiteButtonBorder)),
       ),
-      child: SizedBox(
-        height: 44,
-        child: Row(
-          children: [
-            for (var i = 0; i < labels.length; i++)
-              Expanded(
-                child: InkWell(
-                  onTap: () => onSelected(i),
-                  child: Ink(
-                    decoration: BoxDecoration(
-                      gradient: i == selected
-                          ? const LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [siteGreenTop, siteGreenBottom],
-                            )
-                          : null,
-                      color: i == selected ? null : siteCanvas,
-                    ),
-                    child: Center(
-                      child: Text(
-                        labels[i],
-                        style: siteText(
-                          color: i == selected ? siteButtonText : siteBlack,
-                          fontSize: 13,
-                          lineHeight: 16,
-                          weight: i == selected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+        child: SizedBox(
+          height: 44,
+          child: Row(
+            children: [
+              for (var i = 0; i < labels.length; i++)
+                Expanded(
+                  child: InkWell(
+                    onTap: () => onSelected(i),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient: i == selected
+                            ? const LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [siteGreenTop, siteGreenBottom],
+                              )
+                            : null,
+                        color: i == selected ? null : siteCanvas,
+                      ),
+                      child: Center(
+                        child: Text(
+                          labels[i],
+                          style: siteText(
+                            color: i == selected ? siteButtonText : siteBlack,
+                            fontSize: 13,
+                            lineHeight: 16,
+                            weight: i == selected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     ),

@@ -40,3 +40,7 @@ flutter:
     - assets/site/assets/
     - assets/fixtures/
     - assets/audio/
+  fonts:
+    - family: Indopak
+      fonts:
+        - asset: assets/fonts/indopak.ttf

@@ -14,15 +14,16 @@ class SiteMiniPlayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audio = ServicesScope.maybeOf(context)?.audio;
-    if (audio == null) {
-      return const _Bar();
-    }
+    if (audio == null) return const SizedBox.shrink();
     return StreamBuilder<MediaItem?>(
       stream: audio.mediaItem,
       builder: (context, item) {
         return StreamBuilder<PlaybackState>(
           stream: audio.playbackState,
           builder: (context, playback) {
+            if (!_sessionOpen(item.data, playback.data)) {
+              return const SizedBox.shrink();
+            }
             return StreamBuilder<Duration>(
               stream: audio.player.positionStream,
               builder: (context, position) {
@@ -72,6 +73,14 @@ class SiteMiniPlayer extends StatelessWidget {
       },
     );
   }
+}
+
+bool _sessionOpen(MediaItem? item, PlaybackState? state) {
+  if (item == null || state == null) return false;
+  if (state.playing) return true;
+  return state.processingState == AudioProcessingState.ready ||
+      state.processingState == AudioProcessingState.buffering ||
+      state.processingState == AudioProcessingState.loading;
 }
 
 Future<void> _cycleSpeed(
