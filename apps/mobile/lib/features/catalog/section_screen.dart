@@ -10,11 +10,7 @@ import 'sections.dart';
 import 'text_screen.dart';
 
 class SectionScreen extends StatefulWidget {
-  const SectionScreen({
-    super.key,
-    required this.section,
-    this.catalog,
-  });
+  const SectionScreen({super.key, required this.section, this.catalog});
 
   final CatalogSection section;
   final LocalDevotionalCatalog? catalog;
@@ -43,8 +39,8 @@ class _SectionScreenState extends State<SectionScreen> {
     final filtered = query.trim().isEmpty
         ? items
         : (catalog?.search(query) ?? const <DevotionalText>[])
-            .where(widget.section.matches)
-            .toList();
+              .where(widget.section.matches)
+              .toList();
 
     return SitePage(
       header: [
@@ -96,7 +92,9 @@ class CatalogTextPage extends StatelessWidget {
         children: [SiteBlackText('Catalogue indisponible.')],
       );
     }
-    final matches = services.devotionalCatalog.items.where((item) => item.id == id);
+    final matches = services.devotionalCatalog.items.where(
+      (item) => item.id == id,
+    );
     if (matches.isEmpty) {
       return SitePage(
         children: [
@@ -123,6 +121,7 @@ class CatalogTextPage extends StatelessWidget {
           favorite: snapshot.data?.contains(item.id) ?? false,
           audio: services.audio,
           tracks: tracks,
+          store: services.store,
           onFavorite: () => DevotionalFavorites(services.store).toggle(item.id),
         );
       },
