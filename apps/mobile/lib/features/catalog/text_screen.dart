@@ -156,12 +156,14 @@ class _TextScreenState extends State<TextScreen> {
   Widget _fontBar() {
     return Material(
       color: siteCanvas,
+      elevation: 0,
       child: DecoratedBox(
         decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Color(0xFFE4E4E4))),
+          color: Color(0xFFF7F8F4),
+          border: Border(bottom: BorderSide(color: Color(0xFFD9E3C8))),
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
           child: Row(
             children: [
               _stepper(
@@ -173,6 +175,7 @@ class _TextScreenState extends State<TextScreen> {
                 active: pane == TextPane.arabic,
                 onChanged: (value) => _setSizes(arabic: value),
               ),
+              const SizedBox(width: 6),
               _stepper(
                 label: 'Traduction',
                 value: translationSize,
@@ -182,6 +185,7 @@ class _TextScreenState extends State<TextScreen> {
                 active: pane == TextPane.translation,
                 onChanged: (value) => _setSizes(translation: value),
               ),
+              const SizedBox(width: 6),
               _stepper(
                 label: 'Translit.',
                 value: transliterationSize,
@@ -215,55 +219,62 @@ class _TextScreenState extends State<TextScreen> {
     return Expanded(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: active ? siteGreenSolid : Colors.transparent,
-              width: 2,
-            ),
+          color: active ? const Color(0xFFE7F2D4) : siteCanvas,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: active ? siteGreenSolid : const Color(0xFFD5D5D5),
+            width: active ? 1.4 : 1,
           ),
         ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: siteText(
-                color: active ? siteGreen : siteBlack,
-                fontSize: 11,
-                lineHeight: 14,
-                weight: FontWeight.w700,
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _sizeButton(
-                  tooltip: 'Réduire $target',
-                  icon: Icons.remove,
-                  enabled: value > min,
-                  onPressed: () => onChanged(math.max(min, value - step)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(2, 5, 2, 4),
+          child: Column(
+            children: [
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.fade,
+                softWrap: false,
+                style: siteText(
+                  color: active ? siteGreen : const Color(0xFF5C5C5C),
+                  fontSize: 11,
+                  lineHeight: 13,
+                  weight: FontWeight.w700,
                 ),
-                SizedBox(
-                  width: 26,
-                  child: Text(
-                    '${value.round()}',
-                    textAlign: TextAlign.center,
-                    style: siteText(
-                      color: siteBlack,
-                      fontSize: 13,
-                      lineHeight: 16,
-                      weight: FontWeight.w700,
+              ),
+              const SizedBox(height: 2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _sizeButton(
+                    tooltip: 'Réduire $target',
+                    icon: Icons.remove,
+                    enabled: value > min,
+                    onPressed: () => onChanged(math.max(min, value - step)),
+                  ),
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      '${value.round()}',
+                      textAlign: TextAlign.center,
+                      style: siteText(
+                        color: siteBlack,
+                        fontSize: 14,
+                        lineHeight: 16,
+                        weight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-                _sizeButton(
-                  tooltip: 'Agrandir $target',
-                  icon: Icons.add,
-                  enabled: value < max,
-                  onPressed: () => onChanged(math.min(max, value + step)),
-                ),
-              ],
-            ),
-          ],
+                  _sizeButton(
+                    tooltip: 'Agrandir $target',
+                    icon: Icons.add,
+                    enabled: value < max,
+                    onPressed: () => onChanged(math.min(max, value + step)),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -279,13 +290,17 @@ class _TextScreenState extends State<TextScreen> {
       tooltip: tooltip,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-      onPressed: enabled ? onPressed : null,
-      icon: Icon(
-        icon,
-        size: 18,
-        color: enabled ? siteGreen : const Color(0xFFB0B0B0),
+      constraints: const BoxConstraints.tightFor(width: 28, height: 28),
+      style: IconButton.styleFrom(
+        backgroundColor: enabled ? siteGreenSolid : const Color(0xFFE6E6E6),
+        foregroundColor: enabled ? Colors.white : const Color(0xFF9A9A9A),
+        disabledBackgroundColor: const Color(0xFFE6E6E6),
+        disabledForegroundColor: const Color(0xFF9A9A9A),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        shape: const CircleBorder(),
       ),
+      onPressed: enabled ? onPressed : null,
+      icon: Icon(icon, size: 16),
     );
   }
 
@@ -622,102 +637,40 @@ class _QuranArabic extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lines = _markedArabic(text);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final children = <Widget>[];
-        final verses = <_Line>[];
-        void flush() {
-          if (verses.isEmpty) return;
-          children.add(
-            _AyahGrid(
-              lines: List<_Line>.of(verses),
-              style: style,
-              width: constraints.maxWidth,
-            ),
-          );
-          verses.clear();
-        }
-
-        for (final line in lines) {
-          if (line.number == null) {
-            flush();
-            children.add(
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  line.text,
-                  textDirection: TextDirection.rtl,
-                  textAlign: TextAlign.center,
-                  style: style,
-                ),
-              ),
-            );
-          } else {
-            verses.add(line);
-          }
-        }
-        flush();
-        return Column(mainAxisSize: MainAxisSize.min, children: children);
-      },
-    );
-  }
-}
-
-class _AyahGrid extends StatelessWidget {
-  const _AyahGrid({
-    required this.lines,
-    required this.style,
-    required this.width,
-  });
-
-  final List<_Line> lines;
-  final TextStyle style;
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    final size = style.fontSize ?? 28;
-    final columns = lines.length >= 2 && width >= 320 && size <= width / 11
-        ? 2
-        : 1;
-    if (columns == 1) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final line in lines)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 2),
-              child: _AyahCell(line: line, style: style),
-            ),
-        ],
-      );
-    }
-    final rows = <Widget>[];
-    for (var i = 0; i < lines.length; i += 2) {
-      final right = lines[i];
-      final left = i + 1 < lines.length ? lines[i + 1] : null;
-      rows.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: 2),
-          child: Row(
-            textDirection: TextDirection.rtl,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: _AyahCell(line: right, style: style),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: left == null
-                    ? const SizedBox.shrink()
-                    : _AyahCell(line: left, style: style),
-              ),
-            ],
+    final children = <Widget>[];
+    final verses = <_Line>[];
+    void flush() {
+      if (verses.isEmpty) return;
+      children.addAll([
+        for (final verse in verses)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: _AyahCell(line: verse, style: style),
           ),
-        ),
-      );
+      ]);
+      verses.clear();
     }
-    return Column(mainAxisSize: MainAxisSize.min, children: rows);
+
+    for (final line in lines) {
+      if (line.number == null) {
+        flush();
+        children.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Text(
+              line.text,
+              textDirection: TextDirection.rtl,
+              textAlign: TextAlign.center,
+              style: style,
+            ),
+          ),
+        );
+      } else {
+        verses.add(line);
+      }
+    }
+    flush();
+    return Column(mainAxisSize: MainAxisSize.min, children: children);
   }
 }
 
@@ -729,36 +682,22 @@ class _AyahCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final diameter = ((style.fontSize ?? 28) * 1.45).clamp(38.0, 58.0);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxText = math.max(0.0, constraints.maxWidth - diameter - 6);
-        final painter = TextPainter(
-          text: TextSpan(text: line.text, style: style),
-          textDirection: TextDirection.rtl,
-          textAlign: TextAlign.center,
-        )..layout(maxWidth: maxText);
-        final textWidth = math.min(painter.width, maxText);
-        painter.dispose();
-        return Row(
-          textDirection: TextDirection.rtl,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: textWidth,
-              child: Text(
-                line.text,
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.center,
-                style: style,
-              ),
-            ),
-            const SizedBox(width: 6),
-            _AyahBadge(number: line.number!, diameter: diameter),
-          ],
-        );
-      },
+    final diameter = ((style.fontSize ?? 28) * 1.2).clamp(34.0, 56.0);
+    return Row(
+      textDirection: TextDirection.rtl,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Text(
+            line.text,
+            textDirection: TextDirection.rtl,
+            textAlign: TextAlign.center,
+            style: style,
+          ),
+        ),
+        const SizedBox(width: 8),
+        _AyahBadge(number: line.number!, diameter: diameter),
+      ],
     );
   }
 }

@@ -137,8 +137,12 @@ void main() {
 
       final first = tester.getTopLeft(find.text(verse1));
       final second = tester.getTopLeft(find.text(verse2));
-      expect(first.dx, greaterThan(second.dx));
-      expect((first.dy - second.dy).abs(), lessThan(50));
+      expect(first.dy, lessThan(second.dy - 8));
+      expect(tester.widget<Text>(find.text(verse1)).maxLines, isNull);
+      expect(
+        tester.widget<Text>(find.text(verse1)).style!.fontSize,
+        tester.widget<Text>(find.text(verse2)).style!.fontSize,
+      );
       expect(
         tester.getTopLeft(find.text('بِسْمِ اللّٰهِ')).dy,
         lessThan(first.dy),
@@ -198,4 +202,52 @@ void main() {
       expect(tester.widget<Text>(find.text(verse1)).style!.fontSize, 30);
     },
   );
+
+  testWidgets('un long verset garde la même taille et passe à la ligne', (
+    tester,
+  ) async {
+    const short = 'تَنْزِيلَ الْعَزِيزِ الرَّحِيمِ';
+    const long =
+        'إِنَّمَا تُنْذِرُ مَنِ اتَّبَعَ الذِّكْرَ وَخَشِيَ الرَّحْمَٰنَ بِالْغَيْبِ فَبَشِّرْهُ بِمَغْفِرَةٍ وَأَجْرٍ كَرِيمٍ';
+    final item = DevotionalText(
+      id: 'quran-long',
+      kind: DevotionalKind.quran,
+      title: 'Sourate',
+      arabic: '$short ﴿٥﴾\n$long ﴿١١﴾',
+      translation: 'Traduction.',
+      transliteration: 'Translit',
+      references: [],
+      audioIds: [],
+    );
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TextScreen(
+          item: item,
+          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+          favorite: false,
+          onFavorite: () async {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Arabic'));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 10; i++) {
+      await tester.tap(find.byTooltip('Agrandir l’arabe'));
+      await tester.pump();
+    }
+    final shortText = tester.widget<Text>(find.text(short));
+    final longText = tester.widget<Text>(find.text(long));
+    expect(shortText.style!.fontSize, 48);
+    expect(longText.style!.fontSize, shortText.style!.fontSize);
+    expect(find.byType(FittedBox), findsNothing);
+    expect(
+      tester.getSize(find.text(long)).height,
+      greaterThan(tester.getSize(find.text(short)).height * 1.4),
+    );
+  });
 }
