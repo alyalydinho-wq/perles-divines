@@ -79,6 +79,8 @@ void main() {
     await tester.pumpAndSettle();
     final arabic = tester.widget<Text>(find.text('بِسْمِ اللّٰهِ'));
     expect(arabic.style!.height, lessThan(2.2));
+    await tester.tap(find.byTooltip('Taille du texte'));
+    await tester.pumpAndSettle();
     expect(find.byTooltip('Agrandir l’arabe'), findsOneWidget);
     expect(find.byTooltip('Agrandir la traduction'), findsOneWidget);
     expect(find.byTooltip('Agrandir la translittération'), findsOneWidget);
@@ -150,6 +152,8 @@ void main() {
       expect(tester.getTopLeft(find.text('\u06F1')).dx, lessThan(first.dx));
 
       final before = tester.widget<Text>(find.text(verse1)).style!.fontSize;
+      await tester.tap(find.byTooltip('Taille du texte'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Agrandir l’arabe'));
       await tester.pump();
       expect(
@@ -235,6 +239,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Arabic'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Taille du texte'));
     await tester.pumpAndSettle();
     for (var i = 0; i < 10; i++) {
       await tester.tap(find.byTooltip('Agrandir l’arabe'));

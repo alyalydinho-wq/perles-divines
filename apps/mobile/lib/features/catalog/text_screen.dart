@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/store.dart';
@@ -56,10 +57,13 @@ class TextScreen extends StatefulWidget {
 }
 
 class _TextScreenState extends State<TextScreen> {
+  final _scroll = ScrollController();
+  final _readerKey = GlobalKey<ReaderScreenState>();
   double arabicSize = 28;
   double translationSize = 18;
   double transliterationSize = 18;
   bool _customSizes = false;
+  bool _sizesOpen = false;
   late bool favorite = widget.favorite;
   TextPane pane = TextPane.translation;
 
@@ -67,6 +71,12 @@ class _TextScreenState extends State<TextScreen> {
   void initState() {
     super.initState();
     unawaited(_loadSizes());
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSizes() async {
@@ -141,7 +151,7 @@ class _TextScreenState extends State<TextScreen> {
             },
             onShare: _share,
           ),
-          _fontBar(),
+          _actionBar(),
           Expanded(child: _pane(item)),
           SiteTextTabs(
             selected: pane.index,
@@ -153,7 +163,80 @@ class _TextScreenState extends State<TextScreen> {
     );
   }
 
-  Widget _fontBar() {
+  Widget _actionBar() {
+    return Column(
+      children: [
+        Material(
+          color: siteGreenSolid,
+          child: SizedBox(
+            height: 52,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _barButton(
+                  tooltip: 'Taille du texte',
+                  icon: Icons.settings,
+                  selected: _sizesOpen,
+                  onPressed: () => setState(() => _sizesOpen = !_sizesOpen),
+                ),
+                _barButton(
+                  tooltip: 'Sommaire',
+                  icon: Icons.home,
+                  onPressed: () => GoRouter.maybeOf(context)?.go('/sommaire'),
+                ),
+                _barButton(
+                  tooltip: 'Page précédente',
+                  icon: Icons.chevron_left,
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+                _barButton(
+                  tooltip: 'Haut de la page',
+                  icon: Icons.keyboard_arrow_up,
+                  onPressed: _scrollToTop,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_sizesOpen) _fontControls(),
+      ],
+    );
+  }
+
+  Widget _barButton({
+    required String tooltip,
+    required IconData icon,
+    required VoidCallback onPressed,
+    bool selected = false,
+  }) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      icon: Icon(icon, size: 28, color: Colors.white),
+      style: IconButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: selected ? const Color(0x33FFFFFF) : Colors.transparent,
+        fixedSize: const Size(52, 44),
+        shape: const CircleBorder(),
+      ),
+    );
+  }
+
+  void _scrollToTop() {
+    final reader = _readerKey.currentState;
+    if (reader != null) {
+      unawaited(reader.scrollToTop());
+      return;
+    }
+    if (!_scroll.hasClients) return;
+    _scroll.animateTo(
+      0,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Widget _fontControls() {
     return Material(
       color: siteCanvas,
       elevation: 0,
@@ -324,6 +407,7 @@ class _TextScreenState extends State<TextScreen> {
           return ColoredBox(
             color: siteCanvas,
             child: ReaderScreen(
+              key: _readerKey,
               edition: widget.edition,
               initialPage: item.pagePath,
               compact: true,
@@ -430,6 +514,7 @@ class _TextScreenState extends State<TextScreen> {
       color: siteCanvas,
       child: SelectionArea(
         child: ListView(
+          controller: _scroll,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
           children: [
             SizedBox(

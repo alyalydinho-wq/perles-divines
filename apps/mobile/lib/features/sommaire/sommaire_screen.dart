@@ -32,25 +32,30 @@ class _SommaireScreenState extends State<SommaireScreen> {
   @override
   Widget build(BuildContext context) {
     final catalog = _catalog(context);
-    final results = query.trim().isEmpty
-        ? const <DevotionalText>[]
-        : (catalog?.search(query) ?? const <DevotionalText>[]);
+    final searching = query.trim().isNotEmpty;
+    final results = searching
+        ? (catalog?.search(query) ?? const <DevotionalText>[])
+        : const <DevotionalText>[];
 
     return SitePage(
       header: [
-        SiteLogo(onTap: () => context.go('/')),
-        const SiteGap(height: 12),
-        const SiteBlackText('Version $appVersion', small: true),
-        const SiteGap(height: 12),
+        if (!searching) ...[
+          SiteLogo(onTap: () => context.go('/')),
+          const SiteGap(height: 12),
+          const SiteBlackText('Version $appVersion', small: true),
+          const SiteGap(height: 12),
+        ],
         SiteSearchField(
           controller: search,
           onChanged: (value) => setState(() => query = value),
         ),
       ],
       children: [
-        const SiteBismillah(),
-        const SiteGap(),
-        if (query.trim().isNotEmpty) ...[
+        if (!searching) ...[
+          const SiteBismillah(),
+          const SiteGap(),
+        ],
+        if (searching) ...[
           if (results.isEmpty)
             const SiteBlackText('Aucune prière ne correspond à cette recherche.')
           else

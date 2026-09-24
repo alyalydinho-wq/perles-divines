@@ -20,10 +20,10 @@ class ReaderScreen extends StatefulWidget {
   final String? initialPage;
   final bool compact;
   @override
-  State<ReaderScreen> createState() => _ReaderScreenState();
+  State<ReaderScreen> createState() => ReaderScreenState();
 }
 
-class _ReaderScreenState extends State<ReaderScreen> {
+class ReaderScreenState extends State<ReaderScreen> {
   late final WebViewController controller;
   String? error;
   String current = '';
@@ -135,6 +135,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
         ? file
         : widget.edition.home;
   }
+
+  Future<void> scrollToTop() => controller.scrollTo(0, 0);
 
   Future<void> _open(String file) async {
     if (Platform.isIOS) {

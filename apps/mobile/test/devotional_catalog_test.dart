@@ -38,6 +38,37 @@ void main() {
     expect(catalog.search('reference verifiee'), [dua]);
   });
 
+  test('la recherche tolère les graphies courantes', () {
+    const ashura = DevotionalText(
+      id: 'ashura',
+      kind: DevotionalKind.ziyarat,
+      title: 'Zyaarat-e-Âchourâ',
+      arabic: 'دُعَاء',
+      translation: '',
+      transliteration: "Eelaahi A'Zomal",
+      references: [],
+      audioIds: [],
+    );
+    const kumayl = DevotionalText(
+      id: 'kumayl',
+      kind: DevotionalKind.dua,
+      title: 'Doua-e-Kumayl',
+      arabic: '',
+      translation: '',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+    );
+    const spelled = LocalDevotionalCatalog([dua, ashura, kumayl]);
+    expect(spelled.search('dua'), [dua, kumayl]);
+    expect(spelled.search('doua'), [dua, kumayl]);
+    expect(spelled.search('ashura'), [ashura]);
+    expect(spelled.search('achoura'), [ashura]);
+    expect(spelled.search('azomal'), [ashura]);
+    expect(spelled.search('دعاء'), [dua, ashura]);
+    expect(spelled.search('kumail'), [kumayl]);
+  });
+
   test('le filtre de catégorie isole ziyārāt et duʿā', () {
     expect(catalog.search('', kind: DevotionalKind.ziyarat), [ziyarat]);
     expect(catalog.search('ziy', kind: DevotionalKind.dua), isEmpty);
