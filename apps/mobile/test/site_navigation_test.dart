@@ -66,16 +66,16 @@ Widget _app() {
           GoRoute(
             path: '/section/:id',
             builder: (context, state) {
-              final section =
-                  CatalogSection.byId(state.pathParameters['id'] ?? '')!;
+              final section = CatalogSection.byId(
+                state.pathParameters['id'] ?? '',
+              )!;
               return SectionScreen(section: section, catalog: _catalog);
             },
           ),
           GoRoute(
             path: '/text/:id',
-            builder: (context, state) => const Scaffold(
-              body: Text('texte ouvert'),
-            ),
+            builder: (context, state) =>
+                const Scaffold(body: Text('texte ouvert')),
           ),
           GoRoute(
             path: '/about',
@@ -132,7 +132,24 @@ void main() {
     expect(find.text('Aucun audio en cours'), findsNothing);
   });
 
-  testWidgets('le sommaire liste les rubriques et la recherche', (tester) async {
+  testWidgets('sans lecture, seul l’inset système est réservé en bas', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: MediaQuery(
+          data: MediaQueryData(padding: EdgeInsets.only(bottom: 48)),
+          child: Align(alignment: Alignment.topCenter, child: SiteMiniPlayer()),
+        ),
+      ),
+    );
+    expect(tester.getSize(find.byType(SiteMiniPlayer)).height, 48);
+    expect(find.byKey(const Key('site-player')), findsNothing);
+  });
+
+  testWidgets('le sommaire liste les rubriques et la recherche', (
+    tester,
+  ) async {
     await tester.pumpWidget(_app());
     await _settle(tester);
     await tester.tap(find.byKey(const Key('sommaire-button')));
@@ -145,6 +162,7 @@ void main() {
     expect(find.textContaining('Tafsir'), findsNothing);
     expect(find.textContaining('Diaporama'), findsNothing);
     expect(find.byKey(const Key('site-search')), findsOneWidget);
+    expect(find.byKey(const Key('section-home')), findsNothing);
     expect(find.byKey(const Key('site-player')), findsNothing);
     expect(
       tester.getTopLeft(find.byKey(const Key('site-search'))).dy,
@@ -166,5 +184,23 @@ void main() {
     await _settle(tester);
     expect(find.text('Doua-e-Kumayl'), findsOneWidget);
     expect(find.text('Retour au sommaire'), findsOneWidget);
+    expect(find.byKey(const Key('section-home')), findsOneWidget);
+  });
+
+  testWidgets('la maison d’une rubrique ramène au sommaire', (tester) async {
+    await tester.pumpWidget(_app());
+    await _settle(tester);
+    await tester.tap(find.byKey(const Key('sommaire-button')));
+    await _settle(tester);
+
+    for (final section in ['Qur\'an', 'Namaz', 'Doua', 'Zyaraate']) {
+      await tester.tap(find.text(section));
+      await _settle(tester);
+      expect(find.byKey(const Key('section-home')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('section-home')));
+      await _settle(tester);
+      expect(find.text('A Propos ...'), findsOneWidget);
+      expect(find.byKey(const Key('section-home')), findsNothing);
+    }
   });
 }

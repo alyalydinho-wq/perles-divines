@@ -14,7 +14,7 @@ class SiteMiniPlayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audio = ServicesScope.maybeOf(context)?.audio;
-    if (audio == null) return const SizedBox.shrink();
+    if (audio == null) return _systemInset(context);
     return StreamBuilder<MediaItem?>(
       stream: audio.mediaItem,
       builder: (context, item) {
@@ -22,7 +22,7 @@ class SiteMiniPlayer extends StatelessWidget {
           stream: audio.playbackState,
           builder: (context, playback) {
             if (!_sessionOpen(item.data, playback.data)) {
-              return const SizedBox.shrink();
+              return _systemInset(context);
             }
             return StreamBuilder<Duration>(
               stream: audio.player.positionStream,
@@ -50,7 +50,8 @@ class SiteMiniPlayer extends StatelessWidget {
                           await audio.play();
                         }
                       },
-                      onSpeed: () => _cycleSpeed(audio.player.speed, audio.setSpeed),
+                      onSpeed: () =>
+                          _cycleSpeed(audio.player.speed, audio.setSpeed),
                       onSeek: durationMs > 0
                           ? (value) => audio.seek(
                               Duration(milliseconds: value.round()),
@@ -74,6 +75,9 @@ class SiteMiniPlayer extends StatelessWidget {
     );
   }
 }
+
+Widget _systemInset(BuildContext context) =>
+    SizedBox(height: MediaQuery.paddingOf(context).bottom);
 
 bool _sessionOpen(MediaItem? item, PlaybackState? state) {
   if (item == null || state == null) return false;

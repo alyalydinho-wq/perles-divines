@@ -15,6 +15,12 @@ import '../reader/reader_screen.dart';
 
 enum TextPane { arabic, translation, transliteration }
 
+TextPane _openingPane(DevotionalText item) {
+  if (item.hasArabic || item.hasOriginalPage) return TextPane.arabic;
+  if (item.hasTranslation) return TextPane.translation;
+  return TextPane.transliteration;
+}
+
 const _fontKey = 'readingFonts';
 const _arabicMin = 20.0;
 const _arabicMax = 48.0;
@@ -59,17 +65,20 @@ class TextScreen extends StatefulWidget {
 class _TextScreenState extends State<TextScreen> {
   final _scroll = ScrollController();
   final _readerKey = GlobalKey<ReaderScreenState>();
+  final _surahInfoKey = GlobalKey();
+  bool _surahInfoOpen = false;
   double arabicSize = 28;
   double translationSize = 18;
   double transliterationSize = 18;
   bool _customSizes = false;
   bool _sizesOpen = false;
   late bool favorite = widget.favorite;
-  TextPane pane = TextPane.translation;
+  late TextPane pane;
 
   @override
   void initState() {
     super.initState();
+    pane = _openingPane(widget.item);
     unawaited(_loadSizes());
   }
 
@@ -215,7 +224,9 @@ class _TextScreenState extends State<TextScreen> {
       icon: Icon(icon, size: 28, color: Colors.white),
       style: IconButton.styleFrom(
         foregroundColor: Colors.white,
-        backgroundColor: selected ? const Color(0x33FFFFFF) : Colors.transparent,
+        backgroundColor: selected
+            ? const Color(0x33FFFFFF)
+            : Colors.transparent,
         fixedSize: const Size(52, 44),
         shape: const CircleBorder(),
       ),
@@ -420,6 +431,9 @@ class _TextScreenState extends State<TextScreen> {
             item.arabic,
             const [],
             rtl: true,
+            surahInfo: item.kind == DevotionalKind.quran
+                ? _surahInfo(item.translation)
+                : null,
           );
         }
         return _empty(
@@ -495,12 +509,60 @@ class _TextScreenState extends State<TextScreen> {
     ),
   );
 
+  void _revealSurahInfo() {
+    final opening = !_surahInfoOpen;
+    setState(() => _surahInfoOpen = opening);
+    if (!opening) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final target = _surahInfoKey.currentContext;
+      if (target == null || !mounted) return;
+      Scrollable.ensureVisible(
+        target,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+        alignment: 0.02,
+      );
+    });
+  }
+
+  Widget _surahInfoLink() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Center(
+        child: TextButton(
+          onPressed: _revealSurahInfo,
+          style: TextButton.styleFrom(
+            foregroundColor: siteLink,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(
+            'Infos sur la sourate',
+            textAlign: TextAlign.center,
+            style:
+                siteText(
+                  color: siteLink,
+                  fontSize: 16,
+                  lineHeight: 22,
+                  weight: FontWeight.w600,
+                ).copyWith(
+                  decoration: TextDecoration.underline,
+                  decorationColor: siteLink,
+                ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _reading(
     String? introduction,
     String body,
     List<String> references, {
     bool rtl = false,
     bool verses = false,
+    String? surahInfo,
   }) {
     final text = body.trim();
     final intro = introduction?.trim() ?? '';
@@ -531,6 +593,13 @@ class _TextScreenState extends State<TextScreen> {
               ),
             ),
             const SizedBox(height: 10),
+            if (surahInfo != null) _surahInfoLink(),
+            if (surahInfo != null && _surahInfoOpen)
+              Padding(
+                key: _surahInfoKey,
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _SurahInfo(text: surahInfo, size: proseSize),
+              ),
             if (intro.isNotEmpty) ...[
               Text(
                 intro,
@@ -558,7 +627,7 @@ class _TextScreenState extends State<TextScreen> {
                           : TextDirection.ltr,
                       textAlign: TextAlign.center,
                       style: _arabicScript(block)
-                          ? _arabicStyle()
+                          ? _ruledBlack(_arabicStyle())
                           : siteText(
                               color: siteBlack,
                               fontSize: proseSize,
@@ -660,6 +729,118 @@ class _Line {
   final int? number;
 }
 
+String? _surahInfo(String translation) {
+  final text = translation.trim();
+  const marker = 'Infos sur la sourate';
+  final marked = text.indexOf(marker);
+  if (marked >= 0) {
+    final body = text.substring(marked + marker.length).trim();
+    return body.isEmpty ? null : body;
+  }
+  const title = 'La traduction du titre de la Sourate';
+  final alt = text.indexOf(title);
+  if (alt <= 0) return null;
+  var start = alt;
+  final previous = text.substring(0, alt).trimRight().split(RegExp(r'\n{2,}'));
+  if (previous.isNotEmpty) {
+    final note = previous.last.trim();
+    if (note.isNotEmpty && !RegExp(r'(^|\s)\d{1,3}\.\s').hasMatch(note)) {
+      final at = text.lastIndexOf(note, alt);
+      if (at >= 0) start = at;
+    }
+  }
+  final body = text.substring(start).trim();
+  return body.isEmpty ? null : body;
+}
+
+class _SurahInfo extends StatelessWidget {
+  const _SurahInfo({required this.text, required this.size});
+
+  final String text;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final blocks = text
+        .split(RegExp(r'\n{2,}'))
+        .map((block) => block.trim())
+        .where((block) => block.isNotEmpty);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8F4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD9E3C8)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Infos sur la sourate',
+              style: siteText(
+                color: siteGreen,
+                fontSize: size + 1,
+                lineHeight: (size + 1) * 1.3,
+                weight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            for (final block in blocks) _block(block),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _block(String block) {
+    final body = siteText(
+      color: siteBlack,
+      fontSize: size,
+      lineHeight: size * 1.4,
+    );
+    final heading = siteText(
+      color: siteGreen,
+      fontSize: size,
+      lineHeight: size * 1.35,
+      weight: FontWeight.w700,
+    );
+    final split = block.indexOf(':');
+    final lineBreak = block.indexOf('\n');
+    final labelEndsHere =
+        split > 0 &&
+        split < 90 &&
+        (lineBreak < 0 || split < lineBreak);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: labelEndsHere
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(block.substring(0, split + 1), style: heading),
+                if (block.substring(split + 1).trim().isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(block.substring(split + 1).trim(), style: body),
+                ],
+              ],
+            )
+          : Text(block, style: body),
+    );
+  }
+}
+
+TextStyle _ruled(TextStyle style) => style.copyWith(
+  decoration: TextDecoration.underline,
+  decorationColor: const Color(0xFF8A8A8A),
+  decorationThickness: 1,
+);
+
+TextStyle _ruledBlack(TextStyle style) => style.copyWith(
+  decoration: TextDecoration.underline,
+  decorationColor: siteBlack,
+  decorationThickness: 1.15,
+);
+
 List<_Line> _markedArabic(String value) {
   final lines = <_Line>[];
   for (final raw in value.split(RegExp(r'\n+'))) {
@@ -746,7 +927,7 @@ class _QuranArabic extends StatelessWidget {
               line.text,
               textDirection: TextDirection.rtl,
               textAlign: TextAlign.center,
-              style: style,
+              style: _ruled(style),
             ),
           ),
         );
@@ -767,22 +948,24 @@ class _AyahCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final diameter = ((style.fontSize ?? 28) * 1.2).clamp(34.0, 56.0);
-    return Row(
-      textDirection: TextDirection.rtl,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Text(
-            line.text,
-            textDirection: TextDirection.rtl,
-            textAlign: TextAlign.center,
-            style: style,
+    final diameter = ((style.fontSize ?? 28) * 0.9).clamp(26.0, 42.0);
+    final ruled = _ruled(style);
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(text: line.text),
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.only(start: 4),
+              child: _AyahBadge(number: line.number!, diameter: diameter),
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        _AyahBadge(number: line.number!, diameter: diameter),
-      ],
+        ],
+      ),
+      textDirection: TextDirection.rtl,
+      textAlign: TextAlign.center,
+      style: ruled,
     );
   }
 }

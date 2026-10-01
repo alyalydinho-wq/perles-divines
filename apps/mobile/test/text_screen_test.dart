@@ -1,11 +1,13 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:perles_divines/core/store.dart';
 import 'package:perles_divines/features/catalog/text_screen.dart';
 import 'package:perles_divines/features/duas/dua.dart';
 import 'package:perles_divines/features/reader/content_install.dart';
 import 'package:perles_divines/ui/heritage.dart';
+import 'package:perles_divines/ui/site.dart';
 
 void main() {
   test('le chronomètre de lecture reste lisible', () {
@@ -66,6 +68,11 @@ void main() {
     expect(find.text('Translation'), findsOneWidget);
     expect(find.text('Transliteration'), findsOneWidget);
     expect(find.byType(Slider), findsNothing);
+    expect(find.text('بِسْمِ اللّٰهِ'), findsOneWidget);
+    expect(find.text('Au nom d’Allàh, le Tout Miséricordieux.'), findsNothing);
+
+    await tester.tap(find.text('Translation'));
+    await tester.pumpAndSettle();
     expect(
       find.text('Au nom d’Allàh, le Tout Miséricordieux.'),
       findsOneWidget,
@@ -79,6 +86,8 @@ void main() {
     await tester.pumpAndSettle();
     final arabic = tester.widget<Text>(find.text('بِسْمِ اللّٰهِ'));
     expect(arabic.style!.height, lessThan(2.2));
+    expect(arabic.style!.decoration, TextDecoration.underline);
+    expect(arabic.style!.decorationColor, siteBlack);
     await tester.tap(find.byTooltip('Taille du texte'));
     await tester.pumpAndSettle();
     expect(find.byTooltip('Agrandir l’arabe'), findsOneWidget);
@@ -94,6 +103,37 @@ void main() {
   });
 
   testWidgets(
+    'les onglets ne laissent pas de bande blanche au-dessus du lecteur',
+    (tester) async {
+      const item = DevotionalText(
+        id: 'ziyarat-1',
+        kind: DevotionalKind.ziyarat,
+        title: 'Ziyarat e Aale Yasin',
+        arabic: 'بِسْمِ اللّٰهِ',
+        translation: 'Au nom d’Allàh, le Tout Miséricordieux.',
+        transliteration: 'BISMILLAHIR RAHMANIR RAHEEM',
+        references: [],
+        audioIds: [],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(padding: EdgeInsets.only(bottom: 48)),
+            child: TextScreen(
+              item: item,
+              edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+              favorite: false,
+              onFavorite: () async {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.getSize(find.byType(SiteTextTabs)).height, 44);
+    },
+  );
+
+  testWidgets(
     'une sourate montre le numéro de chaque verset et des tailles indépendantes',
     (tester) async {
       const verse1 = 'اِذَا وَقَعَتِ الْوَاقِعَةُ';
@@ -103,7 +143,7 @@ void main() {
         kind: DevotionalKind.quran,
         title: "Sourate al-Wâqi'ah (56)",
         arabic: 'بِسْمِ اللّٰهِ\n\nاِذَا وَقَعَتِ الْوَاقِعَةُ ﴿١﴾\nلَيْسَ لِوَقْعَتِهَا كَاذِبَةٌ ﴿٢﴾',
-        translation: 'Quand l’événement arrivera.',
+        translation: 'Quand l’événement arrivera.\n\nInfos sur la sourate\n\nLieu de révélation:\n\nLa Mecque',
         transliteration: 'Bismillaah\n\nIzaa waqa\nLaisa liwaq',
         references: [],
         audioIds: [],
@@ -126,38 +166,62 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Quand l’événement arrivera.'), findsOneWidget);
-
-      await tester.tap(find.text('Arabic'));
-      await tester.pumpAndSettle();
       expect(find.text('بِسْمِ اللّٰهِ'), findsOneWidget);
-      expect(find.text(verse1), findsOneWidget);
-      expect(find.text(verse2), findsOneWidget);
+      expect(find.text('Quand l’événement arrivera.'), findsNothing);
+      expect(_verse(verse1), findsOneWidget);
+      expect(_verse(verse2), findsOneWidget);
       expect(find.textContaining('﴿'), findsNothing);
       expect(find.text('\u06F1'), findsOneWidget);
       expect(find.text('\u06F2'), findsOneWidget);
 
-      final first = tester.getTopLeft(find.text(verse1));
-      final second = tester.getTopLeft(find.text(verse2));
+      final first = tester.getTopLeft(_verse(verse1));
+      final second = tester.getTopLeft(_verse(verse2));
       expect(first.dy, lessThan(second.dy - 8));
-      expect(tester.widget<Text>(find.text(verse1)).maxLines, isNull);
+      expect(tester.widget<Text>(_verse(verse1)).maxLines, isNull);
       expect(
-        tester.widget<Text>(find.text(verse1)).style!.fontSize,
-        tester.widget<Text>(find.text(verse2)).style!.fontSize,
+        tester.widget<Text>(_verse(verse1)).style!.fontSize,
+        tester.widget<Text>(_verse(verse2)).style!.fontSize,
       );
       expect(
         tester.getTopLeft(find.text('بِسْمِ اللّٰهِ')).dy,
         lessThan(first.dy),
       );
-      expect(tester.getTopLeft(find.text('\u06F1')).dx, lessThan(first.dx));
+      final paragraph = _paragraph(tester, verse1);
+      final boxes = paragraph.getBoxesForSelection(
+        const TextSelection(baseOffset: 0, extentOffset: verse1.length),
+      );
+      final origin = paragraph.localToGlobal(Offset.zero);
+      final number = tester.getRect(find.text('\u06F1'));
+      final nearestEnd = boxes
+          .map((box) => (origin.dx + box.left - number.right).abs())
+          .reduce((a, b) => a < b ? a : b);
+      expect(nearestEnd, lessThan(12));
+      expect(number.left, greaterThan(origin.dx + 24));
+      expect(
+        number.center.dy,
+        inInclusiveRange(origin.dy, origin.dy + paragraph.size.height),
+      );
+      expect(
+        tester.widget<Text>(_verse(verse1)).style!.decoration,
+        TextDecoration.underline,
+      );
+      expect(
+        tester.widget<Text>(find.text('بِسْمِ اللّٰهِ')).style!.decoration,
+        TextDecoration.underline,
+      );
+      expect(find.text('Infos sur la sourate'), findsOneWidget);
+      expect(find.text('La Mecque'), findsNothing);
+      await tester.tap(find.text('Infos sur la sourate'));
+      await tester.pumpAndSettle();
+      expect(find.text('La Mecque'), findsOneWidget);
 
-      final before = tester.widget<Text>(find.text(verse1)).style!.fontSize;
+      final before = tester.widget<Text>(_verse(verse1)).style!.fontSize;
       await tester.tap(find.byTooltip('Taille du texte'));
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Agrandir l’arabe'));
       await tester.pump();
       expect(
-        tester.widget<Text>(find.text(verse1)).style!.fontSize,
+        tester.widget<Text>(_verse(verse1)).style!.fontSize,
         before! + 2,
       );
 
@@ -189,6 +253,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: TextScreen(
+            key: const ValueKey('reopen'),
             item: item,
             edition: LocalEdition('/tmp', const {'home': 'index.html'}),
             favorite: false,
@@ -201,11 +266,48 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 200)),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Arabic'));
-      await tester.pumpAndSettle();
-      expect(tester.widget<Text>(find.text(verse1)).style!.fontSize, 30);
+      expect(tester.widget<Text>(_verse(verse1)).style!.fontSize, 30);
     },
   );
+
+  testWidgets('chaque ligne arabe d’une rubrique a un trait noir', (
+    tester,
+  ) async {
+    const first = 'نَادِ عَلِيًّا مَظْهَرَ الْعَجَائِبِ';
+    const second = 'تَجِدْهُ عَوْنًا لَكَ فِي النَّوَائِبِ';
+    const item = DevotionalText(
+      id: 'dua-naad',
+      kind: DevotionalKind.dua,
+      title: 'Naad-e-Ali',
+      arabic: '$first\n$second',
+      translation: 'Traduction.',
+      transliteration: 'Naad',
+      references: [],
+      audioIds: [],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TextScreen(
+          item: item,
+          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+          favorite: false,
+          onFavorite: () async {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final text = tester.widget<Text>(find.text('$first\n$second'));
+    expect(text.style!.decoration, TextDecoration.underline);
+    expect(text.style!.decorationColor, siteBlack);
+    expect(text.textAlign, TextAlign.center);
+
+    await tester.tap(find.text('Translation'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.text('Traduction.')).style!.decoration,
+      isNot(TextDecoration.underline),
+    );
+  });
 
   testWidgets('un long verset garde la même taille et passe à la ligne', (
     tester,
@@ -238,22 +340,87 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Arabic'));
-    await tester.pumpAndSettle();
+    expect(_verse(short), findsOneWidget);
     await tester.tap(find.byTooltip('Taille du texte'));
     await tester.pumpAndSettle();
     for (var i = 0; i < 10; i++) {
       await tester.tap(find.byTooltip('Agrandir l’arabe'));
       await tester.pump();
     }
-    final shortText = tester.widget<Text>(find.text(short));
-    final longText = tester.widget<Text>(find.text(long));
+    final shortText = tester.widget<Text>(_verse(short));
+    final longText = tester.widget<Text>(_verse(long));
     expect(shortText.style!.fontSize, 48);
     expect(longText.style!.fontSize, shortText.style!.fontSize);
     expect(find.byType(FittedBox), findsNothing);
     expect(
-      tester.getSize(find.text(long)).height,
-      greaterThan(tester.getSize(find.text(short)).height * 1.4),
+      tester.getSize(_verse(long)).height,
+      greaterThan(tester.getSize(_verse(short)).height * 1.4),
     );
   });
+
+  testWidgets(
+    'les infos d’une longue sourate s’affichent au tap',
+    (tester) async {
+      final verses = [
+        for (var i = 1; i <= 40; i++) 'نَصُّ الْآيَةِ $i ﴿$i﴾',
+      ].join('\n');
+      final item = DevotionalText(
+        id: 'quran-long-info',
+        kind: DevotionalKind.quran,
+        title: 'Sourate',
+        arabic: verses,
+        translation:
+            'Traduction du verset.\n\nInfos sur la sourate\n\nLieu de révélation:\n\nLa Mecque\n\nNombre de versets: 40 versets',
+        transliteration: 'Translit',
+        references: [],
+        audioIds: [],
+      );
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TextScreen(
+            item: item,
+            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+            favorite: false,
+            onFavorite: () async {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('La Mecque'), findsNothing);
+      await tester.tap(find.text('Infos sur la sourate'));
+      await tester.pumpAndSettle();
+      expect(find.text('La Mecque'), findsOneWidget);
+      expect(find.text('Nombre de versets:'), findsOneWidget);
+      expect(find.text('40 versets'), findsOneWidget);
+    },
+  );
 }
+
+RenderParagraph _paragraph(WidgetTester tester, String value) {
+  final element = tester.element(_verse(value));
+  RenderParagraph? found;
+  void walk(Element node) {
+    final render = node.renderObject;
+    if (render is RenderParagraph &&
+        render.text.toPlainText(includePlaceholders: false) == value) {
+      found = render;
+    }
+    node.visitChildElements(walk);
+  }
+
+  walk(element);
+  return found!;
+}
+
+Finder _verse(String value) => find.byWidgetPredicate((widget) {
+  if (widget is! Text) return false;
+  final plain =
+      widget.data ??
+      widget.textSpan?.toPlainText(includePlaceholders: false) ??
+      '';
+  return plain == value;
+});

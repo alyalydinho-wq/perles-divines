@@ -313,50 +313,106 @@ class SiteSearchField extends StatelessWidget {
     required this.controller,
     required this.onChanged,
     this.hint = 'Rechercher une prière ou une invocation',
+    this.onHome,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final String hint;
+  final VoidCallback? onHome;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth * 0.92;
-        return SizedBox(
-          width: width,
-          child: TextField(
-            key: const Key('site-search'),
-            controller: controller,
-            onChanged: onChanged,
-            cursorColor: siteGreen,
-            style: siteText(color: siteBlack, fontSize: 16, lineHeight: 20),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: siteText(
-                color: siteWhiteButtonText,
-                fontSize: 14,
-                lineHeight: 18,
-              ),
-              prefixIcon: const Icon(Icons.search, color: siteGreenSolid),
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: siteWhiteButtonBorder),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: siteGreen, width: 1.4),
-              ),
+        final field = TextField(
+          key: const Key('site-search'),
+          controller: controller,
+          onChanged: onChanged,
+          cursorColor: siteGreen,
+          style: siteText(color: siteBlack, fontSize: 16, lineHeight: 20),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: siteText(
+              color: siteWhiteButtonText,
+              fontSize: 14,
+              lineHeight: 18,
+            ),
+            prefixIcon: const Icon(Icons.search, color: siteGreenSolid),
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: siteWhiteButtonBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: siteGreen, width: 1.4),
             ),
           ),
         );
+        final home = onHome;
+        if (home == null) {
+          return SizedBox(width: width, child: field);
+        }
+        return SizedBox(
+          width: width,
+          child: Row(
+            children: [
+              Expanded(child: field),
+              const SizedBox(width: 8),
+              _SiteHomeButton(onTap: home),
+            ],
+          ),
+        );
       },
+    );
+  }
+}
+
+class _SiteHomeButton extends StatelessWidget {
+  const _SiteHomeButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Retour au sommaire',
+      child: Semantics(
+        button: true,
+        label: 'Retour au sommaire',
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: const Key('section-home'),
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(8),
+            child: Ink(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: siteWhiteButtonBorder),
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [siteWhiteTop, siteWhiteBottom],
+                ),
+              ),
+              child: const SizedBox(
+                width: 46,
+                height: 46,
+                child: Center(
+                  child: Icon(Icons.home, color: siteGreenSolid, size: 26),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -479,45 +535,44 @@ class SiteTextTabs extends StatelessWidget {
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: siteWhiteButtonBorder)),
       ),
-      child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
-        child: SizedBox(
-          height: 44,
-          child: Row(
-            children: [
-              for (var i = 0; i < labels.length; i++)
-                Expanded(
-                  child: InkWell(
-                    onTap: () => onSelected(i),
-                    child: Ink(
-                      decoration: BoxDecoration(
-                        gradient: i == selected
-                            ? const LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [siteGreenTop, siteGreenBottom],
-                              )
-                            : null,
-                        color: i == selected ? null : siteCanvas,
-                      ),
-                      child: Center(
-                        child: Text(
-                          labels[i],
-                          style: siteText(
-                            color: i == selected ? siteButtonText : siteBlack,
-                            fontSize: 13,
-                            lineHeight: 16,
-                            weight: i == selected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                          ),
+      // L’inset bas appartient au lecteur du shell. Le réserver ici laissait
+      // une bande blanche entre ces onglets et la barre audio.
+      child: SizedBox(
+        height: 44,
+        child: Row(
+          children: [
+            for (var i = 0; i < labels.length; i++)
+              Expanded(
+                child: InkWell(
+                  onTap: () => onSelected(i),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: i == selected
+                          ? const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [siteGreenTop, siteGreenBottom],
+                            )
+                          : null,
+                      color: i == selected ? null : siteCanvas,
+                    ),
+                    child: Center(
+                      child: Text(
+                        labels[i],
+                        style: siteText(
+                          color: i == selected ? siteButtonText : siteBlack,
+                          fontSize: 13,
+                          lineHeight: 16,
+                          weight: i == selected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                         ),
                       ),
                     ),
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     ),

@@ -59,6 +59,7 @@ class _SectionScreenState extends State<SectionScreen> {
           controller: search,
           hint: 'Rechercher dans ${widget.section.label}',
           onChanged: (value) => setState(() => query = value),
+          onHome: () => context.go('/sommaire'),
         ),
       ],
       children: [

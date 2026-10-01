@@ -1,12 +1,53 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../core/store.dart';
 import '../../core/track.dart';
 import '../downloads/download_controller.dart';
+
+const _notificationPlay = MediaControl(
+  androidIcon: 'drawable/audio_service_play_arrow',
+  label: 'Lire',
+  action: MediaAction.play,
+);
+const _notificationPause = MediaControl(
+  androidIcon: 'drawable/audio_service_pause',
+  label: 'Pause',
+  action: MediaAction.pause,
+);
+const _notificationPrevious = MediaControl(
+  androidIcon: 'drawable/audio_service_skip_previous',
+  label: 'Précédent',
+  action: MediaAction.skipToPrevious,
+);
+const _notificationNext = MediaControl(
+  androidIcon: 'drawable/audio_service_skip_next',
+  label: 'Suivant',
+  action: MediaAction.skipToNext,
+);
+const _notificationStop = MediaControl(
+  androidIcon: 'drawable/audio_service_stop',
+  label: 'Arrêter',
+  action: MediaAction.stop,
+);
+
+const _playbackChannel = MethodChannel('perles_divines/storage');
+
+Future<void> _ensurePlaybackNotification() async {
+  if (!Platform.isAndroid) return;
+  try {
+    await _playbackChannel.invokeMethod<bool>('ensurePlaybackNotification');
+  } on MissingPluginException {
+    // Lecture conservée si le canal natif n’est pas branché.
+  } on PlatformException {
+    // Un refus de permission ne doit pas bloquer la lecture dans l’app.
+  }
+}
 
 class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
   PerlesAudioHandler(this.store, this.downloads) {
@@ -16,6 +57,7 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
         error.add('Lecture impossible : $e');
       },
     );
+    _subscriptions.add(player.playingStream.listen((_) => _broadcast()));
     player.processingStateStream.listen((state) {
       if (state == ProcessingState.completed) unawaited(_finished());
     });
@@ -194,6 +236,7 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> play() async {
     _intent++;
     if (current == null) return;
+    await _ensurePlaybackNotification();
     if (player.processingState == ProcessingState.completed) {
       await player.seek(Duration.zero);
     }
@@ -270,6 +313,7 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     if (![.75, 1, 1.25, 1.5, 1.75, 2].contains(speed)) return;
     await player.setSpeed(speed);
     await store.writeState('speed', speed);
+    _broadcast();
   }
 
   Future<void> setSleep(Duration? duration, {bool endOfTrack = false}) async {
@@ -291,10 +335,10 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
   void _broadcast() => playbackState.add(
     PlaybackState(
       controls: [
-        MediaControl.skipToPrevious,
-        player.playing ? MediaControl.pause : MediaControl.play,
-        MediaControl.skipToNext,
-        MediaControl.stop,
+        _notificationPrevious,
+        player.playing ? _notificationPause : _notificationPlay,
+        _notificationNext,
+        _notificationStop,
       ],
       systemActions: const {
         MediaAction.seek,

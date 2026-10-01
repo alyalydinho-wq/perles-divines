@@ -29,7 +29,9 @@ Future<List<Track>> loadBundledTracks() async {
     final rows = jsonDecode(
       await rootBundle.loadString('assets/content/audio-catalog.json'),
     ) as List<dynamic>;
-    return [for (final row in rows) Track.fromJson(row as Map<String, dynamic>)];
+    return [
+      for (final row in rows) Track.fromJson(row as Map<String, dynamic>),
+    ];
   } on FlutterError {
     return [];
   }
@@ -67,8 +69,13 @@ class _PerlesAppState extends State<PerlesApp> {
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'fr.perlesdivines.playback',
         androidNotificationChannelName: 'Lecture audio',
+        androidNotificationChannelDescription:
+            'Lecture, pause et progression lorsqu’un audio est en cours.',
+        androidNotificationIcon: 'drawable/ic_stat_audio',
+        notificationColor: siteGreenBottom,
         androidNotificationOngoing: true,
         androidStopForegroundOnPause: true,
+        androidNotificationClickStartsActivity: true,
       ),
     );
     await audio.initialize();
