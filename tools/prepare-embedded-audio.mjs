@@ -5,7 +5,6 @@ import { matchAudioToCatalog } from "./audio-match.mjs";
 
 const DEFAULT_SOURCE =
   "C:\\Users\\alyas\\OneDrive\\Bureau\\Perlesdivines\\audio";
-const AUDIO_DIR = "apps/mobile/assets/audio";
 const AUDIO_CATALOG = "apps/mobile/assets/content/audio-catalog.json";
 const ASSOCIATIONS = "content/audio-associations.json";
 const TEXT_CATALOG = "apps/mobile/assets/content/catalog.json";
@@ -44,7 +43,6 @@ export async function prepareEmbeddedAudio({ source } = {}) {
   }
   const report = await inventoryAudios(root);
   const texts = JSON.parse(await fs.readFile(TEXT_CATALOG, "utf8"));
-  await fs.mkdir(AUDIO_DIR, { recursive: true });
   const tracks = [];
   const associations = [];
   for (const row of report.tracks) {
@@ -52,8 +50,6 @@ export async function prepareEmbeddedAudio({ source } = {}) {
       continue;
     }
     const file = assetName(row.relativePath);
-    const destination = path.join(AUDIO_DIR, file);
-    await fs.copyFile(path.join(root, row.relativePath), destination);
     const matched = matchAudioToCatalog(row.relativePath, texts);
     const track = {
       id: row.id,
@@ -64,7 +60,7 @@ export async function prepareEmbeddedAudio({ source } = {}) {
       sizeBytes: row.sizeBytes,
       sha256: row.sha256,
       file: `audio/${file}`,
-      bundled: true,
+      bundled: false,
       fixture: false,
     };
     tracks.push(track);

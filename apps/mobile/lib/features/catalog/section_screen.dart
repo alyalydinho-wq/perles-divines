@@ -124,6 +124,7 @@ class CatalogTextPage extends StatelessWidget {
           edition: services.edition,
           favorite: snapshot.data?.contains(item.id) ?? false,
           audio: services.audio,
+          downloads: services.downloads,
           tracks: tracks,
           store: services.store,
           onFavorite: () => DevotionalFavorites(services.store).toggle(item.id),

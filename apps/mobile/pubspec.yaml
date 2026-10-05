@@ -39,7 +39,6 @@ flutter:
     - assets/site/pages/
     - assets/site/assets/
     - assets/fixtures/
-    - assets/audio/
   fonts:
     - family: Indopak
       fonts:

@@ -9,6 +9,7 @@ import '../../core/store.dart';
 import '../../core/track.dart';
 import '../../ui/site.dart';
 import '../duas/dua.dart';
+import '../downloads/download_controller.dart';
 import '../player/audio_controller.dart';
 import '../reader/content_install.dart';
 import '../reader/reader_screen.dart';
@@ -46,6 +47,7 @@ class TextScreen extends StatefulWidget {
     required this.favorite,
     required this.onFavorite,
     this.audio,
+    this.downloads,
     this.tracks = const [],
     this.store,
   });
@@ -55,6 +57,7 @@ class TextScreen extends StatefulWidget {
   final bool favorite;
   final Future<void> Function() onFavorite;
   final PerlesAudioHandler? audio;
+  final DownloadController? downloads;
   final List<Track> tracks;
   final AppStore? store;
 
@@ -154,6 +157,9 @@ class _TextScreenState extends State<TextScreen> {
             favorite: favorite,
             onBack: () => Navigator.of(context).maybePop(),
             onPlay: _play,
+            onDownload: widget.downloads == null || widget.tracks.isEmpty
+                ? null
+                : _download,
             onFavorite: () async {
               await widget.onFavorite();
               if (mounted) setState(() => favorite = !favorite);
@@ -409,6 +415,16 @@ class _TextScreenState extends State<TextScreen> {
       return;
     }
     await audio.playTracks(widget.tracks);
+  }
+
+  Future<void> _download() async {
+    final downloads = widget.downloads;
+    if (downloads == null || widget.tracks.isEmpty) return;
+    await downloads.enqueue(widget.tracks, individual: true);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Téléchargement lancé pour l’écoute hors ligne.')),
+    );
   }
 
   Widget _pane(DevotionalText item) {

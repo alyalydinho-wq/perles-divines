@@ -3,6 +3,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+!.env.r2.example
 content/imports/
 content/preview/
 content/development/

@@ -6,12 +6,12 @@ Lorsque le propriétaire annonce des fichiers, lancer depuis la racine :
 
 ```powershell
 node tools/audio-inventory/cli.mjs --source "C:\Users\alyas\OneDrive\Bureau\Perlesdivines\audio"
-node tools/prepare-embedded-audio.mjs
+node tools/publish-r2-audio.mjs --write-catalog
 ```
 
 L'outil parcourt récursivement les MP3 et les fichiers audio MPEG-4/AAC (M4A/MP4 sans piste vidéo) en lecture seule, ignore les liens symboliques/jonctions, mesure taille/SHA-256/durée et extrait les tags textuels disponibles. Les tags sont des observations, pas des attributions éditoriales approuvées. Les titres de fichiers et dossiers apparaissent uniquement dans `suggestions`. Les champs éditoriaux auteur/titre restent vides et `editorialValidated` reste faux. Aucune description religieuse n'est produite. Un MP4 contenant de la vidéo est refusé.
 
-Les pistes valides sont copiées dans `apps/mobile/assets/audio/` et listées dans `apps/mobile/assets/content/audio-catalog.json`. Une association n'est écrite dans `content/audio-associations.json` que lorsqu'un nom de fichier correspond de façon unique à un titre déjà présent dans le catalogue. Les autres pistes restent lisibles dans l'onglet Audios, sans texte inventé.
+Les pistes valides sont publiées sur le bucket R2 public et listées dans `apps/mobile/assets/content/audio-catalog.json` avec `bundled: false`. Une association n'est écrite dans `content/audio-associations.json` que lorsqu'un nom de fichier correspond de façon unique à un titre déjà présent dans le catalogue. Les autres pistes restent lisibles dans l'onglet Audios, sans texte inventé. Les identifiants R2 restent dans `.env.r2` (ignoré par Git).
 
 Résultats d'inventaire dans un nouveau sous-dossier de `artifacts/audio-inventory/` :
 

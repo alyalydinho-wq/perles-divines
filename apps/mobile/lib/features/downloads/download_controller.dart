@@ -64,7 +64,7 @@ class DownloadController {
       final finalPath = p.join(
         root.path,
         'media',
-        '${track.transferId}-${track.sha256}.mp3',
+        cachedMediaName(track),
       );
       if (await verifyMedia(finalPath, track.sizeBytes, track.sha256)) {
         await store.updateTransfer(
@@ -130,7 +130,7 @@ class DownloadController {
           baseDirectory: BaseDirectory.applicationSupport,
           updates: Updates.statusAndProgress,
           allowPause: true,
-          requiresWiFi: wifi,
+          requiresWiFi: individual ? false : wifi,
           retries: 3,
           priority: individual ? 1 : 5,
           displayName: track.title,
@@ -258,7 +258,7 @@ class DownloadController {
   Future<void> _complete(Task task, Track track) async {
     if (!_finishing.add(task.taskId)) return;
     try {
-      final relative = 'media/${track.transferId}-${track.sha256}.mp3';
+      final relative = 'media/${cachedMediaName(track)}';
       final target = File(p.join(root.path, relative));
       // Native completion can be replayed after process death or reconciliation.
       if (await verifyMedia(target.path, track.sizeBytes, track.sha256)) {
@@ -369,18 +369,45 @@ class DownloadController {
     final source = await localFile(track);
     if (source == null ||
         !await verifyMedia(source, track.sizeBytes, track.sha256)) {
-      throw StateError('Téléchargez et validez ce MP3 avant de l’exporter.');
+      throw StateError('Téléchargez et validez cet audio avant de l’exporter.');
     }
     final temp = await getTemporaryDirectory();
     final directory = await Directory(
       p.join(temp.path, 'exports', track.transferId),
     ).create(recursive: true);
-    final copy = await File(source)
-        .copy(p.join(directory.path, exportName(track.title)));
+    final extension = p.extension(track.file).isEmpty
+        ? '.m4a'
+        : p.extension(track.file);
+    final copy = await File(source).copy(
+      p.join(directory.path, exportName(track.title, extension: extension)),
+    );
     await SharePlus.instance.share(
       ShareParams(
-        files: [XFile(copy.path, mimeType: 'audio/mpeg')],
+        files: [
+          XFile(
+            copy.path,
+            mimeType: extension == '.mp3' ? 'audio/mpeg' : 'audio/mp4',
+          ),
+        ],
         title: track.title,
+      ),
+    );
+  }
+
+  Future<void> removeLocal(Track track) async {
+    final row = await store.transfer(track.transferId);
+    if (row?.relativePath != null) {
+      final file = File(p.join(root.path, row!.relativePath!));
+      if (await file.exists()) await file.delete();
+    }
+    await store.updateTransfer(
+      track.transferId,
+      const TransfersCompanion(
+        state: Value('cancelled'),
+        progress: Value(0),
+        relativePath: Value(null),
+        error: Value(null),
+        taskJson: Value(null),
       ),
     );
   }

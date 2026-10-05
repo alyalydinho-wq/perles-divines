@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'features/about/about_screen.dart';
+import 'features/catalog/audio_library_screen.dart';
+import 'features/catalog/audio_shelves.dart';
 import 'features/catalog/section_screen.dart';
 import 'features/catalog/sections.dart';
 import 'features/home/home_screen.dart';
@@ -55,6 +57,32 @@ GoRouter createRouter() => GoRouter(
           path: '/text/:id',
           builder: (context, state) =>
               CatalogTextPage(id: state.pathParameters['id'] ?? ''),
+        ),
+        GoRoute(
+          path: '/audios',
+          builder: (context, state) => const AudioLibraryScreen(),
+          routes: [
+            GoRoute(
+              path: ':id',
+              builder: (context, state) {
+                final shelf = AudioShelf.byId(state.pathParameters['id'] ?? '');
+                if (shelf == null) {
+                  return SitePage(
+                    children: [
+                      const SiteBlackText('Cette rubrique audio n’existe pas.'),
+                      const SiteGap(),
+                      SiteButton(
+                        label: 'Retour aux audios',
+                        green: true,
+                        onTap: () => context.go('/audios'),
+                      ),
+                    ],
+                  );
+                }
+                return AudioShelfScreen(shelf: shelf);
+              },
+            ),
+          ],
         ),
         GoRoute(
           path: '/about',

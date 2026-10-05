@@ -4,7 +4,7 @@ Application Flutter Android/iOS de consultation hors connexion de duʿā et ziy�
 
 ## Architecture retenue
 
-Le produit distribue **un catalogue embarqué**. Les textes arabes, traductions, translittérations, références et associations audio sont relus et préparés directement dans ce dépôt, puis inclus dans les assets Flutter. Il n'existe ni interface privée, ni service éditorial, ni mise à jour distante du catalogue.
+Le produit distribue **un catalogue embarqué**. Les textes arabes, traductions, translittérations, références et associations audio sont relus et préparés directement dans ce dépôt, puis inclus dans les assets Flutter. Les fichiers audio publics sont hébergés sur Cloudflare R2 et se téléchargent à la demande pour l’écoute hors ligne. Il n'existe ni interface privée, ni service éditorial, ni mise à jour distante du catalogue texte.
 
 - `apps/mobile/` : application et source unique de ses dépendances (`pubspec.yaml`).
 - `content/` et `tools/import-site/` : sources et import reproductible du contenu.

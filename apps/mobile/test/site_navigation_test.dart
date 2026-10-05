@@ -78,6 +78,10 @@ Widget _app() {
                 const Scaffold(body: Text('texte ouvert')),
           ),
           GoRoute(
+            path: '/audios',
+            builder: (context, state) => const Scaffold(body: Text('audios')),
+          ),
+          GoRoute(
             path: '/about',
             builder: (context, state) => const AboutScreen(),
           ),
@@ -157,6 +161,7 @@ void main() {
     expect(find.text('Doua'), findsOneWidget);
     expect(find.text('Zyaraate'), findsOneWidget);
     expect(find.text('Aamal Specifique'), findsOneWidget);
+    expect(find.text('Audios'), findsOneWidget);
     expect(find.text('A Propos ...'), findsOneWidget);
     expect(find.text('Version $appVersion'), findsOneWidget);
     expect(find.textContaining('Tafsir'), findsNothing);

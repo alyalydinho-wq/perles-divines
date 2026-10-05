@@ -43,12 +43,19 @@ class Track {
   };
 }
 
-String exportName(String title) {
+String cachedMediaName(Track track) {
+  final dot = track.file.lastIndexOf('.');
+  final ext = dot >= 0 ? track.file.substring(dot) : '.m4a';
+  return '${track.transferId}-${track.sha256}$ext';
+}
+
+String exportName(String title, {String extension = '.mp3'}) {
   final clean = title
       .replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_')
       .replaceAll(RegExp(r'[. ]+$'), '')
       .trim();
-  return '${clean.isEmpty ? 'audio' : clean.substring(0, clean.length.clamp(0, 120))}.mp3';
+  final ext = extension.startsWith('.') ? extension : '.$extension';
+  return '${clean.isEmpty ? 'audio' : clean.substring(0, clean.length.clamp(0, 120))}$ext';
 }
 
 Duration restoredPosition(

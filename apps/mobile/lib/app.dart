@@ -21,7 +21,7 @@ import 'ui/theme.dart';
 const fixturesEnabled = bool.fromEnvironment('PERLES_FIXTURES');
 const mediaBase = String.fromEnvironment(
   'PERLES_MEDIA_BASE',
-  defaultValue: 'http://127.0.0.1:4174',
+  defaultValue: 'https://pub-809de60784fd477e972458cf82fb463a.r2.dev',
 );
 
 Future<List<Track>> loadBundledTracks() async {

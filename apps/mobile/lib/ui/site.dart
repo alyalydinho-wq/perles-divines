@@ -227,12 +227,12 @@ class SiteButton extends StatelessWidget {
   const SiteButton({
     super.key,
     required this.label,
-    required this.onTap,
+    this.onTap,
     this.green = false,
   });
 
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool green;
 
   @override
@@ -433,6 +433,7 @@ class SiteReaderHeader extends StatelessWidget {
     this.onShare,
     this.onFavorite,
     this.onPlay,
+    this.onDownload,
     this.favorite = false,
   });
 
@@ -441,6 +442,7 @@ class SiteReaderHeader extends StatelessWidget {
   final VoidCallback? onShare;
   final VoidCallback? onFavorite;
   final VoidCallback? onPlay;
+  final VoidCallback? onDownload;
   final bool favorite;
 
   @override
@@ -488,6 +490,13 @@ class SiteReaderHeader extends StatelessWidget {
                     color: siteButtonText,
                     onPressed: onPlay,
                     icon: const Icon(Icons.play_arrow),
+                  ),
+                if (onDownload != null)
+                  IconButton(
+                    tooltip: 'Télécharger',
+                    color: siteButtonText,
+                    onPressed: onDownload,
+                    icon: const Icon(Icons.download),
                   ),
                 if (onFavorite != null)
                   IconButton(

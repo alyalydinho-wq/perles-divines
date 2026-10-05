@@ -30,8 +30,8 @@ class HomeScreen extends StatelessWidget {
         const SiteBlackText(
           'Cette application est encore\n'
           'en cours d\'élaboration...\n'
-          'Les textes et les audios embarqués\n'
-          'sont disponibles hors connexion.',
+          'Les textes sont disponibles hors connexion.\n'
+          'Les audios se téléchargent à la demande.',
         ),
         const SiteGap(),
         const SiteBlackText(

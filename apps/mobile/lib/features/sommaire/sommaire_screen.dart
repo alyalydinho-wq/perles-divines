@@ -76,6 +76,11 @@ class _SommaireScreenState extends State<SommaireScreen> {
           ],
           const SiteGap(),
           SiteButton(
+            label: 'Audios',
+            onTap: () => context.push('/audios'),
+          ),
+          const SiteGap(),
+          SiteButton(
             label: 'A Propos ...',
             green: true,
             onTap: () => context.push('/about'),
