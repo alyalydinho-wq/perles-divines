@@ -614,9 +614,18 @@ class _TextScreenState extends State<TextScreen> {
               Padding(
                 key: _surahInfoKey,
                 padding: const EdgeInsets.only(bottom: 16),
-                child: _SurahInfo(text: surahInfo, size: proseSize),
+                child: _InfoCard(
+                  text: surahInfo,
+                  size: proseSize,
+                  title: 'Infos sur la sourate',
+                ),
               ),
-            if (intro.isNotEmpty) ...[
+            if (intro.isNotEmpty && text.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _InfoCard(text: intro, size: proseSize),
+              )
+            else if (intro.isNotEmpty) ...[
               Text(
                 intro,
                 style: siteText(
@@ -769,11 +778,12 @@ String? _surahInfo(String translation) {
   return body.isEmpty ? null : body;
 }
 
-class _SurahInfo extends StatelessWidget {
-  const _SurahInfo({required this.text, required this.size});
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({required this.text, required this.size, this.title});
 
   final String text;
   final double size;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -781,6 +791,7 @@ class _SurahInfo extends StatelessWidget {
         .split(RegExp(r'\n{2,}'))
         .map((block) => block.trim())
         .where((block) => block.isNotEmpty);
+    final heading = title?.trim() ?? '';
     return DecoratedBox(
       decoration: BoxDecoration(
         color: const Color(0xFFF7F8F4),
@@ -792,16 +803,18 @@ class _SurahInfo extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Infos sur la sourate',
-              style: siteText(
-                color: siteGreen,
-                fontSize: size + 1,
-                lineHeight: (size + 1) * 1.3,
-                weight: FontWeight.w700,
+            if (heading.isNotEmpty) ...[
+              Text(
+                heading,
+                style: siteText(
+                  color: siteGreen,
+                  fontSize: size + 1,
+                  lineHeight: (size + 1) * 1.3,
+                  weight: FontWeight.w700,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
+              const SizedBox(height: 8),
+            ],
             for (final block in blocks) _block(block),
           ],
         ),

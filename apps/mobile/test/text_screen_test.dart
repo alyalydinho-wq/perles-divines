@@ -398,6 +398,47 @@ void main() {
       expect(find.text('40 versets'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'l’introduction d’un doua est encadrée en traduction et en translittération',
+    (tester) async {
+      const intro =
+          'En cas de difficulté sérieuse, cet appel à Hazrat Ali (as) est recommandé.';
+      const item = DevotionalText(
+        id: 'dua-naad-info',
+        kind: DevotionalKind.dua,
+        title: 'Naad-e-Ali',
+        arabic: 'نَادِ عَلِيًّا',
+        translation: 'Faites appel à Ali.',
+        transliteration: 'Naad-e-ali',
+        introduction: intro,
+        references: [],
+        audioIds: [],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TextScreen(
+            item: item,
+            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+            favorite: false,
+            onFavorite: () async {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      _expectInfoCard(tester, intro);
+
+      await tester.tap(find.text('Translation'));
+      await tester.pumpAndSettle();
+      _expectInfoCard(tester, intro);
+      expect(find.text('Faites appel à Ali.'), findsOneWidget);
+
+      await tester.tap(find.text('Transliteration'));
+      await tester.pumpAndSettle();
+      _expectInfoCard(tester, intro);
+      expect(find.text('Naad-e-ali'), findsOneWidget);
+    },
+  );
 }
 
 RenderParagraph _paragraph(WidgetTester tester, String value) {
@@ -414,6 +455,23 @@ RenderParagraph _paragraph(WidgetTester tester, String value) {
 
   walk(element);
   return found!;
+}
+
+void _expectInfoCard(WidgetTester tester, String value) {
+  final text = tester.widget<Text>(find.text(value));
+  expect(text.style!.fontStyle, isNot(FontStyle.italic));
+  final box = tester.widget<DecoratedBox>(
+    find
+        .ancestor(of: find.text(value), matching: find.byType(DecoratedBox))
+        .first,
+  );
+  final decoration = box.decoration as BoxDecoration;
+  expect(decoration.color, const Color(0xFFF7F8F4));
+  expect(decoration.borderRadius, BorderRadius.circular(12));
+  expect(
+    decoration.border,
+    Border.all(color: const Color(0xFFD9E3C8)),
+  );
 }
 
 Finder _verse(String value) => find.byWidgetPredicate((widget) {
