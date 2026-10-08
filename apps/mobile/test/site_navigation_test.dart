@@ -164,6 +164,13 @@ void main() {
     expect(find.text('Audios'), findsOneWidget);
     expect(find.text('A Propos ...'), findsOneWidget);
     expect(find.text('Version $appVersion'), findsOneWidget);
+    final betweenSections =
+        tester.getTopLeft(find.text('Aamal Mensuel')).dy -
+        tester.getBottomLeft(find.text('Aamal Specifique')).dy;
+    final beforeAudios =
+        tester.getTopLeft(find.text('Audios')).dy -
+        tester.getBottomLeft(find.text('Aamal Mensuel')).dy;
+    expect(beforeAudios, closeTo(betweenSections, 0.5));
     expect(find.textContaining('Tafsir'), findsNothing);
     expect(find.textContaining('Diaporama'), findsNothing);
     expect(find.byKey(const Key('site-search')), findsOneWidget);

@@ -125,16 +125,13 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
         _clock.start();
       }
     }
-    final saved = await store.readState('queue');
-    if (saved is Map && (saved['tracks'] as List).isNotEmpty) {
-      _tracks = (saved['tracks'] as List)
-          .map((j) => Track.fromJson(Map<String, dynamic>.from(j)))
-          .toList();
-      _index = (saved['index'] as int).clamp(0, _tracks.length - 1);
-      _bundled = saved['bundled'] == true;
-      _publishQueue();
-      await _load(_index, autoplay: false);
-    }
+    // La position de chaque piste reste enregistrée, mais la barre
+    // n’est pas rouverte après la fermeture de l’application.
+    await store.writeState('queue', {
+      'tracks': <Object>[],
+      'index': 0,
+      'bundled': false,
+    });
   }
 
   void _publishQueue() => queue.add(
