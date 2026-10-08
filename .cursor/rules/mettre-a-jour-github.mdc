@@ -1,0 +1,18 @@
+---
+description: Envoyer le travail sur GitHub après chaque modification, et au moins une fois par jour s'il reste des changements
+alwaysApply: true
+---
+
+# Mettre à jour GitHub
+
+Dépôt : `origin` → https://github.com/alyalydinho-wq/perles-divines.git
+
+À la fin d'une session qui a modifié des fichiers, enregistrer ce travail sur GitHub : commit, puis `git push` de la branche courante vers `origin`.
+
+Au début d'une session, faire la même chose si GitHub n'a pas reçu de mise à jour aujourd'hui et qu'il reste du travail local (fichiers modifiés, ou commits non poussés). Une fois par jour suffit pour ce rattrapage.
+
+- Inclure les fichiers du travail concerné. Laisser de côté les fichiers sans rapport et les secrets (`.env`, clés, certificats, mots de passe).
+- Message de commit en français, une ou deux phrases, centré sur le pourquoi. Exemple : `Incrémenter la version mobile pour installer la version audio par-dessus l'ancienne.`
+- Pousser la branche courante. Ne pas fusionner vers `master` sans demande explicite.
+- Ne pas modifier la configuration git, ne pas utiliser `--force`, `--no-verify`, ni `reset` destructif.
+- Si le push échoue (authentification, conflit), le dire et s'arrêter. Ne pas réécrire l'historique pour le forcer.
