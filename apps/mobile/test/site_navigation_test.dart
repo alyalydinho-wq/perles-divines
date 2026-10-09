@@ -209,6 +209,40 @@ void main() {
     expect(find.byKey(const Key('section-home')), findsOneWidget);
   });
 
+  testWidgets(
+    'un favori montre un cœur blanc, sinon un cœur vert cerclé de blanc',
+    (tester) async {
+      Future<void> show(bool favorite) {
+        return tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SiteReaderHeader(
+                title: 'Namaz',
+                favorite: favorite,
+                onBack: () {},
+                onFavorite: () {},
+              ),
+            ),
+          ),
+        );
+      }
+
+      await show(true);
+      final saved = tester.widgetList<Icon>(find.byIcon(Icons.favorite));
+      expect(saved.map((icon) => icon.color), [const Color(0xffffffff)]);
+
+      await show(false);
+      final cleared = tester.widgetList<Icon>(find.byIcon(Icons.favorite));
+      expect(
+        cleared.map((icon) => (icon.color, icon.size)).toList(),
+        containsAll([
+          (const Color(0xffffffff), 24.0),
+          (siteGreen, 18.0),
+        ]),
+      );
+    },
+  );
+
   testWidgets('la maison d’une rubrique ramène au sommaire', (tester) async {
     await tester.pumpWidget(_app());
     await _settle(tester);

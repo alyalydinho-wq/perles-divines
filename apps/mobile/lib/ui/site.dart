@@ -503,10 +503,9 @@ class SiteReaderHeader extends StatelessWidget {
                     tooltip: favorite
                         ? 'Retirer des favoris'
                         : 'Ajouter aux favoris',
-                    color: siteButtonText,
                     onPressed: onFavorite,
-                    icon: Icon(
-                      favorite ? Icons.favorite : Icons.favorite_border,
+                    icon: ExcludeSemantics(
+                      child: _FavoriteHeart(selected: favorite),
                     ),
                   ),
                 if (onShare != null)
@@ -523,6 +522,31 @@ class SiteReaderHeader extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Cœur blanc quand le texte est en favori. Sinon, cœur vert cerclé de blanc.
+class _FavoriteHeart extends StatelessWidget {
+  const _FavoriteHeart({required this.selected});
+
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (selected) {
+      return const Icon(Icons.favorite, color: Color(0xffffffff));
+    }
+    return const SizedBox(
+      width: 24,
+      height: 24,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(Icons.favorite, color: Color(0xffffffff), size: 24),
+          Icon(Icons.favorite, color: siteGreen, size: 18),
+        ],
+      ),
+    );
+  }
 }
 
 class SiteTextTabs extends StatelessWidget {
