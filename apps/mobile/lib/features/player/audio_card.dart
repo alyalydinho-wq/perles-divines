@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/store.dart';
 import '../../core/track.dart';
 import '../../ui/heritage.dart';
+import '../../ui/site.dart';
 import '../downloads/download_controller.dart';
 import '../duas/favorites.dart';
 import 'audio_controller.dart';
@@ -13,13 +14,6 @@ const audioBusyStates = {
   'waitingForNetwork',
   'verifying',
 };
-
-const _cardTop = Color(0xFF3E3E44);
-const _cardBottom = Color(0xFF1B1B1F);
-const _ink = Color(0xFFF7F7F8);
-const _muted = Color(0xFFD0D0D6);
-const _star = Color(0xFFFFD56A);
-const _saved = Color(0xFF9BE7A8);
 
 /// Lecteur compact : titre, durée, favori, lecture au début de la barre
 /// et téléchargement à la fin.
@@ -68,30 +62,25 @@ class AudioFace extends StatelessWidget {
     final busy = audioBusyStates.contains(downloadState);
     final saved = downloadState == 'downloaded';
     final caption = _caption(busy, saved);
-    final radius = dense ? 0.0 : 18.0;
     return SizedBox(
       width: double.infinity,
       child: DecoratedBox(
         decoration: BoxDecoration(
+          color: siteCanvas,
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(radius),
-            bottom: Radius.circular(dense ? 0 : radius),
-          ),
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_cardTop, _cardBottom],
+            top: Radius.circular(dense ? 0 : 8),
+            bottom: Radius.circular(dense ? 0 : 8),
           ),
           border: dense
-              ? const Border(top: BorderSide(color: Color(0x33FFFFFF)))
-              : Border.all(color: const Color(0x22FFFFFF)),
+              ? const Border(top: BorderSide(color: siteWhiteButtonBorder))
+              : Border.all(color: siteWhiteButtonBorder),
           boxShadow: dense
               ? null
               : const [
                   BoxShadow(
                     color: Color(0x33000000),
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
                   ),
                 ],
         ),
@@ -116,17 +105,18 @@ class AudioFace extends StatelessWidget {
                       child: Padding(
                         padding: EdgeInsets.only(top: dense ? 4 : 6),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               title,
                               maxLines: dense ? 1 : 2,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: _ink,
+                              textAlign: TextAlign.center,
+                              style: siteText(
+                                color: siteBlack,
                                 fontSize: dense ? 16 : 18,
-                                height: 1.2,
-                                fontWeight: FontWeight.w700,
+                                lineHeight: dense ? 20 : 22,
+                                weight: FontWeight.w700,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -134,12 +124,8 @@ class AudioFace extends StatelessWidget {
                               caption,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: _muted,
-                                fontSize: 13,
-                                height: 1.2,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              textAlign: TextAlign.center,
+                              style: siteSmallBlack,
                             ),
                           ],
                         ),
@@ -162,7 +148,7 @@ class AudioFace extends StatelessWidget {
                     onPressed: onPlay,
                     icon: Icon(
                       playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                      color: _ink,
+                      color: siteButtonText,
                       size: dense ? 26 : 30,
                     ),
                     diameter: dense ? 42 : 48,
@@ -175,6 +161,7 @@ class AudioFace extends StatelessWidget {
                         : saved
                         ? 'Retirer du téléphone'
                         : 'Télécharger',
+                    filled: !saved,
                     onPressed: busy ? null : onDownload,
                     icon: _downloadIcon(busy, saved),
                     diameter: dense ? 42 : 48,
@@ -188,9 +175,10 @@ class AudioFace extends StatelessWidget {
                     error!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFFFFB4B4),
+                    style: siteText(
+                      color: const Color(0xFF9B1C1C),
                       fontSize: 12,
+                      lineHeight: 16,
                     ),
                   ),
                 ),
@@ -224,12 +212,12 @@ class AudioFace extends StatelessWidget {
         trackHeight: 3,
         thumbShape: RoundSliderThumbShape(enabledThumbRadius: dense ? 5 : 6),
         overlayShape: RoundSliderOverlayShape(overlayRadius: dense ? 12 : 14),
-        activeTrackColor: _ink,
-        inactiveTrackColor: const Color(0x55FFFFFF),
-        thumbColor: _ink,
-        disabledActiveTrackColor: _ink,
-        disabledInactiveTrackColor: const Color(0x55FFFFFF),
-        disabledThumbColor: _ink,
+        activeTrackColor: siteGreenSolid,
+        inactiveTrackColor: siteGreenBottom.withValues(alpha: 0.28),
+        thumbColor: siteGreenSolid,
+        disabledActiveTrackColor: siteGreenSolid,
+        disabledInactiveTrackColor: siteGreenBottom.withValues(alpha: 0.28),
+        disabledThumbColor: siteGreenSolid,
       ),
       child: Slider(value: value, max: max, onChanged: onSeek),
     );
@@ -243,14 +231,14 @@ class AudioFace extends StatelessWidget {
         height: 22,
         child: CircularProgressIndicator(
           strokeWidth: 2.2,
-          color: _ink,
+          color: saved ? siteGreenSolid : siteButtonText,
           value: known ? downloadProgress : null,
         ),
       );
     }
     return Icon(
       saved ? Icons.download_done_rounded : Icons.download_rounded,
-      color: saved ? _saved : _ink,
+      color: saved ? siteGreenSolid : siteButtonText,
       size: 26,
     );
   }
@@ -275,7 +263,7 @@ class _StarButton extends StatelessWidget {
       constraints: const BoxConstraints.tightFor(width: 42, height: 42),
       icon: Icon(
         favorite ? Icons.star_rounded : Icons.star_border_rounded,
-        color: favorite ? _star : _ink,
+        color: favorite ? siteGreenSolid : siteGreen,
         size: 28,
       ),
     );
@@ -289,6 +277,7 @@ class _RoundButton extends StatelessWidget {
     required this.diameter,
     this.onPressed,
     this.buttonKey,
+    this.filled = true,
   });
 
   final String tooltip;
@@ -296,21 +285,42 @@ class _RoundButton extends StatelessWidget {
   final double diameter;
   final VoidCallback? onPressed;
   final Key? buttonKey;
+  final bool filled;
 
   @override
   Widget build(BuildContext context) {
+    final enabled = onPressed != null;
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: Colors.white.withValues(alpha: onPressed == null ? 0.08 : 0.16),
+        color: Colors.transparent,
         shape: const CircleBorder(),
         child: InkWell(
           key: buttonKey,
           customBorder: const CircleBorder(),
           onTap: onPressed,
-          child: SizedBox(
+          child: Ink(
             width: diameter,
             height: diameter,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: filled ? null : siteCanvas,
+              gradient: filled
+                  ? LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: enabled
+                          ? const [siteGreenTop, siteGreenBottom]
+                          : [
+                              siteGreenTop.withValues(alpha: 0.45),
+                              siteGreenBottom.withValues(alpha: 0.45),
+                            ],
+                    )
+                  : null,
+              border: Border.all(
+                color: filled ? siteButtonBorder : siteWhiteButtonBorder,
+              ),
+            ),
             child: Center(child: icon),
           ),
         ),

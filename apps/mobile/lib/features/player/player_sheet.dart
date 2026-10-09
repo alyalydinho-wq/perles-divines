@@ -1,6 +1,7 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 
+import '../../ui/site.dart';
 import 'audio_card.dart';
 import 'audio_controller.dart';
 
@@ -21,7 +22,7 @@ class PlayerSheet extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: siteWhiteButtonBorder,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -32,7 +33,12 @@ class PlayerSheet extends StatelessWidget {
                 if (track == null) {
                   return Text(
                     item.data?.title ?? 'Lecteur',
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    style: siteText(
+                      color: siteBlack,
+                      fontSize: 18,
+                      lineHeight: 22,
+                      weight: FontWeight.w700,
+                    ),
                   );
                 }
                 return AudioSessionCard(
@@ -51,7 +57,7 @@ class PlayerSheet extends StatelessWidget {
               children: [
                 IconButton(
                   tooltip: 'Précédent',
-                  color: Colors.white,
+                  color: siteGreenSolid,
                   onPressed: audio.skipToPrevious,
                   icon: const Icon(Icons.skip_previous),
                 ),
@@ -59,19 +65,19 @@ class PlayerSheet extends StatelessWidget {
                   onPressed: audio.rewind,
                   child: const Text(
                     '−15 s',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: siteGreenSolid),
                   ),
                 ),
                 TextButton(
                   onPressed: audio.fastForward,
                   child: const Text(
                     '+15 s',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: siteGreenSolid),
                   ),
                 ),
                 IconButton(
                   tooltip: 'Suivant',
-                  color: Colors.white,
+                  color: siteGreenSolid,
                   onPressed: audio.skipToNext,
                   icon: const Icon(Icons.skip_next),
                 ),
@@ -82,8 +88,9 @@ class PlayerSheet extends StatelessWidget {
               initialData: audio.player.speed,
               builder: (context, snapshot) => DropdownButton<double>(
                 value: snapshot.data,
-                dropdownColor: const Color(0xFF2A2A2E),
-                style: const TextStyle(color: Colors.white),
+                dropdownColor: siteCanvas,
+                style: const TextStyle(color: siteBlack),
+                iconEnabledColor: siteGreenSolid,
                 items: [.75, 1.0, 1.25, 1.5, 1.75, 2.0]
                     .map(
                       (speed) => DropdownMenuItem(
@@ -116,11 +123,13 @@ class PlayerSheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'File de lecture',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
+              style: siteText(
+                color: siteBlack,
+                fontSize: 16,
+                lineHeight: 20,
+                weight: FontWeight.w700,
               ),
             ),
             StreamBuilder<List<MediaItem>>(
@@ -131,7 +140,11 @@ class PlayerSheet extends StatelessWidget {
                     ListTile(
                       title: Text(
                         item.title,
-                        style: const TextStyle(color: Colors.white),
+                        style: siteText(
+                          color: siteBlack,
+                          fontSize: 16,
+                          lineHeight: 20,
+                        ),
                       ),
                       onTap: () => audio.skipToQueueItem(index),
                     ),

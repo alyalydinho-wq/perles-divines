@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/scope.dart';
+import '../../ui/site.dart';
 import 'audio_card.dart';
 import 'player_sheet.dart';
 
@@ -33,7 +34,7 @@ class SiteMiniPlayer extends StatelessWidget {
               onTitle: () => showModalBottomSheet<void>(
                 context: context,
                 isScrollControlled: true,
-                backgroundColor: const Color(0xFF1C1C1F),
+                backgroundColor: siteCanvas,
                 builder: (context) => PlayerSheet(audio: audio),
               ),
             );
