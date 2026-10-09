@@ -86,6 +86,12 @@ class _TextScreenState extends State<TextScreen> {
   }
 
   @override
+  void didUpdateWidget(TextScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.favorite != widget.favorite) favorite = widget.favorite;
+  }
+
+  @override
   void dispose() {
     _scroll.dispose();
     super.dispose();

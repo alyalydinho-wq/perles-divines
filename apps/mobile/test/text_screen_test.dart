@@ -102,6 +102,47 @@ void main() {
     );
   });
 
+  testWidgets('le cœur devient blanc quand le favori arrive après l’ouverture', (
+    tester,
+  ) async {
+    const item = DevotionalText(
+      id: 'ghofaylah',
+      kind: DevotionalKind.namaz,
+      title: 'Namaz-e-Ghofaylah',
+      arabic: 'بِسْمِ اللّٰهِ',
+      translation: '',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+    );
+    var favorite = false;
+    Future<void> show() {
+      return tester.pumpWidget(
+        MaterialApp(
+          home: TextScreen(
+            item: item,
+            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+            favorite: favorite,
+            onFavorite: () async {},
+          ),
+        ),
+      );
+    }
+
+    await show();
+    await tester.pump();
+    expect(find.byTooltip('Ajouter aux favoris'), findsOneWidget);
+
+    favorite = true;
+    await show();
+    await tester.pump();
+    expect(find.byTooltip('Retirer des favoris'), findsOneWidget);
+    expect(
+      tester.widgetList<Icon>(find.byIcon(Icons.favorite)).map((icon) => icon.color),
+      [const Color(0xffffffff)],
+    );
+  });
+
   testWidgets(
     'les onglets ne laissent pas de bande blanche au-dessus du lecteur',
     (tester) async {
