@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:perles_divines/core/track.dart';
 import 'package:perles_divines/features/catalog/audio_library_screen.dart';
+import 'package:perles_divines/features/player/audio_card.dart';
 import 'package:perles_divines/features/catalog/audio_shelves.dart';
 import 'package:perles_divines/features/catalog/favorite_groups.dart';
 import 'package:perles_divines/features/duas/dua.dart';
@@ -106,6 +107,31 @@ void main() {
     expect(find.byKey(const Key('play-ahad')), findsOneWidget);
     expect(find.byKey(const Key('download-ahad')), findsOneWidget);
     expect(find.byKey(const Key('favorite-ahad')), findsOneWidget);
+  });
+
+  testWidgets('la barre du lecteur se dessine sans écran Material parent', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      WidgetsApp(
+        color: const Color(0xffffffff),
+        onGenerateRoute: (settings) => PageRouteBuilder<void>(
+          settings: settings,
+          pageBuilder: (context, animation, secondary) => const Align(
+            alignment: Alignment.bottomCenter,
+            child: AudioFace(
+              title: 'Ziaraté Imamé Zaman',
+              duration: Duration(minutes: 4, seconds: 16),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.byType(Slider), findsOneWidget);
+    expect(find.text('Ziaraté Imamé Zaman'), findsOneWidget);
+    expect(find.textContaining('No Material widget found'), findsNothing);
   });
 
   test('les favoris de l’application sont classés par rubrique', () {
