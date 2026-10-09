@@ -157,15 +157,26 @@ class SiteLogo extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth * 0.92;
-        final image = ColoredBox(
-          color: siteCanvas,
+        // Même présentation que le site d’origine : image nette dans un
+        // cadre blanc arrondi, avec l’ombre `.cadre`.
+        final image = Container(
+          width: width,
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: siteCanvas,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [
+              BoxShadow(color: Color(0x80000000), blurRadius: 14),
+            ],
+          ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.asset(
               siteLogoAsset,
               width: width,
               fit: BoxFit.fitWidth,
-              filterQuality: FilterQuality.medium,
+              filterQuality: FilterQuality.high,
+              isAntiAlias: true,
               errorBuilder: (context, error, stack) => SizedBox(
                 width: width,
                 height: width * 100 / 480,
