@@ -87,7 +87,7 @@ void main() {
     );
     await tester.pump();
     expect(find.text('Doua (1)'), findsOneWidget);
-    expect(find.text('Favoris'), findsOneWidget);
+    expect(find.text('Favoris'), findsNothing);
     expect(find.text('Zyaraate (0)'), findsNothing);
     expect(find.text('Écouter'), findsNothing);
 

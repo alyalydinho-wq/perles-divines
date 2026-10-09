@@ -42,12 +42,6 @@ class AudioLibraryScreen extends StatelessWidget {
         const SiteGap(height: 12),
       ],
       children: [
-        SiteButton(
-          key: const Key('favoris-section'),
-          label: 'Favoris',
-          onTap: () => context.push('/favoris'),
-        ),
-        const SiteGap(),
         if (shelves.isEmpty)
           const SiteBlackText('Aucun audio n’est encore publié.')
         else
