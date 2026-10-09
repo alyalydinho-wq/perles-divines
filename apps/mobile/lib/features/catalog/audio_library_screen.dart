@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../core/scope.dart';
 import '../../core/store.dart';
 import '../../core/track.dart';
-import '../../ui/heritage.dart';
 import '../../ui/site.dart';
 import '../downloads/download_controller.dart';
+import '../player/audio_card.dart';
 import '../player/audio_controller.dart';
 import 'audio_shelves.dart';
 
@@ -42,6 +42,12 @@ class AudioLibraryScreen extends StatelessWidget {
         const SiteGap(height: 12),
       ],
       children: [
+        SiteButton(
+          key: const Key('favoris-section'),
+          label: 'Favoris',
+          onTap: () => context.push('/favoris'),
+        ),
+        const SiteGap(),
         if (shelves.isEmpty)
           const SiteBlackText('Aucun audio n’est encore publié.')
         else
@@ -135,74 +141,11 @@ class AudioTrackTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final db = store;
-    if (db == null) return _tile(null);
-    return StreamBuilder<List<Transfer>>(
-      stream: db.watchTransfers(),
-      builder: (context, snapshot) {
-        final row = snapshot.data?.cast<Transfer?>().firstWhere(
-          (item) => item?.id == track.transferId,
-          orElse: () => null,
-        );
-        return _tile(row);
-      },
-    );
-  }
-
-  Widget _tile(Transfer? row) {
-    return Column(
-      children: [
-        SiteBlackText(track.title),
-        const SiteGap(height: 8),
-        SiteBlackText(
-          [
-            formatPlaybackClock(Duration(milliseconds: track.durationMs)),
-            if (row?.state == 'downloading')
-              '${((row?.progress ?? 0) * 100).round()} %',
-            if (row?.state == 'downloaded') 'Disponible hors ligne',
-            if (row?.error != null) row!.error!,
-          ].join(' · '),
-          small: true,
-        ),
-        const SiteGap(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: SiteButton(
-                label: 'Écouter',
-                onTap: audio == null
-                    ? null
-                    : () => audio!.playTracks([track]),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(child: _downloadButton(row)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _downloadButton([Transfer? row]) {
-    if (row?.state == 'downloaded') {
-      return SiteButton(
-        label: 'Supprimer',
-        onTap: downloads == null ? null : () => downloads!.removeLocal(track),
-      );
-    }
-    final busy = [
-      'queued',
-      'downloading',
-      'waitingForNetwork',
-      'verifying',
-    ].contains(row?.state);
-    return SiteButton(
-      key: Key('download-${track.id}'),
-      label: busy ? 'En cours' : 'Télécharger',
-      green: true,
-      onTap: busy || downloads == null
-          ? null
-          : () => downloads!.enqueue([track], individual: true),
+    return AudioSessionCard(
+      track: track,
+      audio: audio,
+      downloads: downloads,
+      store: store,
     );
   }
 }

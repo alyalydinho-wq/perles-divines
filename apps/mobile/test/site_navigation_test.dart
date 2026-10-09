@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:perles_divines/features/about/about_screen.dart';
+import 'package:perles_divines/features/catalog/favorites_screen.dart';
 import 'package:perles_divines/features/catalog/section_screen.dart';
 import 'package:perles_divines/features/catalog/sections.dart';
 import 'package:perles_divines/features/duas/catalog.dart';
@@ -80,6 +81,10 @@ Widget _app() {
           GoRoute(
             path: '/audios',
             builder: (context, state) => const Scaffold(body: Text('audios')),
+          ),
+          GoRoute(
+            path: '/favoris',
+            builder: (context, state) => const FavoritesScreen(),
           ),
           GoRoute(
             path: '/about',
@@ -162,6 +167,7 @@ void main() {
     expect(find.text('Zyaraate'), findsOneWidget);
     expect(find.text('Aamal Specifique'), findsOneWidget);
     expect(find.text('Audios'), findsOneWidget);
+    expect(find.text('Favoris'), findsOneWidget);
     expect(find.text('A Propos ...'), findsOneWidget);
     expect(find.text('Version $appVersion'), findsOneWidget);
     final betweenSections =
@@ -171,6 +177,10 @@ void main() {
         tester.getTopLeft(find.text('Audios')).dy -
         tester.getBottomLeft(find.text('Aamal Mensuel')).dy;
     expect(beforeAudios, closeTo(betweenSections, 0.5));
+    final beforeFavoris =
+        tester.getTopLeft(find.text('Favoris')).dy -
+        tester.getBottomLeft(find.text('Audios')).dy;
+    expect(beforeFavoris, closeTo(betweenSections, 0.5));
     expect(find.textContaining('Tafsir'), findsNothing);
     expect(find.textContaining('Diaporama'), findsNothing);
     expect(find.byKey(const Key('site-search')), findsOneWidget);

@@ -51,13 +51,12 @@ class _SommaireScreenState extends State<SommaireScreen> {
         ),
       ],
       children: [
-        if (!searching) ...[
-          const SiteBismillah(),
-          const SiteGap(),
-        ],
+        if (!searching) ...[const SiteBismillah(), const SiteGap()],
         if (searching) ...[
           if (results.isEmpty)
-            const SiteBlackText('Aucune prière ne correspond à cette recherche.')
+            const SiteBlackText(
+              'Aucune prière ne correspond à cette recherche.',
+            )
           else
             for (final item in results) ...[
               SiteButton(
@@ -74,9 +73,12 @@ class _SommaireScreenState extends State<SommaireScreen> {
             ),
             const SiteGap(),
           ],
+          SiteButton(label: 'Audios', onTap: () => context.push('/audios')),
+          const SiteGap(),
           SiteButton(
-            label: 'Audios',
-            onTap: () => context.push('/audios'),
+            key: const Key('favoris-section'),
+            label: 'Favoris',
+            onTap: () => context.push('/favoris'),
           ),
           const SiteGap(),
           SiteButton(

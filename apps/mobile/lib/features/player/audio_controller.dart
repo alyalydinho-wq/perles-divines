@@ -156,7 +156,18 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     _tracks = List.of(tracks);
     _bundled = bundled || tracks.any((track) => track.bundled || track.fixture);
     _publishQueue();
+    _downloadForOffline(_tracks);
     if (_tracks.isNotEmpty) await _load(index, autoplay: true);
+  }
+
+  /// La lecture enregistre l’audio sur le téléphone pour l’écoute hors connexion.
+  void _downloadForOffline(Iterable<Track> tracks) {
+    final remote = [
+      for (final track in tracks)
+        if (!track.bundled && !track.fixture) track,
+    ];
+    if (remote.isEmpty) return;
+    unawaited(downloads.enqueue(remote, individual: true));
   }
 
   Future<void> _load(int index, {required bool autoplay}) async {
@@ -233,6 +244,7 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> play() async {
     _intent++;
     if (current == null) return;
+    _downloadForOffline([current!]);
     await _ensurePlaybackNotification();
     if (player.processingState == ProcessingState.completed) {
       await player.seek(Duration.zero);

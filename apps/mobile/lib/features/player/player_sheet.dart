@@ -1,6 +1,7 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 
+import 'audio_card.dart';
 import 'audio_controller.dart';
 
 class PlayerSheet extends StatelessWidget {
@@ -11,74 +12,66 @@ class PlayerSheet extends StatelessWidget {
   Widget build(BuildContext context) => SafeArea(
     child: SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            StreamBuilder<MediaItem?>(
-              stream: audio.mediaItem,
-              builder: (context, s) => Text(
-                s.data?.title ?? 'Lecteur',
-                style: Theme.of(context).textTheme.titleLarge,
+            Container(
+              width: 42,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
-            StreamBuilder<Duration>(
-              stream: audio.player.positionStream,
-              builder: (context, s) {
-                final max =
-                    (audio.player.duration?.inMilliseconds ??
-                            audio.current?.durationMs ??
-                            1)
-                        .toDouble();
-                final pos = (s.data?.inMilliseconds ?? 0)
-                    .toDouble()
-                    .clamp(0, max)
-                    .toDouble();
-                return Column(
-                  children: [
-                    Slider(
-                      value: pos,
-                      max: max > 0 ? max : 1,
-                      onChanged: (v) =>
-                          audio.seek(Duration(milliseconds: v.round())),
-                    ),
-                    Text(
-                      '${Duration(milliseconds: pos.round()).toString().split('.').first} / ${Duration(milliseconds: max.round()).toString().split('.').first}',
-                    ),
-                  ],
+            StreamBuilder<MediaItem?>(
+              stream: audio.mediaItem,
+              builder: (context, item) {
+                final track = audio.current;
+                if (track == null) {
+                  return Text(
+                    item.data?.title ?? 'Lecteur',
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                  );
+                }
+                return AudioSessionCard(
+                  track: track,
+                  audio: audio,
+                  downloads: audio.downloads,
+                  store: audio.store,
+                  keyed: false,
                 );
               },
             ),
+            const SizedBox(height: 8),
             Wrap(
               alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 IconButton(
                   tooltip: 'Précédent',
+                  color: Colors.white,
                   onPressed: audio.skipToPrevious,
                   icon: const Icon(Icons.skip_previous),
                 ),
-                TextButton(onPressed: audio.rewind, child: const Text('−15 s')),
-                StreamBuilder<PlaybackState>(
-                  stream: audio.playbackState,
-                  builder: (context, s) => IconButton(
-                    tooltip: s.data?.playing == true ? 'Pause' : 'Lire',
-                    onPressed: s.data?.playing == true
-                        ? audio.pause
-                        : audio.play,
-                    icon: Icon(
-                      s.data?.playing == true
-                          ? Icons.pause_circle
-                          : Icons.play_circle,
-                    ),
-                    iconSize: 56,
+                TextButton(
+                  onPressed: audio.rewind,
+                  child: const Text(
+                    '−15 s',
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
                 TextButton(
                   onPressed: audio.fastForward,
-                  child: const Text('+15 s'),
+                  child: const Text(
+                    '+15 s',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
                 IconButton(
                   tooltip: 'Suivant',
+                  color: Colors.white,
                   onPressed: audio.skipToNext,
                   icon: const Icon(Icons.skip_next),
                 ),
@@ -87,18 +80,20 @@ class PlayerSheet extends StatelessWidget {
             StreamBuilder<double>(
               stream: audio.player.speedStream,
               initialData: audio.player.speed,
-              builder: (context, s) => DropdownButton<double>(
-                value: s.data,
+              builder: (context, snapshot) => DropdownButton<double>(
+                value: snapshot.data,
+                dropdownColor: const Color(0xFF2A2A2E),
+                style: const TextStyle(color: Colors.white),
                 items: [.75, 1.0, 1.25, 1.5, 1.75, 2.0]
                     .map(
-                      (v) => DropdownMenuItem(
-                        value: v,
-                        child: Text('Vitesse $v×'),
+                      (speed) => DropdownMenuItem(
+                        value: speed,
+                        child: Text('Vitesse $speed×'),
                       ),
                     )
                     .toList(),
-                onChanged: (v) {
-                  if (v != null) audio.setSpeed(v);
+                onChanged: (speed) {
+                  if (speed != null) audio.setSpeed(speed);
                 },
               ),
             ),
@@ -121,15 +116,24 @@ class PlayerSheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            const Text('File de lecture'),
+            const Text(
+              'File de lecture',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             StreamBuilder<List<MediaItem>>(
               stream: audio.queue,
-              builder: (context, s) => Column(
+              builder: (context, snapshot) => Column(
                 children: [
-                  for (final (i, t) in (s.data ?? []).indexed)
+                  for (final (index, item) in (snapshot.data ?? []).indexed)
                     ListTile(
-                      title: Text(t.title),
-                      onTap: () => audio.skipToQueueItem(i),
+                      title: Text(
+                        item.title,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      onTap: () => audio.skipToQueueItem(index),
                     ),
                 ],
               ),

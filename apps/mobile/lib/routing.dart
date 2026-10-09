@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'features/about/about_screen.dart';
 import 'features/catalog/audio_library_screen.dart';
 import 'features/catalog/audio_shelves.dart';
+import 'features/catalog/favorites_screen.dart';
 import 'features/catalog/section_screen.dart';
 import 'features/catalog/sections.dart';
 import 'features/home/home_screen.dart';
@@ -25,10 +26,7 @@ GoRouter createRouter() => GoRouter(
         ),
       ),
       routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => const HomeScreen(),
-        ),
+        GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
         GoRoute(
           path: '/sommaire',
           builder: (context, state) => const SommaireScreen(),
@@ -36,7 +34,9 @@ GoRouter createRouter() => GoRouter(
         GoRoute(
           path: '/section/:id',
           builder: (context, state) {
-            final section = CatalogSection.byId(state.pathParameters['id'] ?? '');
+            final section = CatalogSection.byId(
+              state.pathParameters['id'] ?? '',
+            );
             if (section == null) {
               return SitePage(
                 children: [
@@ -83,6 +83,10 @@ GoRouter createRouter() => GoRouter(
               },
             ),
           ],
+        ),
+        GoRoute(
+          path: '/favoris',
+          builder: (context, state) => const FavoritesScreen(),
         ),
         GoRoute(
           path: '/about',

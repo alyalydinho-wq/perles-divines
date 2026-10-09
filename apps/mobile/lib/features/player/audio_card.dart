@@ -1,0 +1,478 @@
+import 'package:flutter/material.dart';
+
+import '../../core/store.dart';
+import '../../core/track.dart';
+import '../../ui/heritage.dart';
+import '../downloads/download_controller.dart';
+import '../duas/favorites.dart';
+import 'audio_controller.dart';
+
+const audioBusyStates = {
+  'queued',
+  'downloading',
+  'waitingForNetwork',
+  'verifying',
+};
+
+const _cardTop = Color(0xFF3E3E44);
+const _cardBottom = Color(0xFF1B1B1F);
+const _ink = Color(0xFFF7F7F8);
+const _muted = Color(0xFFD0D0D6);
+const _star = Color(0xFFFFD56A);
+const _saved = Color(0xFF9BE7A8);
+
+/// Lecteur compact : titre, durée, favori, lecture au début de la barre
+/// et téléchargement à la fin.
+class AudioFace extends StatelessWidget {
+  const AudioFace({
+    super.key,
+    required this.title,
+    required this.duration,
+    this.position = Duration.zero,
+    this.playing = false,
+    this.favorite = false,
+    this.downloadState,
+    this.downloadProgress = 0,
+    this.error,
+    this.onPlay,
+    this.onSeek,
+    this.onDownload,
+    this.onFavorite,
+    this.onTitle,
+    this.dense = false,
+    this.playKey,
+    this.downloadKey,
+    this.favoriteKey,
+  });
+
+  final String title;
+  final Duration duration;
+  final Duration position;
+  final bool playing;
+  final bool favorite;
+  final String? downloadState;
+  final double downloadProgress;
+  final String? error;
+  final VoidCallback? onPlay;
+  final ValueChanged<double>? onSeek;
+  final VoidCallback? onDownload;
+  final VoidCallback? onFavorite;
+  final VoidCallback? onTitle;
+  final bool dense;
+  final Key? playKey;
+  final Key? downloadKey;
+  final Key? favoriteKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final busy = audioBusyStates.contains(downloadState);
+    final saved = downloadState == 'downloaded';
+    final caption = _caption(busy, saved);
+    final radius = dense ? 0.0 : 18.0;
+    return SizedBox(
+      width: double.infinity,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(radius),
+            bottom: Radius.circular(dense ? 0 : radius),
+          ),
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [_cardTop, _cardBottom],
+          ),
+          border: dense
+              ? const Border(top: BorderSide(color: Color(0x33FFFFFF)))
+              : Border.all(color: const Color(0x22FFFFFF)),
+          boxShadow: dense
+              ? null
+              : const [
+                  BoxShadow(
+                    color: Color(0x33000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+        ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            dense ? 12 : 16,
+            dense ? 8 : 14,
+            dense ? 4 : 6,
+            (dense ? 8 : 8) +
+                (dense ? MediaQuery.paddingOf(context).bottom : 0),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: onTitle,
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: EdgeInsets.only(top: dense ? 4 : 6),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: dense ? 1 : 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: _ink,
+                                fontSize: dense ? 16 : 18,
+                                height: 1.2,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              caption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: _muted,
+                                fontSize: 13,
+                                height: 1.2,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  _StarButton(
+                    key: favoriteKey,
+                    favorite: favorite,
+                    onPressed: onFavorite,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  _RoundButton(
+                    buttonKey: playKey,
+                    tooltip: playing ? 'Pause' : 'Lire',
+                    onPressed: onPlay,
+                    icon: Icon(
+                      playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      color: _ink,
+                      size: dense ? 26 : 30,
+                    ),
+                    diameter: dense ? 42 : 48,
+                  ),
+                  Expanded(child: _bar()),
+                  _RoundButton(
+                    buttonKey: downloadKey,
+                    tooltip: busy
+                        ? 'Téléchargement'
+                        : saved
+                        ? 'Retirer du téléphone'
+                        : 'Télécharger',
+                    onPressed: busy ? null : onDownload,
+                    icon: _downloadIcon(busy, saved),
+                    diameter: dense ? 42 : 48,
+                  ),
+                ],
+              ),
+              if (error != null && error!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 12, 6),
+                  child: Text(
+                    error!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFFFFB4B4),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _caption(bool busy, bool saved) {
+    final total = formatPlaybackClock(duration);
+    final clock = position > Duration.zero
+        ? '${formatPlaybackClock(position)} / $total'
+        : total;
+    if (busy) {
+      final percent = (downloadProgress * 100).round().clamp(0, 100);
+      return '$clock · $percent %';
+    }
+    if (saved) return '$clock · Sur le téléphone';
+    return clock;
+  }
+
+  Widget _bar() {
+    final max = duration.inMilliseconds <= 0
+        ? 1.0
+        : duration.inMilliseconds.toDouble();
+    final value = position.inMilliseconds.toDouble().clamp(0, max).toDouble();
+    return SliderTheme(
+      data: SliderThemeData(
+        trackHeight: 3,
+        thumbShape: RoundSliderThumbShape(enabledThumbRadius: dense ? 5 : 6),
+        overlayShape: RoundSliderOverlayShape(overlayRadius: dense ? 12 : 14),
+        activeTrackColor: _ink,
+        inactiveTrackColor: const Color(0x55FFFFFF),
+        thumbColor: _ink,
+        disabledActiveTrackColor: _ink,
+        disabledInactiveTrackColor: const Color(0x55FFFFFF),
+        disabledThumbColor: _ink,
+      ),
+      child: Slider(value: value, max: max, onChanged: onSeek),
+    );
+  }
+
+  Widget _downloadIcon(bool busy, bool saved) {
+    if (busy) {
+      final known = downloadProgress > 0 && downloadProgress < 1;
+      return SizedBox(
+        width: 22,
+        height: 22,
+        child: CircularProgressIndicator(
+          strokeWidth: 2.2,
+          color: _ink,
+          value: known ? downloadProgress : null,
+        ),
+      );
+    }
+    return Icon(
+      saved ? Icons.download_done_rounded : Icons.download_rounded,
+      color: saved ? _saved : _ink,
+      size: 26,
+    );
+  }
+}
+
+class _StarButton extends StatelessWidget {
+  const _StarButton({
+    super.key,
+    required this.favorite,
+    required this.onPressed,
+  });
+
+  final bool favorite;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: favorite ? 'Retirer des favoris' : 'Ajouter aux favoris',
+      onPressed: onPressed,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints.tightFor(width: 42, height: 42),
+      icon: Icon(
+        favorite ? Icons.star_rounded : Icons.star_border_rounded,
+        color: favorite ? _star : _ink,
+        size: 28,
+      ),
+    );
+  }
+}
+
+class _RoundButton extends StatelessWidget {
+  const _RoundButton({
+    required this.tooltip,
+    required this.icon,
+    required this.diameter,
+    this.onPressed,
+    this.buttonKey,
+  });
+
+  final String tooltip;
+  final Widget icon;
+  final double diameter;
+  final VoidCallback? onPressed;
+  final Key? buttonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.white.withValues(alpha: onPressed == null ? 0.08 : 0.16),
+        shape: const CircleBorder(),
+        child: InkWell(
+          key: buttonKey,
+          customBorder: const CircleBorder(),
+          onTap: onPressed,
+          child: SizedBox(
+            width: diameter,
+            height: diameter,
+            child: Center(child: icon),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AudioSessionCard extends StatefulWidget {
+  const AudioSessionCard({
+    super.key,
+    required this.track,
+    this.audio,
+    this.downloads,
+    this.store,
+    this.dense = false,
+    this.keyed = true,
+    this.onTitle,
+  });
+
+  final Track track;
+  final PerlesAudioHandler? audio;
+  final DownloadController? downloads;
+  final AppStore? store;
+  final bool dense;
+  final bool keyed;
+  final VoidCallback? onTitle;
+
+  @override
+  State<AudioSessionCard> createState() => _AudioSessionCardState();
+}
+
+class _AudioSessionCardState extends State<AudioSessionCard> {
+  AudioFavorites? favorites;
+  Stream<List<Transfer>>? transfers;
+
+  @override
+  void initState() {
+    super.initState();
+    final store = widget.store;
+    if (store != null) {
+      favorites = AudioFavorites(store)..addListener(_onFavorites);
+      transfers = store.watchTransfers();
+      favorites!.read();
+    }
+  }
+
+  @override
+  void didUpdateWidget(AudioSessionCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.store == widget.store) return;
+    favorites?.removeListener(_onFavorites);
+    final store = widget.store;
+    if (store == null) {
+      favorites = null;
+      transfers = null;
+      return;
+    }
+    favorites = AudioFavorites(store)..addListener(_onFavorites);
+    transfers = store.watchTransfers();
+    favorites!.read();
+  }
+
+  @override
+  void dispose() {
+    favorites?.removeListener(_onFavorites);
+    super.dispose();
+  }
+
+  void _onFavorites() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<Transfer>>(
+      stream: transfers,
+      builder: (context, transfer) {
+        final row = transfer.data?.cast<Transfer?>().firstWhere(
+          (item) => item?.id == widget.track.transferId,
+          orElse: () => null,
+        );
+        final audio = widget.audio;
+        if (audio == null) return _face(row, false, false, Duration.zero);
+        return StreamBuilder(
+          stream: audio.mediaItem,
+          builder: (context, item) {
+            final active = item.data?.id == widget.track.id;
+            if (!active) return _face(row, false, false, Duration.zero);
+            return StreamBuilder(
+              stream: audio.playbackState,
+              builder: (context, playback) {
+                return StreamBuilder<Duration>(
+                  stream: audio.player.positionStream,
+                  builder: (context, position) {
+                    return _face(
+                      row,
+                      true,
+                      playback.data?.playing == true,
+                      position.data ?? Duration.zero,
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _face(Transfer? row, bool active, bool playing, Duration position) {
+    final track = widget.track;
+    final duration = Duration(milliseconds: track.durationMs);
+    final busy = audioBusyStates.contains(row?.state);
+    return AudioFace(
+      title: track.title,
+      duration: duration,
+      position: active ? position : Duration.zero,
+      playing: playing,
+      favorite: favorites?.ids.contains(track.id) ?? false,
+      downloadState: row?.state,
+      downloadProgress: row?.progress ?? 0,
+      error: row?.state == 'failed' ? row?.error : null,
+      dense: widget.dense,
+      onTitle: widget.onTitle,
+      onPlay: widget.audio == null ? null : _play,
+      onSeek: active && track.durationMs > 0
+          ? (value) => widget.audio!.seek(Duration(milliseconds: value.round()))
+          : null,
+      onDownload: widget.downloads == null || busy
+          ? null
+          : () => _download(row),
+      onFavorite: favorites == null ? null : () => favorites!.toggle(track.id),
+      playKey: widget.keyed ? Key('play-${track.id}') : null,
+      downloadKey: widget.keyed ? Key('download-${track.id}') : null,
+      favoriteKey: widget.keyed ? Key('favorite-${track.id}') : null,
+    );
+  }
+
+  Future<void> _play() async {
+    final audio = widget.audio;
+    if (audio == null) return;
+    final active = audio.current?.id == widget.track.id;
+    if (active && audio.player.playing) {
+      await audio.pause();
+      return;
+    }
+    if (active) {
+      await audio.play();
+      return;
+    }
+    await audio.playTracks([widget.track]);
+  }
+
+  Future<void> _download(Transfer? row) async {
+    final downloads = widget.downloads;
+    if (downloads == null) return;
+    if (row?.state == 'downloaded') {
+      await downloads.removeLocal(widget.track);
+      return;
+    }
+    await downloads.enqueue([widget.track], individual: true);
+  }
+}
