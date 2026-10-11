@@ -29,11 +29,24 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        // The phone already has the app installed from Android Studio, which signs
+        // with the user debug keystore. The tooling keystore is a different key,
+        // and Android refuses the update.
+        create("phone") {
+            storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("phone")
         }
     }
 }
