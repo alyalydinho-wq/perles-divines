@@ -29,24 +29,23 @@ class AboutScreen extends StatelessWidget {
           'Que cette humble contribution soit dédiée à l\'Imam de notre temps, Mohammad Mehdi (\'aj), en mémoire de nos defunts.',
         ),
         const SiteGap(),
+        const _Portrait('assets/branding/papa.jpg'),
         const SiteBlackText(
           'Marhoum Hajee Firozhoussen\n'
           'GOULAMALY NASSOR\n'
           '(14 aout 1943 - 27 mars 2016)',
         ),
         const SiteGap(),
+        const _Portrait('assets/branding/mbp.jpg'),
         const SiteBlackText(
           'Marhoum Hajee Onaly\n'
           'ISSOUFALY DJIVAN\n'
           '(1er juin 1943 - 24 novembre 2016)',
         ),
         const SiteGap(),
-        const SiteBlackText(
+        const _SawabBox(
           'Merci de réciter un souré Fatéha\n'
-          'pour le Issalé Sawab de :',
-        ),
-        const SiteGap(height: 16),
-        const SiteBlackText(
+          'pour le Issalé Sawab de :\n\n'
           'Marhoum Hajee Zahid Husain M. AJANI,\n\n'
           'Marhoum Hajee Firozhoussen GOULAMALY NASSOR,\n\n'
           'Marhouma Maléka FIROZHOUSSEN NASSOR,\n\n'
@@ -103,6 +102,57 @@ class AboutScreen extends StatelessWidget {
           onTap: () => context.go('/sommaire'),
         ),
       ],
+    );
+  }
+}
+
+/// Portrait du site (`images/papa.jpg`, `images/mbp.jpg`), cadre arrondi.
+class _Portrait extends StatelessWidget {
+  const _Portrait(this.asset);
+
+  final String asset;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 214,
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [BoxShadow(color: Color(0x80000000), blurRadius: 24)],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.asset(
+          asset,
+          width: 214,
+          fit: BoxFit.fitWidth,
+          filterQuality: FilterQuality.high,
+          errorBuilder: (context, error, stack) =>
+              const SizedBox(width: 214, height: 313),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bloc « Issalé Sawab » : cadre noir, texte vert et gras.
+class _SawabBox extends StatelessWidget {
+  const _SawabBox(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+      decoration: BoxDecoration(border: Border.all(color: siteBlack, width: 2)),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: siteText(color: siteGreen, weight: FontWeight.w700),
+      ),
     );
   }
 }
