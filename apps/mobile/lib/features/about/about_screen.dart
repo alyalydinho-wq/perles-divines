@@ -12,7 +12,7 @@ class AboutScreen extends StatelessWidget {
       children: [
         SiteLogo(onTap: () => context.go('/')),
         const SiteGap(),
-        const SiteBlackText(
+        const _GreenBoldText(
           '"Perles Divines" est un receuil\n'
           'de prières et d\'invocations\n'
           'pour les musulmans Chiites (Ja\'ffari)',
@@ -83,14 +83,14 @@ class AboutScreen extends StatelessWidget {
         const SiteGap(),
         GestureDetector(
           onTap: () => openExternal(perlesSiteUrl),
-          child: const SiteBlackText('www.perlesdivines.fr'),
+          child: const _GreenBoldText('www.perlesdivines.fr'),
         ),
         GestureDetector(
           onTap: () => openMailto(perlesContactEmail),
-          child: const SiteBlackText(perlesContactEmail),
+          child: const _GreenBoldText(perlesContactEmail),
         ),
         const SiteGap(),
-        const SiteBlackText(
+        const _GreenBoldText(
           'Malécka & Mamode F. NASSOR\n'
           'Saint André - Réunion\n'
           '© Tous droits réservés.',
@@ -134,6 +134,19 @@ class _Portrait extends StatelessWidget {
       ),
     );
   }
+}
+
+class _GreenBoldText extends StatelessWidget {
+  const _GreenBoldText(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text,
+    textAlign: TextAlign.center,
+    style: siteText(color: siteGreen, weight: FontWeight.w700),
+  );
 }
 
 /// Bloc « Issalé Sawab » : cadre noir, texte vert et gras.
