@@ -29,7 +29,7 @@ const perlesSiteUrl = 'https://www.perlesdivines.fr';
 const perlesContactEmail = 'contact@perlesdivines.fr';
 
 /// Aligné sur `version:` de `apps/mobile/pubspec.yaml`.
-const appVersion = '0.1.0';
+const appVersion = '0.2.3';
 
 const siteLogoAsset = 'assets/branding/logo-m.png';
 const siteBismillahAsset = 'assets/branding/bismillah.gif';
