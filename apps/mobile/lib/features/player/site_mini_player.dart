@@ -1,5 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../core/scope.dart';
@@ -8,8 +9,45 @@ import 'audio_card.dart';
 import 'playback_notice.dart';
 import 'player_sheet.dart';
 
-class SiteMiniPlayer extends StatelessWidget {
+class SiteMiniPlayer extends StatefulWidget {
   const SiteMiniPlayer({super.key});
+
+  @override
+  State<SiteMiniPlayer> createState() => _SiteMiniPlayerState();
+}
+
+class _SiteMiniPlayerState extends State<SiteMiniPlayer> {
+  /// Réduite pendant la navigation, pour ne pas couvrir l’écran.
+  bool _expanded = false;
+  GoRouter? _router;
+  String? _location;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final router = GoRouter.maybeOf(context);
+    if (router == _router) return;
+    _router?.routerDelegate.removeListener(_onRoute);
+    _router = router;
+    _router?.routerDelegate.addListener(_onRoute);
+    _location = _router?.routerDelegate.currentConfiguration.uri.toString();
+  }
+
+  @override
+  void dispose() {
+    _router?.routerDelegate.removeListener(_onRoute);
+    super.dispose();
+  }
+
+  void _onRoute() {
+    final location = _router?.routerDelegate.currentConfiguration.uri
+        .toString();
+    final changed = _location != null && location != _location;
+    _location = location;
+    if (changed && _expanded && mounted) {
+      setState(() => _expanded = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,19 +76,29 @@ class SiteMiniPlayer extends StatelessWidget {
                   ),
                 );
                 if (!visible) return _systemInset(context);
-                return AudioSessionCard(
-                  key: const Key('site-player'),
-                  track: track,
-                  audio: audio,
-                  downloads: audio.downloads,
-                  store: audio.store,
-                  dense: true,
-                  keyed: false,
-                  onTitle: () => showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: siteCanvas,
-                    builder: (context) => PlayerSheet(audio: audio),
+                return AnimatedSize(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  alignment: Alignment.bottomCenter,
+                  child: AudioSessionCard(
+                    key: const Key('site-player'),
+                    track: track,
+                    audio: audio,
+                    downloads: audio.downloads,
+                    store: audio.store,
+                    dense: true,
+                    collapsed: !_expanded,
+                    keyed: false,
+                    onExpanded: (expanded) {
+                      if (_expanded == expanded || !mounted) return;
+                      setState(() => _expanded = expanded);
+                    },
+                    onTitle: () => showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: siteCanvas,
+                      builder: (context) => PlayerSheet(audio: audio),
+                    ),
                   ),
                 );
               },

@@ -136,6 +136,98 @@ void main() {
     expect(find.byTooltip('Téléchargé'), findsOneWidget);
   });
 
+  testWidgets(
+    'la barre réduite ne garde que le titre et lecture, et se déplie vers le haut',
+    (tester) async {
+      bool? expanded;
+      var played = 0;
+      double? sought;
+      Future<void> show({required bool collapsed}) {
+        return tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Align(
+                alignment: Alignment.bottomCenter,
+                child: AudioFace(
+                  title: 'Douâ 22 Mahé Ramzane',
+                  duration: const Duration(minutes: 1),
+                  position: const Duration(seconds: 26),
+                  playing: true,
+                  favorite: true,
+                  downloadState: 'downloaded',
+                  dense: true,
+                  collapsed: collapsed,
+                  onPlay: () => played++,
+                  onSeek: (value) => sought = value,
+                  onExpanded: (value) => expanded = value,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
+      await show(collapsed: true);
+      await tester.pump();
+      final collapsedHeight = tester.getSize(find.byType(AudioFace)).height;
+      expect(find.text('Douâ 22 Mahé Ramzane'), findsOneWidget);
+      expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_up_rounded), findsOneWidget);
+      expect(find.byType(Slider), findsNothing);
+      expect(find.byIcon(Icons.star_rounded), findsNothing);
+      expect(find.textContaining('Téléchargé'), findsNothing);
+      expect(find.byIcon(Icons.download_done_rounded), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.pause_rounded));
+      await tester.pump();
+      expect(played, 1);
+      expect(expanded, isNull);
+
+      await tester.tap(find.text('Douâ 22 Mahé Ramzane'));
+      await tester.pump();
+      expect(expanded, isTrue);
+
+      expanded = null;
+      await tester.fling(
+        find.text('Douâ 22 Mahé Ramzane'),
+        const Offset(0, -120),
+        1200,
+      );
+      await tester.pump();
+      expect(expanded, isTrue);
+
+      expanded = null;
+      await tester.tap(find.byKey(const Key('player-peek')));
+      await tester.pump();
+      expect(expanded, isTrue);
+
+      await show(collapsed: false);
+      await tester.pump();
+      expect(
+        tester.getSize(find.byType(AudioFace)).height,
+        greaterThan(collapsedHeight),
+      );
+      expect(find.byType(Slider), findsOneWidget);
+      expect(find.textContaining('Téléchargé'), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+
+      expanded = null;
+      await tester.drag(find.byType(Slider), const Offset(80, 0));
+      await tester.pump();
+      expect(sought, isNotNull);
+      expect(expanded, isNull);
+
+      await tester.fling(
+        find.byKey(const Key('player-peek')),
+        const Offset(0, 120),
+        1200,
+      );
+      await tester.pump();
+      expect(expanded, isFalse);
+    },
+  );
+
   testWidgets('le téléchargement et la suppression demandent confirmation', (
     tester,
   ) async {
