@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:audio_service/audio_service.dart';
@@ -13,6 +14,7 @@ import 'core/track.dart';
 import 'features/downloads/download_controller.dart';
 import 'features/duas/catalog.dart';
 import 'features/player/audio_controller.dart';
+import 'features/player/playback_notice.dart';
 import 'features/reader/content_install.dart';
 import 'routing.dart';
 import 'ui/site.dart';
@@ -51,11 +53,19 @@ class PerlesApp extends StatefulWidget {
 class _PerlesAppState extends State<PerlesApp> {
   late Future<Services> preparation;
   GoRouter? router;
+  StreamSubscription<bool>? _notificationClicks;
+  bool _notificationHooked = false;
 
   @override
   void initState() {
     super.initState();
     preparation = prepare();
+  }
+
+  @override
+  void dispose() {
+    _notificationClicks?.cancel();
+    super.dispose();
   }
 
   Future<Services> prepare() async {
@@ -76,6 +86,8 @@ class _PerlesAppState extends State<PerlesApp> {
         androidNotificationOngoing: true,
         androidStopForegroundOnPause: true,
         androidNotificationClickStartsActivity: true,
+        fastForwardInterval: Duration(seconds: 15),
+        rewindInterval: Duration(seconds: 15),
       ),
     );
     await audio.initialize();
@@ -100,6 +112,23 @@ class _PerlesAppState extends State<PerlesApp> {
     builder: (context, snapshot) {
       if (snapshot.hasData) {
         router ??= createRouter();
+        if (!_notificationHooked) {
+          _notificationHooked = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            _notificationClicks ??= AudioService.notificationClicked.listen((
+              clicked,
+            ) {
+              final current = router?.state.uri.path;
+              if (current == null) return;
+              final destination = routeAfterNotificationClick(
+                clicked: clicked,
+                currentPath: current,
+              );
+              if (destination != null) router!.push(destination);
+            });
+          });
+        }
         return ServicesScope(
           services: snapshot.data!,
           child: MaterialApp.router(

@@ -1,3 +1,4 @@
+import AVFoundation
 import Flutter
 import UIKit
 
@@ -7,7 +8,13 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    configureBackgroundPlayback()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  private func configureBackgroundPlayback() {
+    let session = AVAudioSession.sharedInstance()
+    try? session.setCategory(.playback, mode: .spokenAudio, options: [])
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {

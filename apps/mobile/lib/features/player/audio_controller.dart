@@ -9,32 +9,7 @@ import 'package:just_audio/just_audio.dart';
 import '../../core/store.dart';
 import '../../core/track.dart';
 import '../downloads/download_controller.dart';
-
-const _notificationPlay = MediaControl(
-  androidIcon: 'drawable/audio_service_play_arrow',
-  label: 'Lire',
-  action: MediaAction.play,
-);
-const _notificationPause = MediaControl(
-  androidIcon: 'drawable/audio_service_pause',
-  label: 'Pause',
-  action: MediaAction.pause,
-);
-const _notificationPrevious = MediaControl(
-  androidIcon: 'drawable/audio_service_skip_previous',
-  label: 'Précédent',
-  action: MediaAction.skipToPrevious,
-);
-const _notificationNext = MediaControl(
-  androidIcon: 'drawable/audio_service_skip_next',
-  label: 'Suivant',
-  action: MediaAction.skipToNext,
-);
-const _notificationStop = MediaControl(
-  androidIcon: 'drawable/audio_service_stop',
-  label: 'Arrêter',
-  action: MediaAction.stop,
-);
+import 'playback_notice.dart';
 
 const _playbackChannel = MethodChannel('perles_divines/storage');
 
@@ -88,10 +63,14 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
   final _subscriptions = <StreamSubscription>[];
   bool _resumeAfterInterruption = false;
   int _interruptionIntent = 0;
+  bool _announced = false;
+  bool _retainSystemSession = false;
+  bool _sessionReleased = false;
+  int _sessionGeneration = 0;
   Track? get current => _tracks.isEmpty ? null : _tracks[_index];
   Future<void> initialize() async {
     final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.speech());
+    await session.configure(backgroundPlaybackSession);
     _subscriptions.add(
       session.becomingNoisyEventStream.listen((_) {
         unawaited(pause());
@@ -99,16 +78,24 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     );
     _subscriptions.add(
       session.interruptionEventStream.listen((event) async {
+        if (_sessionReleased) return;
         if (event.begin) {
           _resumeAfterInterruption = player.playing;
           _interruptionIntent = _intent;
+          _retainSystemSession = _resumeAfterInterruption;
           await player.pause();
           await _save();
+          _broadcast();
         } else if (_resumeAfterInterruption &&
             _interruptionIntent == _intent &&
             event.type != AudioInterruptionType.unknown) {
           _resumeAfterInterruption = false;
+          _retainSystemSession = false;
           await play();
+        } else {
+          _retainSystemSession = false;
+          _resumeAfterInterruption = false;
+          _broadcast();
         }
       }),
     );
@@ -134,18 +121,7 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     });
   }
 
-  void _publishQueue() => queue.add(
-    _tracks
-        .map(
-          (t) => MediaItem(
-            id: t.id,
-            title: t.title,
-            artist: t.author,
-            duration: Duration(milliseconds: t.durationMs),
-          ),
-        )
-        .toList(),
-  );
+  void _publishQueue() => queue.add(_tracks.map(playbackNotice).toList());
   Future<void> playTracks(
     List<Track> tracks, {
     int index = 0,
@@ -173,6 +149,7 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> _load(int index, {required bool autoplay}) async {
     if (_loading) return;
     _loading = true;
+    _retainSystemSession = true;
     try {
       await player.pause();
       for (var next = index; next < _tracks.length; next++) {
@@ -212,6 +189,8 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
       error.add('Aucune piste disponible dans cette file.');
     } finally {
       _loading = false;
+      _retainSystemSession = false;
+      _broadcast();
     }
   }
 
@@ -245,29 +224,41 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     _intent++;
     if (current == null) return;
     _downloadForOffline([current!]);
+    _announced = true;
+    _sessionReleased = false;
+    _sessionGeneration++;
     await _ensurePlaybackNotification();
     if (player.processingState == ProcessingState.completed) {
       await player.seek(Duration.zero);
     }
     final session = await AudioSession.instance;
-    if (await session.setActive(true)) {
-      unawaited(
-        player.play().catchError((Object e) {
-          error.add('Lecture impossible : $e');
-        }),
-      );
-    }
+    if (!await session.setActive(true)) return;
+    final item = mediaItem.value;
+    if (item != null) mediaItem.add(item);
+    // play() ne se termine qu’à la pause ou à la fin : on ne l’attend pas,
+    // sinon le chargement de la piste resterait bloqué pendant toute l’écoute.
+    unawaited(
+      player.play().catchError((Object e) {
+        error.add('Lecture impossible : $e');
+        _retainSystemSession = false;
+        _broadcast();
+      }),
+    );
+    _broadcast();
   }
 
   @override
   Future<void> pause() async {
     _intent++;
+    _retainSystemSession = false;
     await player.pause();
     await _save();
+    _broadcast();
   }
 
   @override
   Future<void> stop() async {
+    _retainSystemSession = false;
     await pause();
     await player.stop();
     await super.stop();
@@ -341,34 +332,69 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     });
   }
 
-  void _broadcast() => playbackState.add(
-    PlaybackState(
-      controls: [
-        _notificationPrevious,
-        player.playing ? _notificationPause : _notificationPlay,
-        _notificationNext,
-        _notificationStop,
-      ],
-      systemActions: const {
-        MediaAction.seek,
-        MediaAction.seekForward,
-        MediaAction.seekBackward,
-      },
-      androidCompactActionIndices: const [0, 1, 2],
-      processingState: const {
-        ProcessingState.idle: AudioProcessingState.idle,
-        ProcessingState.loading: AudioProcessingState.loading,
-        ProcessingState.buffering: AudioProcessingState.buffering,
-        ProcessingState.ready: AudioProcessingState.ready,
-        ProcessingState.completed: AudioProcessingState.completed,
-      }[player.processingState]!,
-      playing: player.playing,
-      updatePosition: player.position,
-      bufferedPosition: player.bufferedPosition,
-      speed: player.speed,
-      queueIndex: _index,
-    ),
-  );
+  void _broadcast() {
+    if (player.playing) _announced = true;
+    if (!_announced) return;
+    final willAdvance =
+        player.processingState == ProcessingState.completed &&
+        !_endOfTrack &&
+        _index + 1 < _tracks.length;
+    if (willAdvance) _retainSystemSession = true;
+    final playing = player.playing;
+    final retain = _retainSystemSession && !playing;
+    if (!playing && !retain) {
+      _dismissSystemPlayback();
+      return;
+    }
+    playbackState.add(
+      systemPlaybackState(
+        playing: playing,
+        retain: retain,
+        processingState: noticeProcessingState(player.processingState),
+        position: player.position,
+        bufferedPosition: player.bufferedPosition,
+        speed: player.speed,
+        queueIndex: _tracks.isEmpty ? null : _index,
+      ),
+    );
+  }
+
+  void _dismissSystemPlayback() {
+    final current = playbackState.hasValue ? playbackState.value : null;
+    if (current?.processingState != AudioProcessingState.idle ||
+        current?.playing != false) {
+      playbackState.add(
+        systemPlaybackState(
+          playing: false,
+          retain: false,
+          processingState: AudioProcessingState.idle,
+          position: player.position,
+          bufferedPosition: player.bufferedPosition,
+          speed: player.speed,
+          queueIndex: _tracks.isEmpty ? null : _index,
+        ),
+      );
+    }
+    if (_sessionReleased) return;
+    _sessionReleased = true;
+    final generation = _sessionGeneration;
+    unawaited(_deactivateSession(generation));
+  }
+
+  Future<void> _deactivateSession(int generation) async {
+    try {
+      final session = await AudioSession.instance;
+      if (generation != _sessionGeneration) return;
+      await session.setActive(
+        false,
+        avAudioSessionSetActiveOptions:
+            AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
+      );
+    } catch (_) {
+      // La notification est déjà retirée si la session est indisponible.
+    }
+  }
+
   Future<void> dispose() async {
     _ticker.cancel();
     for (final s in _subscriptions) {

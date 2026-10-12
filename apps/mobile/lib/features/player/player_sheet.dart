@@ -6,8 +6,9 @@ import 'audio_card.dart';
 import 'audio_controller.dart';
 
 class PlayerSheet extends StatelessWidget {
-  const PlayerSheet({super.key, required this.audio});
+  const PlayerSheet({super.key, required this.audio, this.handle = true});
   final PerlesAudioHandler audio;
+  final bool handle;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -17,15 +18,16 @@ class PlayerSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 42,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: siteWhiteButtonBorder,
-                borderRadius: BorderRadius.circular(4),
+            if (handle)
+              Container(
+                width: 42,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: siteWhiteButtonBorder,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
-            ),
             StreamBuilder<MediaItem?>(
               stream: audio.mediaItem,
               builder: (context, item) {
