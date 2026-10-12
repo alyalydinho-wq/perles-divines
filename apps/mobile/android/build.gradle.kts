@@ -19,13 +19,16 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-subprojects {
-    afterEvaluate {
-        if (name != "audio_service") return@afterEvaluate
-        patchMediaPlaybackForeground(
-            file("src/main/java/com/ryanheise/audioservice/AudioService.java"),
-        )
-    }
+gradle.projectsEvaluated {
+    rootProject.subprojects
+        .find { it.name == "audio_service" }
+        ?.let { audioService ->
+            patchMediaPlaybackForeground(
+                audioService.file(
+                    "src/main/java/com/ryanheise/audioservice/AudioService.java",
+                ),
+            )
+        }
 }
 
 // audio_service 0.18.19 appelle startForeground sans type. A partir
