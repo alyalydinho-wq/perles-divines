@@ -109,6 +109,89 @@ void main() {
     expect(find.byKey(const Key('favorite-ahad')), findsOneWidget);
   });
 
+  testWidgets('un audio téléchargé se reconnaît sur le bouton', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AudioFace(
+            title: 'Doua-e-Ahad',
+            duration: Duration(minutes: 7, seconds: 10),
+            downloadState: 'downloaded',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byIcon(Icons.download_done_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.download_rounded), findsNothing);
+    expect(find.text('7:10 · Téléchargé'), findsOneWidget);
+    expect(find.byTooltip('Téléchargé'), findsOneWidget);
+  });
+
+  testWidgets('le téléchargement et la suppression demandent confirmation', (
+    tester,
+  ) async {
+    bool? answer;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () async {
+              answer = await confirmAudioTransfer(
+                context,
+                title: 'Doua-e-Ahad',
+                remove: false,
+              );
+            },
+            child: const Text('ouvrir'),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('ouvrir'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Télécharger « Doua-e-Ahad » sur ce téléphone ?'),
+      findsOneWidget,
+    );
+    await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
+    await tester.pumpAndSettle();
+    expect(answer, isFalse);
+
+    await tester.tap(find.text('ouvrir'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Télécharger'));
+    await tester.pumpAndSettle();
+    expect(answer, isTrue);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () async {
+              answer = await confirmAudioTransfer(
+                context,
+                title: 'Doua-e-Ahad',
+                remove: true,
+              );
+            },
+            child: const Text('ouvrir'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('ouvrir'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Supprimer « Doua-e-Ahad » de ce téléphone ?'),
+      findsOneWidget,
+    );
+    await tester.tap(find.widgetWithText(TextButton, 'Supprimer'));
+    await tester.pumpAndSettle();
+    expect(answer, isTrue);
+  });
+
   testWidgets('la barre du lecteur se dessine sans écran Material parent', (
     tester,
   ) async {

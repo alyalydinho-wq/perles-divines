@@ -164,7 +164,7 @@ class AudioFace extends StatelessWidget {
                       tooltip: busy
                           ? 'Téléchargement'
                           : saved
-                          ? 'Retirer du téléphone'
+                          ? 'Téléchargé'
                           : 'Télécharger',
                       filled: !saved,
                       onPressed: busy ? null : onDownload,
@@ -204,7 +204,7 @@ class AudioFace extends StatelessWidget {
       final percent = (downloadProgress * 100).round().clamp(0, 100);
       return '$clock · $percent %';
     }
-    if (saved) return '$clock · Sur le téléphone';
+    if (saved) return '$clock · Téléchargé';
     return clock;
   }
 
@@ -365,6 +365,7 @@ class AudioSessionCard extends StatefulWidget {
 class _AudioSessionCardState extends State<AudioSessionCard> {
   AudioFavorites? favorites;
   Stream<List<Transfer>>? transfers;
+  bool _confirming = false;
 
   @override
   void initState() {
@@ -487,11 +488,53 @@ class _AudioSessionCardState extends State<AudioSessionCard> {
 
   Future<void> _download(Transfer? row) async {
     final downloads = widget.downloads;
-    if (downloads == null) return;
-    if (row?.state == 'downloaded') {
-      await downloads.removeLocal(widget.track);
-      return;
+    if (downloads == null || _confirming || !mounted) return;
+    final remove = row?.state == 'downloaded';
+    _confirming = true;
+    try {
+      final confirmed = await confirmAudioTransfer(
+        context,
+        title: widget.track.title,
+        remove: remove,
+      );
+      if (!confirmed || !mounted) return;
+      if (remove) {
+        await downloads.removeLocal(widget.track);
+      } else {
+        await downloads.enqueue([widget.track], individual: true);
+      }
+    } finally {
+      _confirming = false;
     }
-    await downloads.enqueue([widget.track], individual: true);
   }
+}
+
+/// Demande avant de télécharger un audio, ou de supprimer le fichier local.
+Future<bool> confirmAudioTransfer(
+  BuildContext context, {
+  required String title,
+  required bool remove,
+}) async {
+  final accepted = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(remove ? 'Supprimer le fichier' : 'Télécharger'),
+      content: Text(
+        remove
+            ? 'Supprimer « $title » de ce téléphone ?'
+            : 'Télécharger « $title » sur ce téléphone ?',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Annuler'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text(remove ? 'Supprimer' : 'Télécharger'),
+        ),
+      ],
+    ),
+  );
+  return accepted == true;
 }
