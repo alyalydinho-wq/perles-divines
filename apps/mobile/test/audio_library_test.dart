@@ -32,9 +32,17 @@ void main() {
     );
     expect(shelfOf(_track('Douà 2 Mahé Ramzane')), AudioShelf.aamal);
     expect(shelfOf(_track('Douà du 30 Mahé Ramzane')), AudioShelf.aamal);
-    expect(shelfOf(_track('Douà du lundi')), AudioShelf.aamal);
-    expect(shelfOf(_track('Sehri ni Douà')), AudioShelf.aamal);
-    expect(shelfOf(_track('Mounajat é Shabaniya')), AudioShelf.aamal);
+    expect(shelfOf(_track('Douà du lundi')), AudioShelf.doua);
+    expect(shelfOf(_track('Douà du vendredi')), AudioShelf.doua);
+    expect(shelfOf(_track('Douà du premier jour de l’an')), AudioShelf.doua);
+    expect(shelfOf(_track('Douà du dernier jour de l’an')), AudioShelf.doua);
+    expect(
+      shelfOf(_track('Douà du dernier vendredi de Mahé Ramzane')),
+      AudioShelf.doua,
+    );
+    expect(shelfOf(_track('Sehri ni Douà')), AudioShelf.doua);
+    expect(shelfOf(_track('Mounajat é Shabaniya')), AudioShelf.doua);
+    expect(shelfOf(_track('Salàwat é Mahé Shabàne')), AudioShelf.doua);
     expect(shelfOf(_track('Hadiçe é Kissà')), AudioShelf.hadith);
   });
 
@@ -64,9 +72,9 @@ void main() {
         shelf: tracksOf(shelf, tracks).length,
     };
     expect(tracks.length, 86);
-    expect(counts[AudioShelf.doua], 17);
+    expect(counts[AudioShelf.doua], 30);
     expect(counts[AudioShelf.zyaraate], 26);
-    expect(counts[AudioShelf.aamal], 42);
+    expect(counts[AudioShelf.aamal], 29);
     expect(counts[AudioShelf.hadith], 1);
     expect(counts[AudioShelf.autres], 0);
     expect(counts.values.reduce((a, b) => a + b), 86);

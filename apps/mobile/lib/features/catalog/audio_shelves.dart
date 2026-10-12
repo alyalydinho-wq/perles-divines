@@ -26,10 +26,12 @@ AudioShelf shelfOf(Track track) {
     return AudioShelf.zyaraate;
   }
   if (RegExp(r'hadith|hadis|hadic').hasMatch(title)) return AudioShelf.hadith;
-  if (_isAamal(title)) return AudioShelf.aamal;
+  // Les douas du 1er au 30e jour de Ramadan sont les aamal de ce mois.
+  if (_isRamadanDayDua(title)) return AudioShelf.aamal;
   if (RegExp(r'doua|mounajat|salawat|salat').hasMatch(title)) {
     return AudioShelf.doua;
   }
+  if (_isAamal(title)) return AudioShelf.aamal;
   return AudioShelf.autres;
 }
 
@@ -84,8 +86,11 @@ int? weekdayOrder(String title) {
   return null;
 }
 
+bool _isRamadanDayDua(String title) =>
+    title.contains('ramzan') && RegExp(r'\d+').hasMatch(title);
+
 bool _isAamal(String title) => RegExp(
-  r'ramzan|shaban|sehri|jour de l.?an|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche',
+  r'aamal|ramzan|shaban|sehri|jour de l.?an|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche',
 ).hasMatch(title);
 
 String foldTitle(String value) {
