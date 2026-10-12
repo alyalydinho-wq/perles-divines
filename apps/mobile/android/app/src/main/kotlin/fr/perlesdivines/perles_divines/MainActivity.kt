@@ -1,6 +1,7 @@
 package fr.perlesdivines.perles_divines
 
 import android.Manifest
+import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.StatFs
@@ -14,6 +15,10 @@ class MainActivity : AudioServiceActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        if (Build.VERSION.SDK_INT >= 26) {
+            getSystemService(NotificationManager::class.java)
+                .deleteNotificationChannel("fr.perlesdivines.playback")
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "perles_divines/storage")
             .setMethodCallHandler { call, result ->
                 when (call.method) {

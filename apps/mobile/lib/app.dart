@@ -77,7 +77,7 @@ class _PerlesAppState extends State<PerlesApp> {
     final audio = await AudioService.init<PerlesAudioHandler>(
       builder: () => PerlesAudioHandler(store, downloads),
       config: const AudioServiceConfig(
-        androidNotificationChannelId: 'fr.perlesdivines.playback',
+        androidNotificationChannelId: 'fr.perlesdivines.playback.visible',
         androidNotificationChannelName: 'Lecture audio',
         androidNotificationChannelDescription:
             'Lecture, pause et progression lorsqu’un audio est en cours.',
