@@ -436,7 +436,7 @@ class _CollapsedPlaybackBar extends StatelessWidget {
           border: Border(top: BorderSide(color: siteWhiteButtonBorder)),
         ),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(14, 0, 8, 2 + bottomInset),
+          padding: EdgeInsets.fromLTRB(8, 0, 14, 2 + bottomInset),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -447,24 +447,6 @@ class _CollapsedPlaybackBar extends StatelessWidget {
                 ),
               Row(
                 children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: onTitle,
-                      behavior: HitTestBehavior.opaque,
-                      child: Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: siteText(
-                          color: siteBlack,
-                          fontSize: 16,
-                          lineHeight: 20,
-                          weight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
                   _RoundButton(
                     buttonKey: playKey,
                     tooltip: playing ? 'Pause' : 'Lire',
@@ -475,6 +457,25 @@ class _CollapsedPlaybackBar extends StatelessWidget {
                       size: 26,
                     ),
                     diameter: 42,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: onTitle,
+                      behavior: HitTestBehavior.opaque,
+                      child: Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                        style: siteText(
+                          color: siteBlack,
+                          fontSize: 16,
+                          lineHeight: 20,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

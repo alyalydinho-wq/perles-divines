@@ -172,6 +172,10 @@ void main() {
       final collapsedHeight = tester.getSize(find.byType(AudioFace)).height;
       expect(find.text('Douâ 22 Mahé Ramzane'), findsOneWidget);
       expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
+      expect(
+        tester.getCenter(find.byIcon(Icons.pause_rounded)).dx,
+        lessThan(tester.getCenter(find.text('Douâ 22 Mahé Ramzane')).dx),
+      );
       expect(find.byIcon(Icons.keyboard_arrow_up_rounded), findsOneWidget);
       expect(find.byType(Slider), findsNothing);
       expect(find.byIcon(Icons.star_rounded), findsNothing);
