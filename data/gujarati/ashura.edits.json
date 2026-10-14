@@ -1,0 +1,22 @@
+[
+  {"from": "દુર કયો", "to": "દૂર ક્યા", "why": "ૂ lu ુ ; ક્યા lu કયો (page 162)"},
+  {"from": "કતલ કયો", "to": "કતલ ક્યા", "why": "ક્યા lu કયો (page 162, second occurrence)"},
+  {"from": "કરૂં છું", "to": "કરું છું", "why": "le point est un anusvāra ું, pas ૂ"},
+  {"from": "કરૂ છું", "to": "કરું છું", "why": "le point est un anusvāra ું, pas ૂ"},
+  {"from": "કરં છું", "to": "કરું છું", "why": "page 166 : કરું, le ુ a été perdu par l’OCR"},
+  {"from": "ઇઝઝતવાન", "to": "ઇઝ્ઝતવાન", "why": "conjonction ઝ્ઝ"},
+  {"from": "ઇઝઝત", "to": "ઇઝ્ઝત", "why": "conjonction ઝ્ઝ"},
+  {"from": "ઈઝઝત", "to": "ઈઝ્ઝત", "why": "conjonction ઝ્ઝ"},
+  {"from": "મોકો", "to": "મૌકો", "why": "matra ૌ lue ો"},
+  {"from": "તય્યાર કર્યા", "to": "તૈયાર ક્યા", "why": "તૈયાર (matra ૈ) et ક્યા, pas કર્યા"},
+  {"from": "તય્યાર", "to": "તૈયાર", "why": "matra ૈ sur ત"},
+  {"from": "અય અલાહ", "to": "અય અલ્લાહ", "why": "conjonction લ્લ manquante"},
+  {"from": "ઉબષ્દુલ્લાહ", "to": "ઉબયદુલ્લાહ", "why": "ય lu ષ"},
+  {"from": "અબુસુકીયાનની", "to": "અબુસુફીયાનની", "why": "ફ lu ક"},
+  {"from": "હિન્દા", "to": "હિંદા", "why": "anusvāra, pas la conjonction ન્દ"},
+  {"from": "અવ્લાદે", "to": "અવલાદે", "why": "pas de virāma entre વ et લ"},
+  {"from": "ઔલાદથી", "to": "ઓલાદથી", "why": "matra ો, pas ૌ"},
+  {"from": "ઔલાદ", "to": "ઓલાદ", "why": "matra ો, pas ૌ"},
+  {"from": "બાકો છે", "to": "બાકી છે", "why": "matra િ lue ો ; le texte brut a બાકી"},
+  {"from": "તે રૂહ ઉપર", "to": "તે રૂહો ઉપર", "why": "le brut « રહો » est રૂહો sans le ૂ"}
+]
