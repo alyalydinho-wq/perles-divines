@@ -501,6 +501,9 @@ class _TextScreenState extends State<TextScreen> {
           item.translation,
           item.references,
           translationVerses: item.kind == DevotionalKind.quran,
+          surahInfo: item.kind == DevotionalKind.quran
+              ? _surahInfo(item.translation)
+              : null,
         );
       case TextPane.transliteration:
         if (!item.hasTransliteration) {
@@ -653,6 +656,10 @@ class _TextScreenState extends State<TextScreen> {
         : verses
         ? transliterationSize
         : translationSize;
+    final infoCut = surahInfo == null ? null : _surahInfoStart(text);
+    final verseBody = infoCut == null
+        ? text
+        : text.substring(0, infoCut).trim();
     final translated = translationVerses ? _numberedTranslation(text) : null;
     return ColoredBox(
       color: siteCanvas,
@@ -741,19 +748,6 @@ class _TextScreenState extends State<TextScreen> {
             ] else if (translated != null) ...[
               for (final line in translated.lines)
                 _verseLine(line, proseSize, italic: false),
-              for (final paragraph in _paragraphs(translated.tail))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(
-                    paragraph,
-                    textAlign: TextAlign.start,
-                    style: siteText(
-                      color: siteBlack,
-                      fontSize: proseSize,
-                      lineHeight: proseSize * 1.4,
-                    ),
-                  ),
-                ),
             ] else if (text.isNotEmpty && verses) ...[
               for (final line in _verseLines(
                 widget.item.kind == DevotionalKind.quran
@@ -763,8 +757,8 @@ class _TextScreenState extends State<TextScreen> {
                 numbered: widget.item.kind == DevotionalKind.quran,
               ))
                 _verseLine(line, proseSize, italic: true),
-            ] else if (text.isNotEmpty) ...[
-              for (final paragraph in _paragraphs(text))
+            ] else if (verseBody.isNotEmpty) ...[
+              for (final paragraph in _paragraphs(verseBody))
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Text(

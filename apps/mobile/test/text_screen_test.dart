@@ -496,6 +496,29 @@ void main() {
     expect(find.text('La Mecque'), findsOneWidget);
     expect(find.text('Nombre de versets:'), findsOneWidget);
     expect(find.text('40 versets'), findsOneWidget);
+
+    tester
+        .state<ScrollableState>(find.byType(Scrollable).first)
+        .position
+        .jumpTo(0);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Infos sur la sourate').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Translation'));
+    await tester.pumpAndSettle();
+    expect(find.text('La Mecque'), findsNothing);
+    expect(
+      tester.getTopLeft(find.text('Infos sur la sourate')).dy,
+      lessThan(tester.getTopLeft(find.text('Traduction du verset.')).dy),
+    );
+    await tester.tap(find.text('Infos sur la sourate'));
+    await tester.pumpAndSettle();
+    expect(find.text('La Mecque'), findsOneWidget);
+    expect(
+      tester.getBottomLeft(find.text('40 versets')).dy,
+      lessThan(tester.getTopLeft(find.text('Traduction du verset.')).dy),
+    );
+    _expectInfoCard(tester, 'La Mecque');
   });
 
   testWidgets(
