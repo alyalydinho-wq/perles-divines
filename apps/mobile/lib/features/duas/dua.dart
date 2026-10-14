@@ -16,6 +16,7 @@ class DevotionalText {
     required this.arabic,
     required this.translation,
     required this.transliteration,
+    this.gujarati = '',
     required this.references,
     required this.audioIds,
     this.introduction = '',
@@ -29,6 +30,7 @@ class DevotionalText {
   final String arabic;
   final String translation;
   final String transliteration;
+  final String gujarati;
   final String introduction;
   final List<String> references;
   final List<String> audioIds;
@@ -37,6 +39,7 @@ class DevotionalText {
 
   bool get hasTranslation => translation.trim().isNotEmpty;
   bool get hasTransliteration => transliteration.trim().isNotEmpty;
+  bool get hasGujarati => gujarati.trim().isNotEmpty;
   bool get hasArabic => arabic.trim().isNotEmpty;
   bool get hasOriginalPage => pagePath.isNotEmpty;
 
@@ -56,6 +59,7 @@ class DevotionalText {
         arabic: json['arabic'] as String? ?? '',
         translation: json['translation'] as String? ?? '',
         transliteration: json['transliteration'] as String? ?? '',
+        gujarati: json['gujarati'] as String? ?? '',
         introduction: json['introduction'] as String? ?? '',
         references: List<String>.from(json['references'] as List? ?? const []),
         audioIds: List<String>.from(json['audioIds'] as List? ?? const []),

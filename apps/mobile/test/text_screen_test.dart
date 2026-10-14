@@ -498,6 +498,50 @@ RenderParagraph _paragraph(WidgetTester tester, String value) {
   return found!;
 }
 
+testWidgets('l’onglet Gujarati n’apparaît que s’il y a un texte', (
+  tester,
+) async {
+  const item = DevotionalText(
+    id: 'ashura',
+    kind: DevotionalKind.ziyarat,
+    title: 'Zyaarat-e-Âchourâ',
+    arabic: 'اَلسَّلاَمُ',
+    translation: 'Que la paix soit sur toi.',
+    transliteration: 'assalamu',
+    gujarati: 'સલામ આપ પર.\n\nખુદા લાનત કરે.',
+    references: [],
+    audioIds: [],
+  );
+  await tester.pumpWidget(
+    MaterialApp(
+      home: TextScreen(
+        item: item,
+        edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+        favorite: false,
+        onFavorite: () async {},
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+
+  expect(find.text('Gujarati'), findsOneWidget);
+  expect(find.text('સલામ આપ પર.'), findsNothing);
+
+  await tester.tap(find.text('Gujarati'));
+  await tester.pumpAndSettle();
+  expect(find.text('સલામ આપ પર.'), findsOneWidget);
+  expect(find.text('ખુદા લાનત કરે.'), findsOneWidget);
+  expect(find.text('Que la paix soit sur toi.'), findsNothing);
+
+  final gujarati = tester.widget<Text>(find.text('સલામ આપ પર.'));
+  expect(gujarati.style!.fontFamily, 'NotoSansGujarati');
+  expect(gujarati.style!.height, greaterThan(1.6));
+
+  await tester.tap(find.byTooltip('Taille du texte'));
+  await tester.pumpAndSettle();
+  expect(find.byTooltip('Agrandir le gujarati'), findsOneWidget);
+});
+
 void _expectInfoCard(WidgetTester tester, String value) {
   final text = tester.widget<Text>(find.text(value));
   expect(text.style!.fontStyle, isNot(FontStyle.italic));

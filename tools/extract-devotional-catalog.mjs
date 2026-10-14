@@ -61,7 +61,23 @@ export async function extractCatalog({
     }
   }
   await applyAudioAssociations(items, 'content/audio-associations.json');
+  await keepGujarati(items);
   return items;
+}
+
+async function keepGujarati(items) {
+  const catalogPath = 'apps/mobile/assets/content/catalog.json';
+  let previous;
+  try {
+    previous = JSON.parse(await fs.readFile(catalogPath, 'utf8'));
+  } catch {
+    return;
+  }
+  const byId = new Map(previous.map((item) => [item.id, item.gujarati || '']));
+  for (const item of items) {
+    const gujarati = byId.get(item.id);
+    if (gujarati) item.gujarati = gujarati;
+  }
 }
 
 const running = process.argv[1] && path.basename(process.argv[1]) === 'extract-devotional-catalog.mjs';

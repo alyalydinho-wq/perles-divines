@@ -14,7 +14,7 @@ import '../player/audio_controller.dart';
 import '../reader/content_install.dart';
 import '../reader/reader_screen.dart';
 
-enum TextPane { arabic, translation, transliteration }
+enum TextPane { arabic, translation, transliteration, gujarati }
 
 TextPane _openingPane(DevotionalText item) {
   if (item.hasArabic || item.hasOriginalPage) return TextPane.arabic;
@@ -73,6 +73,7 @@ class _TextScreenState extends State<TextScreen> {
   double arabicSize = 28;
   double translationSize = 18;
   double transliterationSize = 18;
+  double gujaratiSize = 18;
   bool _customSizes = false;
   bool _sizesOpen = false;
   late bool favorite = widget.favorite;
@@ -89,6 +90,9 @@ class _TextScreenState extends State<TextScreen> {
   void didUpdateWidget(TextScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.favorite != widget.favorite) favorite = widget.favorite;
+    if (!widget.item.hasGujarati && pane == TextPane.gujarati) {
+      pane = _openingPane(widget.item);
+    }
   }
 
   @override
@@ -121,6 +125,12 @@ class _TextScreenState extends State<TextScreen> {
         _proseMax,
         transliterationSize,
       );
+      gujaratiSize = _savedSize(
+        saved['gujarati'],
+        _proseMin,
+        _proseMax,
+        gujaratiSize,
+      );
     });
   }
 
@@ -133,12 +143,14 @@ class _TextScreenState extends State<TextScreen> {
     double? arabic,
     double? translation,
     double? transliteration,
+    double? gujarati,
   }) {
     setState(() {
       _customSizes = true;
       if (arabic != null) arabicSize = arabic;
       if (translation != null) translationSize = translation;
       if (transliteration != null) transliterationSize = transliteration;
+      if (gujarati != null) gujaratiSize = gujarati;
     });
     final store = widget.store;
     if (store == null) return;
@@ -147,6 +159,7 @@ class _TextScreenState extends State<TextScreen> {
         'arabic': arabicSize,
         'translation': translationSize,
         'transliteration': transliterationSize,
+        'gujarati': gujaratiSize,
       }),
     );
   }
@@ -176,6 +189,12 @@ class _TextScreenState extends State<TextScreen> {
           Expanded(child: _pane(item)),
           SiteTextTabs(
             selected: pane.index,
+            labels: [
+              'Arabic',
+              'Translation',
+              'Transliteration',
+              if (item.hasGujarati) 'Gujarati',
+            ],
             onSelected: (index) =>
                 setState(() => pane = TextPane.values[index]),
           ),
@@ -301,6 +320,18 @@ class _TextScreenState extends State<TextScreen> {
                 active: pane == TextPane.transliteration,
                 onChanged: (value) => _setSizes(transliteration: value),
               ),
+              if (widget.item.hasGujarati) ...[
+                const SizedBox(width: 6),
+                _stepper(
+                  label: 'Gujarati',
+                  value: gujaratiSize,
+                  min: _proseMin,
+                  max: _proseMax,
+                  step: 1,
+                  active: pane == TextPane.gujarati,
+                  onChanged: (value) => _setSizes(gujarati: value),
+                ),
+              ],
             ],
           ),
         ),
@@ -320,6 +351,7 @@ class _TextScreenState extends State<TextScreen> {
     final target = switch (label) {
       'Arabe' => 'l’arabe',
       'Traduction' => 'la traduction',
+      'Gujarati' => 'le gujarati',
       _ => 'la translittération',
     };
     return Expanded(
@@ -479,6 +511,16 @@ class _TextScreenState extends State<TextScreen> {
           const [],
           verses: true,
         );
+      case TextPane.gujarati:
+        if (!item.hasGujarati) {
+          return _empty('Gujarati non disponible');
+        }
+        return _reading(
+          '',
+          item.gujarati,
+          const [],
+          gujarati: true,
+        );
     }
   }
 
@@ -505,6 +547,19 @@ class _TextScreenState extends State<TextScreen> {
     }
     return paragraphs;
   }
+
+  TextStyle _gujaratiStyle(double size) => TextStyle(
+    fontFamily: 'NotoSansGujarati',
+    fontFamilyFallback: const [
+      'Noto Sans Gujarati',
+      'Noto Sans',
+      ...siteSansFallbacks,
+    ],
+    color: siteBlack,
+    fontSize: size,
+    height: 1.85,
+    fontWeight: FontWeight.w400,
+  );
 
   TextStyle _arabicStyle() => const TextStyle(
     fontFamily: 'Indopak',
@@ -584,6 +639,7 @@ class _TextScreenState extends State<TextScreen> {
     List<String> references, {
     bool rtl = false,
     bool verses = false,
+    bool gujarati = false,
     String? surahInfo,
   }) {
     final text = body.trim();
@@ -593,7 +649,11 @@ class _TextScreenState extends State<TextScreen> {
         'Ce passage n’est pas en texte dans la page source. Ouvrez l’onglet Arabic pour la version originale.',
       );
     }
-    final proseSize = verses ? transliterationSize : translationSize;
+    final proseSize = gujarati
+        ? gujaratiSize
+        : verses
+        ? transliterationSize
+        : translationSize;
     return ColoredBox(
       color: siteCanvas,
       child: SelectionArea(
@@ -665,6 +725,17 @@ class _TextScreenState extends State<TextScreen> {
                               lineHeight: proseSize * 1.4,
                               weight: FontWeight.w700,
                             ),
+                    ),
+                  ),
+            ] else if (text.isNotEmpty && gujarati) ...[
+              for (final paragraph in text.split(RegExp(r'\n{2,}')))
+                if (paragraph.trim().isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Text(
+                      paragraph.trim(),
+                      textAlign: TextAlign.start,
+                      style: _gujaratiStyle(proseSize),
                     ),
                   ),
             ] else if (text.isNotEmpty && verses) ...[
@@ -743,7 +814,9 @@ class _TextScreenState extends State<TextScreen> {
 
   Future<void> _share() async {
     final item = widget.item;
-    final body = item.hasTranslation
+    final body = pane == TextPane.gujarati && item.hasGujarati
+        ? item.gujarati
+        : item.hasTranslation
         ? item.translation
         : item.hasTransliteration
         ? item.transliteration

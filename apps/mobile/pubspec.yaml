@@ -43,3 +43,6 @@ flutter:
     - family: Indopak
       fonts:
         - asset: assets/fonts/indopak.ttf
+    - family: NotoSansGujarati
+      fonts:
+        - asset: assets/fonts/NotoSansGujarati-Regular.ttf

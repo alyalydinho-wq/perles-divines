@@ -66,6 +66,24 @@ class AboutScreen extends StatelessWidget {
           'www.thaqalayn.eu\n'
           'www.ziaraat.com',
         ),
+        const SiteGap(),
+        const SiteBlackText(
+          'Le gujarati de Ziyârat Âchourâ est repris du livre',
+        ),
+        Text(
+          '« જન્નતની ચાવીઓ »',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: 'NotoSansGujarati',
+            fontFamilyFallback: ['Noto Sans Gujarati', 'Noto Sans'],
+            color: siteBlack,
+            fontSize: 18,
+            height: 1.8,
+          ),
+        ),
+        const SiteBlackText(
+          'compilation de Maulana Rizwanali Palsaniya.',
+        ),
         const SiteGap(height: 16),
         const SiteBlackText(
           'Que leurs auteurs\n'

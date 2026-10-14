@@ -34,6 +34,7 @@ class LocalDevotionalCatalog {
         item.arabic,
         item.translation,
         item.transliteration,
+        item.gujarati,
         item.introduction,
         ...item.references,
       ].join(' '));
@@ -104,7 +105,7 @@ String _searchable(String value) {
   text = text.replaceAll('ou', 'u');
   text = text.replaceAll('aa', 'a');
   return text
-      .replaceAll(RegExp(r'[^a-z0-9\u0600-\u06ff]+', unicode: true), ' ')
+      .replaceAll(RegExp(r'[^a-z0-9\u0600-\u06ff\u0A80-\u0AFF]+', unicode: true), ' ')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 }

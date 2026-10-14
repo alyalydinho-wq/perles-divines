@@ -601,15 +601,22 @@ class SiteTextTabs extends StatelessWidget {
                       color: i == selected ? null : siteCanvas,
                     ),
                     child: Center(
-                      child: Text(
-                        labels[i],
-                        style: siteText(
-                          color: i == selected ? siteButtonText : siteBlack,
-                          fontSize: 13,
-                          lineHeight: 16,
-                          weight: i == selected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            labels[i],
+                            maxLines: 1,
+                            style: siteText(
+                              color: i == selected ? siteButtonText : siteBlack,
+                              fontSize: labels.length > 3 ? 12 : 13,
+                              lineHeight: 16,
+                              weight: i == selected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
+                          ),
                         ),
                       ),
                     ),
