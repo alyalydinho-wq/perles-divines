@@ -68,7 +68,7 @@ class AboutScreen extends StatelessWidget {
         ),
         const SiteGap(),
         const SiteBlackText(
-          'Le gujarati de Ziyârat Âchourâ est repris du livre',
+          'Le gujarati est repris du livre',
         ),
         Text(
           '« જન્નતની ચાવીઓ »',
