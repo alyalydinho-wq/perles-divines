@@ -4,6 +4,39 @@ import 'package:flutter/services.dart';
 
 import 'dua.dart';
 
+final _arabicDiacritics = RegExp(r'[\u064B-\u065F\u0670\u06D6-\u06ED]');
+final _alefVariants = RegExp('[أإآٱ]');
+final _apostrophes = RegExp("[’'`´ʿʾ]");
+final _notSearchable = RegExp(
+  r'[^a-z0-9\u0600-\u06ff\u0A80-\u0AFF]+',
+  unicode: true,
+);
+final _whitespace = RegExp(r'\s+');
+
+const _folds = <String, String>{
+  'àáâäãåāăą': 'a',
+  'çćč': 'c',
+  'ďđḍ': 'd',
+  'èéêëēĕėę': 'e',
+  'ìíîïī': 'i',
+  'ñń': 'n',
+  'òóôöõō': 'o',
+  'ùúûüūŭů': 'u',
+  'ýÿ': 'y',
+  'ḥħ': 'h',
+  'ṣš': 's',
+  'ṭþ': 't',
+  'ẓżž': 'z',
+  'ġğ': 'g',
+};
+
+final _foldPatterns = [
+  for (final entry in _folds.entries)
+    MapEntry(RegExp('[${entry.key}]'), entry.value),
+];
+
+final _searchDocs = Expando<List<_SearchDoc>>();
+
 class LocalDevotionalCatalog {
   const LocalDevotionalCatalog(this.items);
   final List<DevotionalText> items;
@@ -12,10 +45,12 @@ class LocalDevotionalCatalog {
     final rows = jsonDecode(
       await rootBundle.loadString('assets/content/catalog.json'),
     ) as List<dynamic>;
-    return LocalDevotionalCatalog([
+    final catalog = LocalDevotionalCatalog([
       for (final row in rows)
         DevotionalText.fromJson(row as Map<String, dynamic>),
     ]);
+    _docsOf(catalog);
+    return catalog;
   }
 
   List<DevotionalText> get duas => ofKind(DevotionalKind.dua);
@@ -24,12 +59,57 @@ class LocalDevotionalCatalog {
       items.where((item) => item.kind == kind).toList();
 
   List<DevotionalText> search(String query, {DevotionalKind? kind}) {
-    final words = _searchable(
-      query,
-    ).split(' ').where((word) => word.isNotEmpty);
-    return items.where((item) {
-      if (kind != null && item.kind != kind) return false;
-      final value = _searchable([
+    final words = _searchable(query)
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .toList();
+    // Une ou deux lettres se trouvent dans presque chaque prière.
+    // On les cherche dans le titre et la translittération, pas dans le corps.
+    final inBody = words.isNotEmpty && words.every((word) => word.length >= 3);
+    final titles = <DevotionalText>[];
+    final others = <DevotionalText>[];
+    for (final doc in _docsOf(this)) {
+      if (kind != null && doc.item.kind != kind) continue;
+      if (words.isEmpty) {
+        others.add(doc.item);
+        continue;
+      }
+      if (!words.every((word) => _wordMatches(word, doc, inBody))) continue;
+      if (words.every((word) => doc.title.contains(word))) {
+        titles.add(doc.item);
+      } else {
+        others.add(doc.item);
+      }
+    }
+    return [...titles, ...others];
+  }
+}
+
+List<_SearchDoc> _docsOf(LocalDevotionalCatalog catalog) =>
+    _searchDocs[catalog] ??= [
+      for (final item in catalog.items) _SearchDoc.from(item),
+    ];
+
+class _SearchDoc {
+  const _SearchDoc({
+    required this.item,
+    required this.haystack,
+    required this.heading,
+    required this.title,
+    required this.tokensByLength,
+  });
+
+  final DevotionalText item;
+  final String haystack;
+  final String heading;
+  final String title;
+  final Map<int, List<String>> tokensByLength;
+
+  factory _SearchDoc.from(DevotionalText item) {
+    final title = _searchable(item.title);
+    final heading = _searchable('${item.title} ${item.transliteration}');
+    final haystack = _searchable(
+      [
         item.title,
         item.arabic,
         item.translation,
@@ -37,19 +117,36 @@ class LocalDevotionalCatalog {
         item.gujarati,
         item.introduction,
         ...item.references,
-      ].join(' '));
-      return words.every((word) => _wordMatches(word, value));
-    }).toList();
+      ].join(' '),
+    );
+    final tokensByLength = <int, List<String>>{};
+    final seen = <String>{};
+    for (final token in heading.split(' ')) {
+      if (token.length < 3 || !seen.add(token)) continue;
+      (tokensByLength[token.length] ??= []).add(token);
+    }
+    return _SearchDoc(
+      item: item,
+      haystack: haystack,
+      heading: heading,
+      title: title,
+      tokensByLength: tokensByLength,
+    );
   }
 }
 
-bool _wordMatches(String word, String haystack) {
-  if (haystack.contains(word)) return true;
+bool _wordMatches(String word, _SearchDoc doc, bool inBody) {
+  if ((inBody ? doc.haystack : doc.heading).contains(word)) return true;
   if (word.length < 4) return false;
   final maxDistance = word.length >= 6 ? 2 : 1;
-  for (final token in haystack.split(' ')) {
-    if ((token.length - word.length).abs() > maxDistance) continue;
-    if (_distance(word, token) <= maxDistance) return true;
+  final shortest = word.length - maxDistance;
+  final longest = word.length + maxDistance;
+  for (var length = shortest; length <= longest; length++) {
+    final tokens = doc.tokensByLength[length];
+    if (tokens == null) continue;
+    for (final token in tokens) {
+      if (_distance(word, token) <= maxDistance) return true;
+    }
   }
   return false;
 }
@@ -77,35 +174,19 @@ int _distance(String a, String b) {
 
 String _searchable(String value) {
   var text = value.toLowerCase();
-  text = text.replaceAll(RegExp(r'[\u064B-\u065F\u0670\u06D6-\u06ED]'), '');
-  text = text.replaceAll(RegExp('[أإآٱ]'), 'ا');
+  text = text.replaceAll(_arabicDiacritics, '');
+  text = text.replaceAll(_alefVariants, 'ا');
   text = text.replaceAll('ة', 'ه');
   text = text.replaceAll('ى', 'ي');
-  const folds = <String, String>{
-    'àáâäãåāăą': 'a',
-    'çćč': 'c',
-    'ďđḍ': 'd',
-    'èéêëēĕėę': 'e',
-    'ìíîïī': 'i',
-    'ñń': 'n',
-    'òóôöõō': 'o',
-    'ùúûüūŭů': 'u',
-    'ýÿ': 'y',
-    'ḥħ': 'h',
-    'ṣš': 's',
-    'ṭþ': 't',
-    'ẓżž': 'z',
-    'ġğ': 'g',
-  };
-  for (final entry in folds.entries) {
-    text = text.replaceAll(RegExp('[${entry.key}]'), entry.value);
+  for (final entry in _foldPatterns) {
+    text = text.replaceAll(entry.key, entry.value);
   }
-  text = text.replaceAll(RegExp("[’'`´ʿʾ]"), '');
+  text = text.replaceAll(_apostrophes, '');
   text = text.replaceAll('ch', 'sh');
   text = text.replaceAll('ou', 'u');
   text = text.replaceAll('aa', 'a');
   return text
-      .replaceAll(RegExp(r'[^a-z0-9\u0600-\u06ff\u0A80-\u0AFF]+', unicode: true), ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
+      .replaceAll(_notSearchable, ' ')
+      .replaceAll(_whitespace, ' ')
       .trim();
 }

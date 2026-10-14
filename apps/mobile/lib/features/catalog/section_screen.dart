@@ -35,7 +35,7 @@ class _SectionScreenState extends State<SectionScreen> {
   @override
   Widget build(BuildContext context) {
     final catalog = _catalog(context);
-    final searching = query.trim().isNotEmpty;
+    final searching = query.trim().length >= 2;
     final items = widget.section.itemsOf(catalog?.items ?? const []);
     final filtered = searching
         ? (catalog?.search(query) ?? const <DevotionalText>[])
@@ -45,16 +45,22 @@ class _SectionScreenState extends State<SectionScreen> {
 
     return SitePage(
       header: [
-        if (!searching) ...[
-          SiteLogo(onTap: () => context.go('/')),
-          const SiteGap(height: 12),
-          Text(
-            widget.section.label,
-            textAlign: TextAlign.center,
-            style: siteHeading,
+        Visibility(
+          visible: !searching,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SiteLogo(onTap: () => context.go('/')),
+              const SiteGap(height: 12),
+              Text(
+                widget.section.label,
+                textAlign: TextAlign.center,
+                style: siteHeading,
+              ),
+              const SiteGap(height: 12),
+            ],
           ),
-          const SiteGap(height: 12),
-        ],
+        ),
         SiteSearchField(
           controller: search,
           hint: 'Rechercher dans ${widget.section.label}',

@@ -191,6 +191,19 @@ void main() {
       lessThan(tester.getTopLeft(find.byType(SiteBismillah)).dy),
     );
 
+    await tester.showKeyboard(find.byKey(const Key('site-search')));
+    await tester.enterText(find.byKey(const Key('site-search')), 'K');
+    await _settle(tester);
+    expect(find.text('K'), findsOneWidget);
+    expect(find.text('Doua'), findsOneWidget);
+    expect(find.text('Namaz'), findsOneWidget);
+    expect(tester.binding.focusManager.primaryFocus?.hasPrimaryFocus, isTrue);
+
+    await tester.enterText(find.byKey(const Key('site-search')), 'Ku');
+    await _settle(tester);
+    expect(find.text('Doua-e-Kumayl'), findsOneWidget);
+    expect(find.text('Namaz'), findsNothing);
+
     await tester.enterText(find.byKey(const Key('site-search')), 'Kumayl');
     await _settle(tester);
     expect(find.text('Doua-e-Kumayl'), findsOneWidget);
@@ -235,10 +248,7 @@ void main() {
       final cleared = tester.widgetList<Icon>(find.byIcon(Icons.favorite));
       expect(
         cleared.map((icon) => (icon.color, icon.size)).toList(),
-        containsAll([
-          (const Color(0xffffffff), 24.0),
-          (siteGreen, 18.0),
-        ]),
+        containsAll([(const Color(0xffffffff), 24.0), (siteGreen, 18.0)]),
       );
     },
   );

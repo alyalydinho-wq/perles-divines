@@ -60,13 +60,34 @@ void main() {
       audioIds: [],
     );
     const spelled = LocalDevotionalCatalog([dua, ashura, kumayl]);
-    expect(spelled.search('dua'), [dua, kumayl]);
-    expect(spelled.search('doua'), [dua, kumayl]);
+    expect(spelled.search('dua'), [kumayl, dua]);
+    expect(spelled.search('doua'), [kumayl, dua]);
     expect(spelled.search('ashura'), [ashura]);
     expect(spelled.search('achoura'), [ashura]);
     expect(spelled.search('azomal'), [ashura]);
     expect(spelled.search('دعاء'), [dua, ashura]);
     expect(spelled.search('kumail'), [kumayl]);
+  });
+
+  test('une saisie courte ne balaie pas le corps du texte', () {
+    final buried = DevotionalText(
+      id: 'buried',
+      kind: DevotionalKind.dua,
+      title: 'Titre',
+      arabic: '',
+      translation: 'alphabet ${'paragraphe ' * 2000}',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+    );
+    final wide = LocalDevotionalCatalog([buried]);
+    expect(wide.search('a'), isEmpty);
+    expect(wide.search('ti'), [buried]);
+    final watch = Stopwatch()..start();
+    expect(wide.search('alphabet'), [buried]);
+    expect(wide.search('zzzz'), isEmpty);
+    watch.stop();
+    expect(watch.elapsedMilliseconds, lessThan(400));
   });
 
   test('le filtre de catégorie isole ziyārāt et duʿā', () {

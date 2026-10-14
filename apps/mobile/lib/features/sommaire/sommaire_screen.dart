@@ -32,19 +32,25 @@ class _SommaireScreenState extends State<SommaireScreen> {
   @override
   Widget build(BuildContext context) {
     final catalog = _catalog(context);
-    final searching = query.trim().isNotEmpty;
+    final searching = query.trim().length >= 2;
     final results = searching
         ? (catalog?.search(query) ?? const <DevotionalText>[])
         : const <DevotionalText>[];
 
     return SitePage(
       header: [
-        if (!searching) ...[
-          SiteLogo(onTap: () => context.go('/')),
-          const SiteGap(height: 12),
-          const SiteBlackText('Version $appVersion', small: true),
-          const SiteGap(height: 12),
-        ],
+        Visibility(
+          visible: !searching,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SiteLogo(onTap: () => context.go('/')),
+              const SiteGap(height: 12),
+              const SiteBlackText('Version $appVersion', small: true),
+              const SiteGap(height: 12),
+            ],
+          ),
+        ),
         SiteSearchField(
           controller: search,
           onChanged: (value) => setState(() => query = value),
