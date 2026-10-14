@@ -22,7 +22,7 @@ const ARABIC_FIELD = 'text_indopak';
 
 // Titre exact dans le catalogue -> sourate (et verset unique éventuel).
 export const QURAN_MAPPING = [
-  {title: 'Ayat al-Kursî', quran: 2, verse: 255},
+  {title: 'Ayat al-Kursî', quran: 2, verses: [255, 256, 257]},
   {title: 'Sourate al-Fâtihah (1)', quran: 1},
   {title: "Sourate al-'Ankabût (29)", quran: 29},
   {title: 'Sourate al-Rûm (30)', quran: 30},
@@ -118,12 +118,20 @@ export async function loadQuran(entry) {
     segments.push({arabic: fatihah.arabic.get(1), transliteration: fatihah.verses.get(1)});
     segments.push({break: true});
   }
-  const numbers = entry.verse ? [entry.verse] : [...chapter.arabic.keys()].sort((a, b) => a - b);
+  const numbers = entry.verses
+    ? [...entry.verses]
+    : entry.verse
+      ? [entry.verse]
+      : [...chapter.arabic.keys()].sort((a, b) => a - b);
   for (const n of numbers) {
     const arabic = chapter.arabic.get(n);
     if (!arabic) throw new Error(`sourate ${entry.quran} : verset ${n} introuvable`);
     segments.push({arabic: `${arabic} ${ayahNumber(n)}`, transliteration: chapter.verses.get(n) || ''});
   }
-  const label = entry.verse ? `${entry.quran}:${entry.verse}` : `sourate ${entry.quran}`;
+  const label = entry.verses
+    ? `${entry.quran}:${entry.verses[0]}-${entry.verses[entry.verses.length - 1]}`
+    : entry.verse
+      ? `${entry.quran}:${entry.verse}`
+      : `sourate ${entry.quran}`;
   return {title: chapter.name, segments, sourceTitle: `${chapter.name} (${label})`, verses: numbers.length};
 }

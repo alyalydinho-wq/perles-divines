@@ -461,7 +461,9 @@ class _TextScreenState extends State<TextScreen> {
     await downloads.enqueue(widget.tracks, individual: true);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Téléchargement lancé pour l’écoute hors ligne.')),
+      const SnackBar(
+        content: Text('Téléchargement lancé pour l’écoute hors ligne.'),
+      ),
     );
   }
 
@@ -498,6 +500,7 @@ class _TextScreenState extends State<TextScreen> {
           _hadith(item.introduction),
           item.translation,
           item.references,
+          translationVerses: item.kind == DevotionalKind.quran,
         );
       case TextPane.transliteration:
         if (!item.hasTransliteration) {
@@ -515,12 +518,7 @@ class _TextScreenState extends State<TextScreen> {
         if (!item.hasGujarati) {
           return _empty('Gujarati non disponible');
         }
-        return _reading(
-          '',
-          item.gujarati,
-          const [],
-          gujarati: true,
-        );
+        return _reading('', item.gujarati, const [], gujarati: true);
     }
   }
 
@@ -639,6 +637,7 @@ class _TextScreenState extends State<TextScreen> {
     List<String> references, {
     bool rtl = false,
     bool verses = false,
+    bool translationVerses = false,
     bool gujarati = false,
     String? surahInfo,
   }) {
@@ -654,6 +653,7 @@ class _TextScreenState extends State<TextScreen> {
         : verses
         ? transliterationSize
         : translationSize;
+    final translated = translationVerses ? _numberedTranslation(text) : null;
     return ColoredBox(
       color: siteCanvas,
       child: SelectionArea(
@@ -738,6 +738,22 @@ class _TextScreenState extends State<TextScreen> {
                       style: _gujaratiStyle(proseSize),
                     ),
                   ),
+            ] else if (translated != null) ...[
+              for (final line in translated.lines)
+                _verseLine(line, proseSize, italic: false),
+              for (final paragraph in _paragraphs(translated.tail))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    paragraph,
+                    textAlign: TextAlign.start,
+                    style: siteText(
+                      color: siteBlack,
+                      fontSize: proseSize,
+                      lineHeight: proseSize * 1.4,
+                    ),
+                  ),
+                ),
             ] else if (text.isNotEmpty && verses) ...[
               for (final line in _verseLines(
                 widget.item.kind == DevotionalKind.quran
@@ -746,7 +762,7 @@ class _TextScreenState extends State<TextScreen> {
                 text,
                 numbered: widget.item.kind == DevotionalKind.quran,
               ))
-                _transliterationLine(line, proseSize),
+                _verseLine(line, proseSize, italic: true),
             ] else if (text.isNotEmpty) ...[
               for (final paragraph in _paragraphs(text))
                 Padding(
@@ -779,35 +795,35 @@ class _TextScreenState extends State<TextScreen> {
     );
   }
 
-  Widget _transliterationLine(_Line line, double size) {
+  Widget _verseLine(_Line line, double size, {required bool italic}) {
     final style = siteText(
       color: siteBlack,
       fontSize: size,
       lineHeight: size * 1.35,
-    ).copyWith(fontStyle: FontStyle.italic);
+    ).copyWith(fontStyle: italic ? FontStyle.italic : FontStyle.normal);
+    final number = line.number;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (line.number != null)
-            SizedBox(
-              width: 32,
-              child: Text(
-                '${line.number}',
-                textAlign: TextAlign.center,
-                style: style.copyWith(
-                  color: _ayahGold,
-                  fontStyle: FontStyle.normal,
-                  fontWeight: FontWeight.w700,
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Text.rich(
+        TextSpan(
+          style: style,
+          children: [
+            TextSpan(text: line.text),
+            if (number != null)
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 6),
+                  child: _AyahBadge(
+                    number: number,
+                    diameter: _badgeSize(size, number),
+                    western: true,
+                  ),
                 ),
               ),
-            ),
-          Expanded(
-            child: Text(line.text, textAlign: TextAlign.center, style: style),
-          ),
-          if (line.number != null) const SizedBox(width: 32),
-        ],
+          ],
+        ),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -835,12 +851,21 @@ class _Line {
 
 String? _surahInfo(String translation) {
   final text = translation.trim();
+  final start = _surahInfoStart(text);
+  if (start == null) return null;
   const marker = 'Infos sur la sourate';
-  final marked = text.indexOf(marker);
-  if (marked >= 0) {
-    final body = text.substring(marked + marker.length).trim();
+  if (text.startsWith(marker, start)) {
+    final body = text.substring(start + marker.length).trim();
     return body.isEmpty ? null : body;
   }
+  final body = text.substring(start).trim();
+  return body.isEmpty ? null : body;
+}
+
+int? _surahInfoStart(String text) {
+  const marker = 'Infos sur la sourate';
+  final marked = text.indexOf(marker);
+  if (marked >= 0) return marked;
   const title = 'La traduction du titre de la Sourate';
   final alt = text.indexOf(title);
   if (alt <= 0) return null;
@@ -848,13 +873,43 @@ String? _surahInfo(String translation) {
   final previous = text.substring(0, alt).trimRight().split(RegExp(r'\n{2,}'));
   if (previous.isNotEmpty) {
     final note = previous.last.trim();
-    if (note.isNotEmpty && !RegExp(r'(^|\s)\d{1,3}\.\s').hasMatch(note)) {
+    if (note.isNotEmpty && !RegExp(r'(^|\s)\d{1,3}\.\s*').hasMatch(note)) {
       final at = text.lastIndexOf(note, alt);
       if (at >= 0) start = at;
     }
   }
-  final body = text.substring(start).trim();
-  return body.isEmpty ? null : body;
+  return start;
+}
+
+class _ParsedTranslation {
+  const _ParsedTranslation(this.lines, this.tail);
+  final List<_Line> lines;
+  final String tail;
+}
+
+_ParsedTranslation? _numberedTranslation(String body) {
+  final text = body.trim();
+  if (text.isEmpty) return null;
+  final cut = _surahInfoStart(text);
+  final head = cut == null ? text : text.substring(0, cut).trim();
+  final tail = cut == null ? '' : text.substring(cut).trim();
+  final matches = RegExp(r'(^|\s)(\d{1,3})\.\s*').allMatches(head).toList();
+  if (matches.isEmpty) return null;
+  final numbers = matches.map((match) => int.parse(match.group(2)!)).toList();
+  for (var i = 1; i < numbers.length; i++) {
+    if (numbers[i] != numbers[i - 1] + 1) return null;
+  }
+  final lines = <_Line>[];
+  final preamble = head.substring(0, matches.first.start).trim();
+  if (preamble.isNotEmpty) lines.add(_Line(preamble));
+  for (var i = 0; i < matches.length; i++) {
+    final start = matches[i].end;
+    final end = i + 1 < matches.length ? matches[i + 1].start : head.length;
+    final verse = head.substring(start, end).trim();
+    if (verse.isEmpty) continue;
+    lines.add(_Line(verse, numbers[i]));
+  }
+  return lines.isEmpty ? null : _ParsedTranslation(lines, tail);
 }
 
 class _InfoCard extends StatelessWidget {
@@ -916,9 +971,7 @@ class _InfoCard extends StatelessWidget {
     final split = block.indexOf(':');
     final lineBreak = block.indexOf('\n');
     final labelEndsHere =
-        split > 0 &&
-        split < 90 &&
-        (lineBreak < 0 || split < lineBreak);
+        split > 0 && split < 90 && (lineBreak < 0 || split < lineBreak);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: labelEndsHere
@@ -979,6 +1032,16 @@ List<_Line> _verseLines(String arabic, String body, {required bool numbered}) {
     for (var i = 0; i < lines.length; i++)
       _Line(lines[i], i < numbers.length ? numbers[i] : null),
   ];
+}
+
+double _badgeSize(double textSize, int number) {
+  final digits = '$number'.length;
+  final factor = digits >= 3
+      ? 1.9
+      : digits == 2
+      ? 1.45
+      : 1.2;
+  return (textSize * factor).clamp(24.0, 64.0);
 }
 
 int? _digitsToInt(String value) {
@@ -1056,7 +1119,11 @@ class _AyahCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final diameter = ((style.fontSize ?? 28) * 0.9).clamp(26.0, 42.0);
+    final digits = line.number == null ? 1 : '${line.number}'.length;
+    final diameter = ((style.fontSize ?? 28) * (digits >= 3 ? 1.4 : 0.9)).clamp(
+      26.0,
+      64.0,
+    );
     final ruled = _ruled(style);
     return Text.rich(
       TextSpan(
@@ -1079,21 +1146,46 @@ class _AyahCell extends StatelessWidget {
 }
 
 class _AyahBadge extends StatelessWidget {
-  const _AyahBadge({required this.number, required this.diameter});
+  const _AyahBadge({
+    required this.number,
+    required this.diameter,
+    this.western = false,
+  });
 
   final int number;
   final double diameter;
+  final bool western;
 
   @override
   Widget build(BuildContext context) {
-    final label = _indoDigits(number);
+    final label = western ? '$number' : _indoDigits(number);
+    final digits = '$number'.length;
     final fontSize =
         diameter *
-        (label.length >= 3
-            ? 0.62
-            : label.length == 2
-            ? 0.78
-            : 0.92);
+        (digits >= 3
+            ? 0.34
+            : digits == 2
+            ? (western ? 0.46 : 0.78)
+            : (western ? 0.58 : 0.92));
+    final style = western
+        ? siteText(
+            color: _ayahGold,
+            fontSize: fontSize,
+            lineHeight: fontSize,
+            weight: FontWeight.w700,
+          )
+        : TextStyle(
+            fontFamily: 'Indopak',
+            fontFamilyFallback: const [
+              'Noto Naskh Arabic',
+              'Noto Sans Arabic',
+              'Traditional Arabic',
+              'Arial',
+            ],
+            color: _ayahGold,
+            fontSize: fontSize,
+            height: 1,
+          );
     return Semantics(
       label: 'Verset $number',
       child: SizedBox(
@@ -1106,20 +1198,10 @@ class _AyahBadge extends StatelessWidget {
               label,
               maxLines: 1,
               softWrap: false,
+              overflow: TextOverflow.visible,
               textDirection: TextDirection.ltr,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Indopak',
-                fontFamilyFallback: const [
-                  'Noto Naskh Arabic',
-                  'Noto Sans Arabic',
-                  'Traditional Arabic',
-                  'Arial',
-                ],
-                color: _ayahGold,
-                fontSize: fontSize,
-                height: 1,
-              ),
+              style: style,
             ),
           ),
         ),

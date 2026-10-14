@@ -102,46 +102,49 @@ void main() {
     );
   });
 
-  testWidgets('le cœur devient blanc quand le favori arrive après l’ouverture', (
-    tester,
-  ) async {
-    const item = DevotionalText(
-      id: 'ghofaylah',
-      kind: DevotionalKind.namaz,
-      title: 'Namaz-e-Ghofaylah',
-      arabic: 'بِسْمِ اللّٰهِ',
-      translation: '',
-      transliteration: '',
-      references: [],
-      audioIds: [],
-    );
-    var favorite = false;
-    Future<void> show() {
-      return tester.pumpWidget(
-        MaterialApp(
-          home: TextScreen(
-            item: item,
-            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
-            favorite: favorite,
-            onFavorite: () async {},
-          ),
-        ),
+  testWidgets(
+    'le cœur devient blanc quand le favori arrive après l’ouverture',
+    (tester) async {
+      const item = DevotionalText(
+        id: 'ghofaylah',
+        kind: DevotionalKind.namaz,
+        title: 'Namaz-e-Ghofaylah',
+        arabic: 'بِسْمِ اللّٰهِ',
+        translation: '',
+        transliteration: '',
+        references: [],
+        audioIds: [],
       );
-    }
+      var favorite = false;
+      Future<void> show() {
+        return tester.pumpWidget(
+          MaterialApp(
+            home: TextScreen(
+              item: item,
+              edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+              favorite: favorite,
+              onFavorite: () async {},
+            ),
+          ),
+        );
+      }
 
-    await show();
-    await tester.pump();
-    expect(find.byTooltip('Ajouter aux favoris'), findsOneWidget);
+      await show();
+      await tester.pump();
+      expect(find.byTooltip('Ajouter aux favoris'), findsOneWidget);
 
-    favorite = true;
-    await show();
-    await tester.pump();
-    expect(find.byTooltip('Retirer des favoris'), findsOneWidget);
-    expect(
-      tester.widgetList<Icon>(find.byIcon(Icons.favorite)).map((icon) => icon.color),
-      [const Color(0xffffffff)],
-    );
-  });
+      favorite = true;
+      await show();
+      await tester.pump();
+      expect(find.byTooltip('Retirer des favoris'), findsOneWidget);
+      expect(
+        tester
+            .widgetList<Icon>(find.byIcon(Icons.favorite))
+            .map((icon) => icon.color),
+        [const Color(0xffffffff)],
+      );
+    },
+  );
 
   testWidgets(
     'les onglets ne laissent pas de bande blanche au-dessus du lecteur',
@@ -261,10 +264,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Agrandir l’arabe'));
       await tester.pump();
-      expect(
-        tester.widget<Text>(_verse(verse1)).style!.fontSize,
-        before! + 2,
-      );
+      expect(tester.widget<Text>(_verse(verse1)).style!.fontSize, before! + 2);
 
       await tester.tap(find.byTooltip('Agrandir la traduction'));
       await tester.pump();
@@ -282,7 +282,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('1'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
-      expect(find.text('Izaa waqa'), findsOneWidget);
+      expect(_verse('Izaa waqa'), findsOneWidget);
 
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 200)),
@@ -310,6 +310,64 @@ void main() {
       expect(tester.widget<Text>(_verse(verse1)).style!.fontSize, 30);
     },
   );
+
+  testWidgets('un numéro à trois chiffres reste entier à la fin du verset', (
+    tester,
+  ) async {
+    const item = DevotionalText(
+      id: 'kursi',
+      kind: DevotionalKind.quran,
+      title: 'Ayat al-Kursî',
+      arabic: 'بِسۡمِ اللهِ\n\nاللّٰهُ ﴿٢٥٥﴾\nلَاۤ ﴿٢٥٦﴾\nاَللّٰهُ ﴿٢٥٧﴾',
+      translation: 'Par la grâce.\n\n255. Allàh point de divinité.\n\n256. Nulle contrainte.\n\n257. Allàh est le défenseur.',
+      transliteration:
+          'Bismillaah\n\nAllahu laaa\nLaaa ikraaha\nAllaahu waliyy',
+      references: [],
+      audioIds: [],
+    );
+    tester.view.physicalSize = const Size(390, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TextScreen(
+          item: item,
+          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+          favorite: false,
+          onFavorite: () async {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('\u06F2\u06F5\u06F5'), findsOneWidget);
+    expect(find.text('\u06F2\u06F5\u06F6'), findsOneWidget);
+    expect(find.text('\u06F2\u06F5\u06F7'), findsOneWidget);
+    final arabicNumber = tester.getSize(find.text('\u06F2\u06F5\u06F5'));
+    expect(arabicNumber.height, lessThan(arabicNumber.width));
+
+    await tester.tap(find.text('Transliteration'));
+    await tester.pumpAndSettle();
+    final number = find.text('255');
+    expect(number, findsOneWidget);
+    final numberSize = tester.getSize(number);
+    expect(numberSize.height, lessThan(numberSize.width));
+    expect(
+      tester.getTopLeft(number).dx,
+      greaterThan(tester.getTopLeft(find.textContaining('Allahu laaa')).dx),
+    );
+
+    await tester.tap(find.text('Translation'));
+    await tester.pumpAndSettle();
+    expect(find.text('256'), findsOneWidget);
+    expect(find.text('257'), findsOneWidget);
+    expect(find.textContaining('Nulle contrainte'), findsOneWidget);
+    expect(find.textContaining('255.'), findsNothing);
+    expect(
+      tester.getTopLeft(find.text('257')).dx,
+      greaterThan(tester.getTopLeft(find.textContaining('le défenseur')).dx),
+    );
+  });
 
   testWidgets('chaque ligne arabe d’une rubrique a un trait noir', (
     tester,
@@ -392,53 +450,53 @@ void main() {
     final longText = tester.widget<Text>(_verse(long));
     expect(shortText.style!.fontSize, 48);
     expect(longText.style!.fontSize, shortText.style!.fontSize);
-    expect(find.byType(FittedBox), findsNothing);
+    expect(
+      find.ancestor(of: _verse(long), matching: find.byType(FittedBox)),
+      findsNothing,
+    );
     expect(
       tester.getSize(_verse(long)).height,
       greaterThan(tester.getSize(_verse(short)).height * 1.4),
     );
   });
 
-  testWidgets(
-    'les infos d’une longue sourate s’affichent au tap',
-    (tester) async {
-      final verses = [
-        for (var i = 1; i <= 40; i++) 'نَصُّ الْآيَةِ $i ﴿$i﴾',
-      ].join('\n');
-      final item = DevotionalText(
-        id: 'quran-long-info',
-        kind: DevotionalKind.quran,
-        title: 'Sourate',
-        arabic: verses,
-        translation:
-            'Traduction du verset.\n\nInfos sur la sourate\n\nLieu de révélation:\n\nLa Mecque\n\nNombre de versets: 40 versets',
-        transliteration: 'Translit',
-        references: [],
-        audioIds: [],
-      );
-      tester.view.physicalSize = const Size(390, 844);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(
-        MaterialApp(
-          home: TextScreen(
-            item: item,
-            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
-            favorite: false,
-            onFavorite: () async {},
-          ),
+  testWidgets('les infos d’une longue sourate s’affichent au tap', (
+    tester,
+  ) async {
+    final verses = [for (var i = 1; i <= 40; i++) 'نَصُّ الْآيَةِ $i ﴿$i﴾']
+        .join('\n');
+    final item = DevotionalText(
+      id: 'quran-long-info',
+      kind: DevotionalKind.quran,
+      title: 'Sourate',
+      arabic: verses,
+      translation: 'Traduction du verset.\n\nInfos sur la sourate\n\nLieu de révélation:\n\nLa Mecque\n\nNombre de versets: 40 versets',
+      transliteration: 'Translit',
+      references: [],
+      audioIds: [],
+    );
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TextScreen(
+          item: item,
+          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+          favorite: false,
+          onFavorite: () async {},
         ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('La Mecque'), findsNothing);
-      await tester.tap(find.text('Infos sur la sourate'));
-      await tester.pumpAndSettle();
-      expect(find.text('La Mecque'), findsOneWidget);
-      expect(find.text('Nombre de versets:'), findsOneWidget);
-      expect(find.text('40 versets'), findsOneWidget);
-    },
-  );
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('La Mecque'), findsNothing);
+    await tester.tap(find.text('Infos sur la sourate'));
+    await tester.pumpAndSettle();
+    expect(find.text('La Mecque'), findsOneWidget);
+    expect(find.text('Nombre de versets:'), findsOneWidget);
+    expect(find.text('40 versets'), findsOneWidget);
+  });
 
   testWidgets(
     'l’introduction d’un doua est encadrée en traduction et en translittération',
@@ -480,6 +538,50 @@ void main() {
       expect(find.text('Naad-e-ali'), findsOneWidget);
     },
   );
+
+  testWidgets('l’onglet Gujarati n’apparaît que s’il y a un texte', (
+    tester,
+  ) async {
+    const item = DevotionalText(
+      id: 'ashura',
+      kind: DevotionalKind.ziyarat,
+      title: 'Zyaarat-e-Âchourâ',
+      arabic: 'اَلسَّلاَمُ',
+      translation: 'Que la paix soit sur toi.',
+      transliteration: 'assalamu',
+      gujarati: 'સલામ આપ પર.\n\nખુદા લાનત કરે.',
+      references: [],
+      audioIds: [],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TextScreen(
+          item: item,
+          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+          favorite: false,
+          onFavorite: () async {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Gujarati'), findsOneWidget);
+    expect(find.text('સલામ આપ પર.'), findsNothing);
+
+    await tester.tap(find.text('Gujarati'));
+    await tester.pumpAndSettle();
+    expect(find.text('સલામ આપ પર.'), findsOneWidget);
+    expect(find.text('ખુદા લાનત કરે.'), findsOneWidget);
+    expect(find.text('Que la paix soit sur toi.'), findsNothing);
+
+    final gujarati = tester.widget<Text>(find.text('સલામ આપ પર.'));
+    expect(gujarati.style!.fontFamily, 'NotoSansGujarati');
+    expect(gujarati.style!.height, greaterThan(1.6));
+
+    await tester.tap(find.byTooltip('Taille du texte'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Agrandir le gujarati'), findsOneWidget);
+  });
 }
 
 RenderParagraph _paragraph(WidgetTester tester, String value) {
@@ -498,50 +600,6 @@ RenderParagraph _paragraph(WidgetTester tester, String value) {
   return found!;
 }
 
-testWidgets('l’onglet Gujarati n’apparaît que s’il y a un texte', (
-  tester,
-) async {
-  const item = DevotionalText(
-    id: 'ashura',
-    kind: DevotionalKind.ziyarat,
-    title: 'Zyaarat-e-Âchourâ',
-    arabic: 'اَلسَّلاَمُ',
-    translation: 'Que la paix soit sur toi.',
-    transliteration: 'assalamu',
-    gujarati: 'સલામ આપ પર.\n\nખુદા લાનત કરે.',
-    references: [],
-    audioIds: [],
-  );
-  await tester.pumpWidget(
-    MaterialApp(
-      home: TextScreen(
-        item: item,
-        edition: LocalEdition('/tmp', const {'home': 'index.html'}),
-        favorite: false,
-        onFavorite: () async {},
-      ),
-    ),
-  );
-  await tester.pumpAndSettle();
-
-  expect(find.text('Gujarati'), findsOneWidget);
-  expect(find.text('સલામ આપ પર.'), findsNothing);
-
-  await tester.tap(find.text('Gujarati'));
-  await tester.pumpAndSettle();
-  expect(find.text('સલામ આપ પર.'), findsOneWidget);
-  expect(find.text('ખુદા લાનત કરે.'), findsOneWidget);
-  expect(find.text('Que la paix soit sur toi.'), findsNothing);
-
-  final gujarati = tester.widget<Text>(find.text('સલામ આપ પર.'));
-  expect(gujarati.style!.fontFamily, 'NotoSansGujarati');
-  expect(gujarati.style!.height, greaterThan(1.6));
-
-  await tester.tap(find.byTooltip('Taille du texte'));
-  await tester.pumpAndSettle();
-  expect(find.byTooltip('Agrandir le gujarati'), findsOneWidget);
-});
-
 void _expectInfoCard(WidgetTester tester, String value) {
   final text = tester.widget<Text>(find.text(value));
   expect(text.style!.fontStyle, isNot(FontStyle.italic));
@@ -553,10 +611,7 @@ void _expectInfoCard(WidgetTester tester, String value) {
   final decoration = box.decoration as BoxDecoration;
   expect(decoration.color, const Color(0xFFF7F8F4));
   expect(decoration.borderRadius, BorderRadius.circular(12));
-  expect(
-    decoration.border,
-    Border.all(color: const Color(0xFFD9E3C8)),
-  );
+  expect(decoration.border, Border.all(color: const Color(0xFFD9E3C8)));
 }
 
 Finder _verse(String value) => find.byWidgetPredicate((widget) {
