@@ -7,7 +7,8 @@
 // sur le rendu 300 dpi de chaque bloc.
 //
 // Usage :
-//   node tools/extract-gujarati-pdf.mjs --pdf "<chemin.pdf>" --from 161 --to 170 --out data/gujarati/ashura.gu.json
+//   node tools/extract-gujarati-pdf.mjs --pdf "<chemin.pdf>" --from 161 --to 170 --out data/gujarati/ashura.gu.json --edits data/gujarati/ashura.edits.json
+//   node tools/extract-gujarati-pdf.mjs --pdf "<chemin.pdf>" --batch data/gujarati/batch.json --resume true
 //   node tools/apply-gujarati-ashura.mjs
 //
 // Les corrections visuelles de data/gujarati/ashura.edits.json sont appliquées
@@ -142,54 +143,73 @@ const from = Number(arg('--from', '161'));
 const to = Number(arg('--to', '170'));
 const outPath = arg('--out', 'data/gujarati/ashura.gu.json');
 const cropsDir = arg('--crops', 'tmp/gujarati-crops');
-const editsPath = arg('--edits', 'data/gujarati/ashura.edits.json');
+const editsPath = arg('--edits', '');
+const batchPath = arg('--batch', '');
+const sectionName = arg('--section', 'ઝિયારતે આશૂરા');
 
 if (!pdfPath || !fs.existsSync(pdfPath)) {
   throw new Error(`PDF introuvable : ${pdfPath || '(--pdf manquant)'}`);
 }
 
-fs.mkdirSync(cropsDir, { recursive: true });
-fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.mkdirSync('tmp/tessdata', { recursive: true });
 
 const doc = mupdf.Document.openDocument(fs.readFileSync(pdfPath), 'application/pdf');
 const scale = DPI / 72;
-const jobs = [];
 
-for (let pageNo = from; pageNo <= to; pageNo += 1) {
-  const page = doc.loadPage(pageNo - 1);
-  const groups = groupLines(gujaratiLines(page));
-  const pixmap = page.toPixmap(
-    mupdf.Matrix.scale(scale, scale),
-    mupdf.ColorSpace.DeviceRGB,
-    false,
-  );
-  const pagePng = PNG.sync.read(Buffer.from(pixmap.asPNG()));
-  groups.forEach((group, index) => {
-    const image = cropPng(pagePng, group, scale);
-    const file = path.join(
-      cropsDir,
-      `p${pageNo}-${String(index).padStart(2, '0')}.png`,
+function collectJobs(range) {
+  const dir = range.cropsDir;
+  fs.mkdirSync(dir, { recursive: true });
+  const jobs = [];
+  let started = false;
+  let seenBody = false;
+  let stopped = false;
+  for (let pageNo = range.from; pageNo <= range.to && !stopped; pageNo += 1) {
+    const page = doc.loadPage(pageNo - 1);
+    const groups = groupLines(gujaratiLines(page));
+    const pixmap = page.toPixmap(
+      mupdf.Matrix.scale(scale, scale),
+      mupdf.ColorSpace.DeviceRGB,
+      false,
     );
-    fs.writeFileSync(file, image);
-    jobs.push({
-      pdf_page: pageNo,
-      index,
-      role: roleOf(group),
-      raw: tidy(group.lines.map((line) => line.text).join('\n')),
-      bbox: [
-        Number(group.x0.toFixed(1)),
-        Number(group.y0.toFixed(1)),
-        Number((group.x1 - group.x0).toFixed(1)),
-        Number((group.y1 - group.y0).toFixed(1)),
-      ],
-      file,
-    });
-  });
-  console.error(`page ${pageNo} : ${groups.length} blocs`);
+    const pagePng = PNG.sync.read(Buffer.from(pixmap.asPNG()));
+    let kept = 0;
+    for (let index = 0; index < groups.length; index += 1) {
+      const group = groups[index];
+      const role = roleOf(group);
+      if (!started) {
+        if (role !== 'title') continue;
+        started = true;
+      } else if (role === 'title' && seenBody && range.stopAtNextTitle) {
+        stopped = true;
+        break;
+      }
+      if (role === 'body' || role === 'instruction') seenBody = true;
+      const image = cropPng(pagePng, group, scale);
+      const file = path.join(
+        dir,
+        `p${pageNo}-${String(index).padStart(2, '0')}.png`,
+      );
+      fs.writeFileSync(file, image);
+      jobs.push({
+        pdf_page: pageNo,
+        index,
+        role,
+        raw: tidy(group.lines.map((line) => line.text).join('\n')),
+        bbox: [
+          Number(group.x0.toFixed(1)),
+          Number(group.y0.toFixed(1)),
+          Number((group.x1 - group.x0).toFixed(1)),
+          Number((group.y1 - group.y0).toFixed(1)),
+        ],
+        file,
+      });
+      kept += 1;
+    }
+    console.error(`page ${pageNo} : ${kept} blocs`);
+  }
+  return jobs;
 }
 
-console.error(`OCR de ${jobs.length} blocs (guj, tessdata_best)…`);
 const worker = await createWorker('guj', 1, {
   langPath: LANG_PATH,
   cachePath: path.resolve('tmp/tessdata'),
@@ -201,26 +221,10 @@ await worker.setParameters({
   user_defined_dpi: String(DPI),
 });
 
-const blocks = [];
-for (const job of jobs) {
-  const result = await worker.recognize(job.file);
-  const text = tidy(result.data.text || '');
-  blocks.push({
-    pdf_page: job.pdf_page,
-    index: job.index,
-    role: job.role,
-    text,
-    raw: job.raw,
-    bbox: job.bbox,
-  });
-  console.error(`  p${job.pdf_page}#${job.index} ${job.role} ${text.slice(0, 72)}`);
-}
-await worker.terminate();
-
-if (editsPath && fs.existsSync(editsPath)) {
-  const edits = JSON.parse(fs.readFileSync(editsPath, 'utf8'));
+function applyEdits(blocks, file) {
+  if (!file || !fs.existsSync(file)) return;
+  const edits = JSON.parse(fs.readFileSync(file, 'utf8'));
   for (const block of blocks) {
-    block.ocr = block.text;
     for (const edit of edits) {
       if (block.text.includes(edit.from)) {
         block.text = block.text.replaceAll(edit.from, edit.to);
@@ -229,18 +233,69 @@ if (editsPath && fs.existsSync(editsPath)) {
   }
 }
 
-const payload = {
-  source: {
-    book: 'જન્નતની ચાવીઓ',
-    compiler: 'Maulana Rizwanali Palsaniya',
-    section: 'ઝિયારતે આશૂરા',
-    pdf_pages: [from, to],
-    page_rule: 'numéro de page PDF = numéro imprimé + 1',
-  },
-  method:
-    'Rendu MuPDF 300 dpi, blocs isolés par le script gujarati (pas par le texte brut), OCR Tesseract LSTM -l guj avec tessdata_best. Le champ raw est l’extraction Unicode fautive, conservée pour contrôle ; text est l’OCR.',
-  blocks,
-};
+async function recognize(jobs, range) {
+  console.error(`OCR de ${jobs.length} blocs (${range.section})…`);
+  const blocks = [];
+  for (const job of jobs) {
+    const result = await worker.recognize(job.file);
+    const text = tidy(result.data.text || '');
+    blocks.push({
+      pdf_page: job.pdf_page,
+      index: job.index,
+      role: job.role,
+      text,
+      ocr: text,
+      raw: job.raw,
+      bbox: job.bbox,
+    });
+    console.error(`  p${job.pdf_page}#${job.index} ${job.role} ${text.slice(0, 72)}`);
+  }
+  applyEdits(blocks, range.edits);
+  fs.mkdirSync(path.dirname(range.out), { recursive: true });
+  const payload = {
+    source: {
+      book: 'જન્નતની ચાવીઓ',
+      compiler: 'Maulana Rizwanali Palsaniya',
+      section: range.section,
+      catalogTitle: range.catalogTitle || '',
+      pdf_pages: [range.from, range.to],
+      page_rule: 'numéro de page PDF = numéro imprimé + 1',
+    },
+    method:
+      'Rendu MuPDF 300 dpi, blocs isolés par le script gujarati (pas par le texte brut), OCR Tesseract LSTM -l guj avec tessdata_best. Le champ raw est l’extraction Unicode fautive, conservée pour contrôle ; ocr est la sortie Tesseract ; text est ocr après les corrections visuelles.',
+    blocks,
+  };
+  fs.writeFileSync(range.out, `${JSON.stringify(payload, null, 2)}\n`);
+  console.error(`écrit ${range.out} (${blocks.length} blocs)`);
+}
 
-fs.writeFileSync(outPath, `${JSON.stringify(payload, null, 2)}\n`);
-console.error(`écrit ${outPath} (${blocks.length} blocs)`);
+const ranges = batchPath
+  ? JSON.parse(fs.readFileSync(batchPath, 'utf8')).map((item) => ({
+      ...item,
+      out: item.out || `data/gujarati/${item.id}.gu.json`,
+      cropsDir: item.cropsDir || `tmp/gujarati-crops/${item.id}`,
+      edits: item.edits || editsPath,
+      stopAtNextTitle: item.stopAtNextTitle !== false,
+    }))
+  : [
+      {
+        section: sectionName,
+        catalogTitle: arg('--catalog', ''),
+        from,
+        to,
+        out: outPath,
+        cropsDir,
+        edits: editsPath,
+        stopAtNextTitle: arg('--stop-at-next-title', 'false') === 'true',
+      },
+    ];
+
+for (const range of ranges) {
+  if (fs.existsSync(range.out) && arg('--resume', 'false') === 'true') {
+    console.error(`déjà fait : ${range.out}`);
+    continue;
+  }
+  const jobs = collectJobs(range);
+  await recognize(jobs, range);
+}
+await worker.terminate();

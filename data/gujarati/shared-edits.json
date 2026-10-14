@@ -1,0 +1,18 @@
+[
+  {"from": "કરૂછું", "to": "કરું છું", "why": "ું lu ૂ, et le mot collé à છું"},
+  {"from": "કરૂં છું", "to": "કરું છું", "why": "le point est un anusvāra ું, pas ૂ"},
+  {"from": "કરૂ છું", "to": "કરું છું", "why": "le point est un anusvāra ું, pas ૂ"},
+  {"from": "કરં છું", "to": "કરું છું", "why": "ું perdu par l’OCR"},
+  {"from": "પૂકારૂં છું", "to": "પૂકારું છું", "why": "même confusion ૂ / ું"},
+  {"from": "પુકારૂં છું", "to": "પુકારું છું", "why": "même confusion ૂ / ું"},
+  {"from": "પૂકારં છું", "to": "પૂકારું છું", "why": "ું perdu par l’OCR"},
+  {"from": "પુકારં છું", "to": "પુકારું છું", "why": "ું perdu par l’OCR"},
+  {"from": "ઇઝઝતવાળો", "to": "ઇઝ્ઝતવાળો", "why": "conjonction ઝ્ઝ"},
+  {"from": "ઈઝઝતવાળો", "to": "ઈઝ્ઝતવાળો", "why": "conjonction ઝ્ઝ"},
+  {"from": "ઇઝઝતવાન", "to": "ઇઝ્ઝતવાન", "why": "conjonction ઝ્ઝ"},
+  {"from": "ઈઝઝતવાન", "to": "ઈઝ્ઝતવાન", "why": "conjonction ઝ્ઝ"},
+  {"from": "ઇઝઝત", "to": "ઇઝ્ઝત", "why": "conjonction ઝ્ઝ"},
+  {"from": "ઈઝઝત", "to": "ઈઝ્ઝત", "why": "conjonction ઝ્ઝ"},
+  {"from": "ઊજે માણસ", "to": "જે માણસ", "why": "le brut a જે ; ઊજે est une lecture OCR"},
+  {"from": "અય અલાહ", "to": "અય અલ્લાહ", "why": "conjonction લ્લ manquante"}
+]

@@ -1,0 +1,30 @@
+{
+  "source": {
+    "book": "જન્નતની ચાવીઓ",
+    "compiler": "Maulana Rizwanali Palsaniya",
+    "section": "સૂરે યાસીન",
+    "catalogTitle": "Sourate Yâ-Sîn (36)",
+    "pdf_pages": [
+      7,
+      15
+    ],
+    "page_rule": "numéro de page PDF = numéro imprimé + 1"
+  },
+  "method": "Rendu MuPDF 300 dpi, blocs isolés par le script gujarati (pas par le texte brut), OCR Tesseract LSTM -l guj avec tessdata_best. Le champ raw est l’extraction Unicode fautive, conservée pour contrôle ; ocr est la sortie Tesseract ; text est ocr après les corrections visuelles.",
+  "blocks": [
+    {
+      "pdf_page": 7,
+      "index": 0,
+      "role": "title",
+      "text": "સુરે યાસીન",
+      "ocr": "સુરે યાસીન",
+      "raw": "સ રે યાસીન",
+      "bbox": [
+        180,
+        49,
+        72,
+        25
+      ]
+    }
+  ]
+}

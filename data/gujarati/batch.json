@@ -1,0 +1,108 @@
+[
+  {
+    "id": "yasin",
+    "catalogTitle": "Sourate Yâ-Sîn (36)",
+    "section": "સૂરે યાસીન",
+    "printed_start": 6,
+    "from": 7,
+    "to": 15
+  },
+  {
+    "id": "ahad",
+    "catalogTitle": "Doua-e-Ahad",
+    "section": "દુઆએ અહદ",
+    "printed_start": 79,
+    "from": 80,
+    "to": 85
+  },
+  {
+    "id": "tawassoul",
+    "catalogTitle": "Doua-e-Tawassoul",
+    "section": "દુઆએ તવસ્સુલ",
+    "printed_start": 85,
+    "from": 86,
+    "to": 95
+  },
+  {
+    "id": "kisa",
+    "catalogTitle": "Hadith-e-Kissa",
+    "section": "હદીસે કિસા",
+    "printed_start": 95,
+    "from": 96,
+    "to": 106
+  },
+  {
+    "id": "kumayl",
+    "catalogTitle": "Doua-e-Kumayl",
+    "section": "દુઆએ કોમૈલ",
+    "printed_start": 107,
+    "from": 108,
+    "to": 128
+  },
+  {
+    "id": "nudba",
+    "catalogTitle": "Doua-e-Nudba",
+    "section": "દુઆએ નુદબા",
+    "printed_start": 128,
+    "from": 129,
+    "to": 134
+  },
+  {
+    "id": "waressa",
+    "catalogTitle": "Zyaarat-e-Wâressa",
+    "section": "ઝિયારતે વારેસા",
+    "printed_start": 153,
+    "from": 154,
+    "to": 157
+  },
+  {
+    "id": "aminullah",
+    "catalogTitle": "Zyaarat-e-Amin-Allàh",
+    "section": "ઝિયારતે અમીનુલ્લાહ",
+    "printed_start": 170,
+    "from": 171,
+    "to": 175,
+    "note": "Le repère indiqué (page imprimée 174) est la dernière page. Le titre est à la page imprimée 170."
+  },
+  {
+    "id": "rajab",
+    "catalogTitle": "Doua du mois de Rajab",
+    "section": "રજબ મહિનામાં નમાઝ પછી પઢવાની દુઆ",
+    "printed_start": 211,
+    "from": 212,
+    "to": 213,
+    "note": "Le repère indiqué (page imprimée 216) est la salawât de Sha‘bân. Le du‘â de Rajab de l’application commence à la page imprimée 211 et s’arrête avant Amal Umme Dawud."
+  },
+  {
+    "id": "iftetah",
+    "catalogTitle": "Doua-e-Iftetah",
+    "section": "દુઆએ ઇફ્તેતાહ",
+    "printed_start": 249,
+    "from": 250,
+    "to": 264
+  },
+  {
+    "id": "munajat-ali",
+    "catalogTitle": "Mounajat de l'Imam Ali (as)",
+    "section": "મુનાજાતે ઈમામ અલી (અ.)",
+    "printed_start": 271,
+    "from": 272,
+    "to": 280
+  },
+  {
+    "id": "mujir",
+    "catalogTitle": "Doua-e-Mujir",
+    "section": "દુઆએ મોજીર",
+    "printed_start": 281,
+    "from": 282,
+    "to": 297
+  },
+  {
+    "id": "abu-hamza",
+    "catalogTitle": "Doua-e-Abou-Hamza-Thamali",
+    "section": "દુઆ અબૂહમ્ઝા સેમાલી",
+    "printed_start": 330,
+    "from": 331,
+    "to": 359
+  }
+]
