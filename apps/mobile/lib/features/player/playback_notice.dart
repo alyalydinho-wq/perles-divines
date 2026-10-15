@@ -125,6 +125,17 @@ bool inAppPlayerVisible({
   return playing || resumable;
 }
 
+/// Piste dont la barre a été masquée d’un appui.
+/// La barre revient dès qu’une lecture reprend ou qu’une autre piste s’affiche.
+String? retainedMiniPlayerDismissal({
+  required String? dismissedId,
+  required String? itemId,
+  required bool playing,
+}) {
+  if (dismissedId == null || playing || itemId != dismissedId) return null;
+  return dismissedId;
+}
+
 String? routeAfterNotificationClick({
   required bool clicked,
   required String currentPath,

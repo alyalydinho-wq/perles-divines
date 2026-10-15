@@ -130,6 +130,41 @@ void main() {
     );
   });
 
+  test('un appui masque la barre arrêtée jusqu’à la prochaine lecture', () {
+    expect(
+      retainedMiniPlayerDismissal(
+        dismissedId: 'ziarat',
+        itemId: 'ziarat',
+        playing: false,
+      ),
+      'ziarat',
+    );
+    expect(
+      retainedMiniPlayerDismissal(
+        dismissedId: 'ziarat',
+        itemId: 'ziarat',
+        playing: true,
+      ),
+      isNull,
+    );
+    expect(
+      retainedMiniPlayerDismissal(
+        dismissedId: 'ziarat',
+        itemId: 'autre',
+        playing: false,
+      ),
+      isNull,
+    );
+    expect(
+      retainedMiniPlayerDismissal(
+        dismissedId: null,
+        itemId: 'ziarat',
+        playing: false,
+      ),
+      isNull,
+    );
+  });
+
   test('un appui sur la notification ouvre le lecteur', () {
     expect(
       routeAfterNotificationClick(clicked: true, currentPath: '/audios'),

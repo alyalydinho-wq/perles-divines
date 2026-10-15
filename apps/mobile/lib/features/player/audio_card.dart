@@ -37,6 +37,7 @@ class AudioFace extends StatelessWidget {
     this.onFavorite,
     this.onTitle,
     this.onExpanded,
+    this.onDismiss,
     this.dense = false,
     this.collapsed = false,
     this.playKey,
@@ -60,6 +61,9 @@ class AudioFace extends StatelessWidget {
 
   /// `true` pour déplier la barre, `false` pour la réduire.
   final ValueChanged<bool>? onExpanded;
+
+  /// Masque la barre quand l’audio n’est plus en lecture.
+  final VoidCallback? onDismiss;
   final bool dense;
   final bool collapsed;
   final Key? playKey;
@@ -78,6 +82,7 @@ class AudioFace extends StatelessWidget {
           onPlay: onPlay,
           onTitle: onExpanded == null ? onTitle : () => onExpanded!(true),
           onExpanded: onExpanded,
+          onDismiss: onDismiss,
           playKey: playKey,
           bottomInset: _bottomInset(context),
         ),
@@ -162,6 +167,8 @@ class AudioFace extends StatelessWidget {
                           ),
                         ),
                       ),
+                      if (onDismiss != null && !playing)
+                        _DismissButton(onPressed: onDismiss!),
                       _StarButton(
                         key: favoriteKey,
                         favorite: favorite,
@@ -375,6 +382,25 @@ class _RoundButton extends StatelessWidget {
   }
 }
 
+class _DismissButton extends StatelessWidget {
+  const _DismissButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      key: const Key('player-dismiss'),
+      tooltip: 'Masquer le lecteur',
+      onPressed: onPressed,
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints.tightFor(width: 42, height: 42),
+      icon: const Icon(Icons.close_rounded, color: siteGreen, size: 24),
+    );
+  }
+}
+
 class _PeekHandle extends StatelessWidget {
   const _PeekHandle({required this.collapsed, required this.onPressed});
 
@@ -414,6 +440,7 @@ class _CollapsedPlaybackBar extends StatelessWidget {
     this.onPlay,
     this.onTitle,
     this.onExpanded,
+    this.onDismiss,
     this.playKey,
   });
 
@@ -423,6 +450,7 @@ class _CollapsedPlaybackBar extends StatelessWidget {
   final VoidCallback? onPlay;
   final VoidCallback? onTitle;
   final ValueChanged<bool>? onExpanded;
+  final VoidCallback? onDismiss;
   final Key? playKey;
 
   @override
@@ -477,6 +505,10 @@ class _CollapsedPlaybackBar extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (onDismiss != null && !playing) ...[
+                    const SizedBox(width: 4),
+                    _DismissButton(onPressed: onDismiss!),
+                  ],
                 ],
               ),
             ],
@@ -533,6 +565,7 @@ class AudioSessionCard extends StatefulWidget {
     this.keyed = true,
     this.onTitle,
     this.onExpanded,
+    this.onDismiss,
   });
 
   final Track track;
@@ -544,6 +577,7 @@ class AudioSessionCard extends StatefulWidget {
   final bool keyed;
   final VoidCallback? onTitle;
   final ValueChanged<bool>? onExpanded;
+  final VoidCallback? onDismiss;
 
   @override
   State<AudioSessionCard> createState() => _AudioSessionCardState();
@@ -646,6 +680,7 @@ class _AudioSessionCardState extends State<AudioSessionCard> {
       collapsed: widget.collapsed,
       onTitle: widget.onTitle,
       onExpanded: widget.onExpanded,
+      onDismiss: widget.onDismiss,
       onPlay: widget.audio == null ? null : _play,
       onSeek: active && track.durationMs > 0
           ? (value) => widget.audio!.seek(Duration(milliseconds: value.round()))

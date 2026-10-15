@@ -19,6 +19,9 @@ class SiteMiniPlayer extends StatefulWidget {
 class _SiteMiniPlayerState extends State<SiteMiniPlayer> {
   /// Réduite pendant la navigation, pour ne pas couvrir l’écran.
   bool _expanded = false;
+
+  /// Piste retirée de l’écran après la fin d’écoute.
+  String? _dismissedId;
   GoRouter? _router;
   String? _location;
 
@@ -67,39 +70,58 @@ class _SiteMiniPlayerState extends State<SiteMiniPlayer> {
               stream: audio.player.processingStateStream,
               initialData: audio.player.processingState,
               builder: (context, processing) {
+                final playing = playback.data?.playing == true;
                 final visible = inAppPlayerVisible(
                   hasTrack: true,
                   hasMediaItem: true,
-                  playing: playback.data?.playing == true,
+                  playing: playing,
                   resumable: playbackResumable(
                     processing.data ?? ProcessingState.idle,
                   ),
                 );
+                final itemId = item.data?.id;
+                final dismissed = retainedMiniPlayerDismissal(
+                  dismissedId: _dismissedId,
+                  itemId: itemId,
+                  playing: playing,
+                );
+                if (dismissed != _dismissedId) _dismissedId = dismissed;
                 if (!visible) return _systemInset(context);
                 return AnimatedSize(
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeOutCubic,
                   alignment: Alignment.bottomCenter,
-                  child: AudioSessionCard(
-                    key: const Key('site-player'),
-                    track: track,
-                    audio: audio,
-                    downloads: audio.downloads,
-                    store: audio.store,
-                    dense: true,
-                    collapsed: !_expanded,
-                    keyed: false,
-                    onExpanded: (expanded) {
-                      if (_expanded == expanded || !mounted) return;
-                      setState(() => _expanded = expanded);
-                    },
-                    onTitle: () => showModalBottomSheet<void>(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: siteCanvas,
-                      builder: (context) => PlayerSheet(audio: audio),
-                    ),
-                  ),
+                  child: dismissed != null
+                      ? _systemInset(context)
+                      : AudioSessionCard(
+                          key: const Key('site-player'),
+                          track: track,
+                          audio: audio,
+                          downloads: audio.downloads,
+                          store: audio.store,
+                          dense: true,
+                          collapsed: !_expanded,
+                          keyed: false,
+                          onExpanded: (expanded) {
+                            if (_expanded == expanded || !mounted) return;
+                            setState(() => _expanded = expanded);
+                          },
+                          onDismiss: itemId == null
+                              ? null
+                              : () {
+                                  if (!mounted) return;
+                                  setState(() {
+                                    _dismissedId = itemId;
+                                    _expanded = false;
+                                  });
+                                },
+                          onTitle: () => showModalBottomSheet<void>(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: siteCanvas,
+                            builder: (context) => PlayerSheet(audio: audio),
+                          ),
+                        ),
                 );
               },
             );

@@ -232,6 +232,47 @@ void main() {
     },
   );
 
+  testWidgets('la barre arrêtée se masque d’un appui, pas pendant la lecture', (
+    tester,
+  ) async {
+    var dismissed = 0;
+    Future<void> show({required bool playing, required bool collapsed}) {
+      return tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.bottomCenter,
+              child: AudioFace(
+                title: 'Ziarat Bibi Koulssoum sa',
+                duration: const Duration(minutes: 4),
+                playing: playing,
+                dense: true,
+                collapsed: collapsed,
+                onDismiss: () => dismissed++,
+                onExpanded: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    await show(playing: true, collapsed: true);
+    await tester.pump();
+    expect(find.byKey(const Key('player-dismiss')), findsNothing);
+
+    await show(playing: false, collapsed: true);
+    await tester.pump();
+    expect(find.byTooltip('Masquer le lecteur'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('player-dismiss')));
+    await tester.pump();
+    expect(dismissed, 1);
+
+    await show(playing: false, collapsed: false);
+    await tester.pump();
+    expect(find.byKey(const Key('player-dismiss')), findsOneWidget);
+  });
+
   testWidgets('le téléchargement et la suppression demandent confirmation', (
     tester,
   ) async {
