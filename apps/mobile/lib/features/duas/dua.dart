@@ -43,6 +43,10 @@ class DevotionalText {
   bool get hasArabic => arabic.trim().isNotEmpty;
   bool get hasOriginalPage => pagePath.isNotEmpty;
 
+  /// Lecture native déjà mise à jour : le lien ne doit plus ouvrir l’ancienne page.
+  bool get opensUpdatedReading =>
+      kind == DevotionalKind.quran && hasArabic && !hasOriginalPage;
+
   String get preview {
     for (final value in [translation, introduction, transliteration, arabic]) {
       final text = value.trim();

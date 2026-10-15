@@ -9,16 +9,43 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import 'content_install.dart';
 
+final _catalogPage = RegExp(
+  r'^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.html$',
+  caseSensitive: false,
+);
+
+/// Identifiant catalogue d’une page locale, si l’adresse reste dans l’édition.
+String? localCatalogId(Uri uri, String editionDirectory) {
+  if (uri.scheme != 'file') return null;
+  final String file;
+  try {
+    file = p.normalize(uri.replace(query: '', fragment: '').toFilePath());
+  } on UnsupportedError {
+    return null;
+  }
+  if (!p.isWithin(editionDirectory, file)) return null;
+  return _catalogPage.firstMatch(p.basename(file))?.group(1)?.toLowerCase();
+}
+
 class ReaderScreen extends StatefulWidget {
   const ReaderScreen({
     super.key,
     required this.edition,
     this.initialPage,
     this.compact = false,
+    this.opensUpdatedText,
+    this.onOpenUpdatedText,
   });
   final LocalEdition edition;
   final String? initialPage;
   final bool compact;
+
+  /// Vrai quand cette page a une lecture native mise à jour.
+  final bool Function(String id)? opensUpdatedText;
+
+  /// Ouvre cette lecture à la place de l’ancienne page HTML.
+  final void Function(String id)? onOpenUpdatedText;
+
   @override
   State<ReaderScreen> createState() => ReaderScreenState();
 }
@@ -47,13 +74,28 @@ class ReaderScreenState extends State<ReaderScreen> {
           final uri = Uri.tryParse(request.url);
           if (uri == null) return NavigationDecision.prevent;
           if (uri.scheme == 'file') {
-            final file = p.normalize(
-              uri.replace(query: '', fragment: '').toFilePath(),
-            );
-            if (p.isWithin(widget.edition.directory, file)) {
-              return NavigationDecision.navigate;
+            final String file;
+            try {
+              file = p.normalize(
+                uri.replace(query: '', fragment: '').toFilePath(),
+              );
+            } on UnsupportedError {
+              return NavigationDecision.prevent;
             }
-            return NavigationDecision.prevent;
+            if (!p.isWithin(widget.edition.directory, file)) {
+              return NavigationDecision.prevent;
+            }
+            final id = localCatalogId(uri, widget.edition.directory);
+            if (id != null && (widget.opensUpdatedText?.call(id) ?? false)) {
+              final open = widget.onOpenUpdatedText;
+              if (open != null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) open(id);
+                });
+              }
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
           }
           if (['https', 'http', 'mailto'].contains(uri.scheme)) {
             if (!mounted) return NavigationDecision.prevent;

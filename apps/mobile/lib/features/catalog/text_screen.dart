@@ -50,6 +50,7 @@ class TextScreen extends StatefulWidget {
     this.downloads,
     this.tracks = const [],
     this.store,
+    this.opensUpdatedText,
   });
 
   final DevotionalText item;
@@ -60,6 +61,9 @@ class TextScreen extends StatefulWidget {
   final DownloadController? downloads;
   final List<Track> tracks;
   final AppStore? store;
+
+  /// Vrai pour une sourate dont la lecture native remplace l’ancienne page.
+  final bool Function(String id)? opensUpdatedText;
 
   @override
   State<TextScreen> createState() => _TextScreenState();
@@ -262,6 +266,11 @@ class _TextScreenState extends State<TextScreen> {
         shape: const CircleBorder(),
       ),
     );
+  }
+
+  void _openUpdatedText(String id) {
+    if (widget.opensUpdatedText?.call(id) != true) return;
+    GoRouter.maybeOf(context)?.push('/text/$id');
   }
 
   void _scrollToTop() {
@@ -478,6 +487,8 @@ class _TextScreenState extends State<TextScreen> {
               edition: widget.edition,
               initialPage: item.pagePath,
               compact: true,
+              opensUpdatedText: widget.opensUpdatedText,
+              onOpenUpdatedText: _openUpdatedText,
             ),
           );
         }

@@ -134,6 +134,12 @@ class CatalogTextPage extends StatelessWidget {
           tracks: tracks,
           store: services.store,
           onFavorite: () => DevotionalFavorites(services.store).toggle(item.id),
+          opensUpdatedText: (id) {
+            for (final candidate in services.devotionalCatalog.items) {
+              if (candidate.id == id) return candidate.opensUpdatedReading;
+            }
+            return false;
+          },
         );
       },
     );
