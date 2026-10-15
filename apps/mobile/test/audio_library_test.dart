@@ -70,6 +70,13 @@ void main() {
       'Doua-e-Kumayl',
     ]);
     expect(
+      searchTracks('tawass', [
+        _track('Douà é Tawassoul'),
+        kumayl,
+      ]).map((t) => t.title),
+      ['Douà é Tawassoul'],
+    );
+    expect(
       searchTracks('yassin', [
         _track('Ziarat E Ale Yassine'),
       ]).map((t) => t.title),

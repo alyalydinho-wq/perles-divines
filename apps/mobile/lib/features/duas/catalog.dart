@@ -232,10 +232,30 @@ bool _titleMatches(String word, _SearchDoc doc) {
   for (final key in _keys(word)) {
     if (doc.forms.contains(key)) return true;
   }
+  // « ta » trouve déjà le titre. Sans ce préfixe, « taw » puis « tawass »
+  // ne proposent plus rien jusqu’à presque tout le mot (« tawassou »).
+  if (_titlePrefix(word, doc)) return true;
   final stem = _stem(word);
   if (stem.length < 4) return false;
   for (final token in doc.tokenKeys) {
     if (_nearName(stem, token)) return true;
+  }
+  return false;
+}
+
+/// Vrai quand [word] est le début d’un mot du titre, ou de deux mots collés
+/// (Ya-Sin, al-Fatiha). Le corps du texte n’est pas concerné.
+bool _titlePrefix(String word, _SearchDoc doc) {
+  final tokens = doc.title.split(' ').where((token) => token.isNotEmpty).toList();
+  for (final token in tokens) {
+    if (token.length > word.length && token.startsWith(word)) return true;
+  }
+  for (var i = 0; i < tokens.length - 1; i++) {
+    if (_digits.hasMatch(tokens[i]) || _digits.hasMatch(tokens[i + 1])) {
+      continue;
+    }
+    final joined = tokens[i] + tokens[i + 1];
+    if (joined.length > word.length && joined.startsWith(word)) return true;
   }
   return false;
 }

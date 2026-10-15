@@ -69,6 +69,36 @@ void main() {
     expect(spelled.search('kumail'), [kumayl]);
   });
 
+  test('le début d’un titre propose la prière avant la fin du mot', () {
+    const tawassoul = DevotionalText(
+      id: 'tawassoul',
+      kind: DevotionalKind.dua,
+      title: 'Doua-e-Tawassoul',
+      arabic: '',
+      translation: '',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+    );
+    const kumayl = DevotionalText(
+      id: 'kumayl',
+      kind: DevotionalKind.dua,
+      title: 'Doua-e-Kumayl',
+      arabic: '',
+      translation: '',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+    );
+    const spelled = LocalDevotionalCatalog([tawassoul, kumayl]);
+    expect(spelled.search('taw'), [tawassoul]);
+    expect(spelled.search('tawass'), [tawassoul]);
+    expect(spelled.search('tawassou'), [tawassoul]);
+    expect(spelled.search('kum'), [kumayl]);
+    expect(matchesSearchQuery('tawass', 'Douà é Tawassoul'), isTrue);
+    expect(matchesSearchQuery('tawass', 'Doua-e-Kumayl'), isFalse);
+  });
+
   test('une saisie courte ne balaie pas le corps du texte', () {
     final buried = DevotionalText(
       id: 'buried',
@@ -106,6 +136,9 @@ void main() {
     expect(titles('qadr'), ['Sourate al-Qadr (97)']);
     expect(titles('annas'), ['Sourate an-Nâs (114)']);
     expect(titles('kumail'), ['Doua-e-Kumayl']);
+    expect(titles('taw'), ['Doua-e-Tawassoul']);
+    expect(titles('tawass'), ['Doua-e-Tawassoul']);
+    expect(titles('tawassou'), ['Doua-e-Tawassoul']);
     expect(titles('achoura'), contains('Zyaarat-e-Âchourâ'));
     expect(titles('achoura'), isNot(contains('Sourate Yâ-Sîn (36)')));
 
