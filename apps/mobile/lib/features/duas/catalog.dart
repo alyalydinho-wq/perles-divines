@@ -64,7 +64,7 @@ class LocalDevotionalCatalog {
         .where((word) => word.isNotEmpty)
         .toList();
     // Une ou deux lettres se trouvent dans presque chaque prière.
-    // On les cherche dans le titre et la translittération, pas dans le corps.
+    // On les cherche dans le titre, pas dans le corps.
     final inBody = words.isNotEmpty && words.every((word) => word.length >= 3);
     final titles = <DevotionalText>[];
     final others = <DevotionalText>[];
@@ -74,14 +74,16 @@ class LocalDevotionalCatalog {
         others.add(doc.item);
         continue;
       }
-      if (!words.every((word) => _wordMatches(word, doc, inBody))) continue;
-      if (words.every((word) => doc.title.contains(word))) {
+      if (words.every((word) => _titleMatches(word, doc))) {
         titles.add(doc.item);
-      } else {
+      } else if (inBody && words.every((word) => _bodyMatches(word, doc))) {
         others.add(doc.item);
       }
     }
-    return [...titles, ...others];
+    // Un titre qui correspond suffit : le corps citerait le mot
+    // dans des prières sans rapport avec la demande.
+    if (titles.isNotEmpty) return titles;
+    return others;
   }
 }
 
@@ -93,21 +95,20 @@ List<_SearchDoc> _docsOf(LocalDevotionalCatalog catalog) =>
 class _SearchDoc {
   const _SearchDoc({
     required this.item,
-    required this.haystack,
-    required this.heading,
     required this.title,
-    required this.tokensByLength,
+    required this.titleTokens,
+    required this.bodyTokens,
+    required this.titleTokensByLength,
   });
 
   final DevotionalText item;
-  final String haystack;
-  final String heading;
   final String title;
-  final Map<int, List<String>> tokensByLength;
+  final Set<String> titleTokens;
+  final Set<String> bodyTokens;
+  final Map<int, List<String>> titleTokensByLength;
 
   factory _SearchDoc.from(DevotionalText item) {
     final title = _searchable(item.title);
-    final heading = _searchable('${item.title} ${item.transliteration}');
     final haystack = _searchable(
       [
         item.title,
@@ -119,29 +120,18 @@ class _SearchDoc {
         ...item.references,
       ].join(' '),
     );
-    final tokensByLength = <int, List<String>>{};
-    final seen = <String>{};
-    for (final token in heading.split(' ')) {
-      if (token.length < 3 || !seen.add(token)) continue;
-      (tokensByLength[token.length] ??= []).add(token);
-    }
     return _SearchDoc(
       item: item,
-      haystack: haystack,
-      heading: heading,
       title: title,
-      tokensByLength: tokensByLength,
+      titleTokens: _tokenSet(title),
+      bodyTokens: _tokenSet(haystack),
+      titleTokensByLength: _tokensByLength(title),
     );
   }
 
   factory _SearchDoc.fromPlain(String text) {
-    final heading = _searchable(text);
-    final tokensByLength = <int, List<String>>{};
-    final seen = <String>{};
-    for (final token in heading.split(' ')) {
-      if (token.length < 3 || !seen.add(token)) continue;
-      (tokensByLength[token.length] ??= []).add(token);
-    }
+    final title = _searchable(text);
+    final tokens = _tokenSet(title);
     return _SearchDoc(
       item: DevotionalText(
         id: '',
@@ -153,29 +143,43 @@ class _SearchDoc {
         references: const [],
         audioIds: const [],
       ),
-      haystack: heading,
-      heading: heading,
-      title: heading,
-      tokensByLength: tokensByLength,
+      title: title,
+      titleTokens: tokens,
+      bodyTokens: tokens,
+      titleTokensByLength: _tokensByLength(title),
     );
   }
 }
 
-bool _wordMatches(String word, _SearchDoc doc, bool inBody) {
-  if ((inBody ? doc.haystack : doc.heading).contains(word)) return true;
+Set<String> _tokenSet(String text) =>
+    text.split(' ').where((token) => token.isNotEmpty).toSet();
+
+Map<int, List<String>> _tokensByLength(String text) {
+  final tokensByLength = <int, List<String>>{};
+  final seen = <String>{};
+  for (final token in text.split(' ')) {
+    if (token.length < 3 || !seen.add(token)) continue;
+    (tokensByLength[token.length] ??= []).add(token);
+  }
+  return tokensByLength;
+}
+
+bool _titleMatches(String word, _SearchDoc doc) {
+  if (word.length < 3) return doc.title.contains(word);
+  if (doc.titleTokens.contains(word)) return true;
   if (word.length < 4) return false;
-  final maxDistance = word.length >= 6 ? 2 : 1;
-  final shortest = word.length - maxDistance;
-  final longest = word.length + maxDistance;
-  for (var length = shortest; length <= longest; length++) {
-    final tokens = doc.tokensByLength[length];
+  for (var length = word.length - 1; length <= word.length + 1; length++) {
+    final tokens = doc.titleTokensByLength[length];
     if (tokens == null) continue;
     for (final token in tokens) {
-      if (_distance(word, token) <= maxDistance) return true;
+      if (_distance(word, token) <= 1) return true;
     }
   }
   return false;
 }
+
+bool _bodyMatches(String word, _SearchDoc doc) =>
+    _titleMatches(word, doc) || doc.bodyTokens.contains(word);
 
 int _distance(String a, String b) {
   if (a == b) return 0;
@@ -215,6 +219,8 @@ String _searchable(String value) {
       .replaceAll(_notSearchable, ' ')
       .replaceAll(_whitespace, ' ')
       .replaceAll(_ramadanSpellings, 'ramadan')
+      .replaceAll(_yaSinSplit, 'yasin')
+      .replaceAll(_yaSinWord, 'yasin')
       .trim();
 }
 
@@ -222,8 +228,12 @@ final _ramadanSpellings = RegExp(
   r'\bramadha+n\b|\bramzane\b|\bramzan\b|\bramadan\b',
 );
 
+/// Yâ-Sîn, Ya-Sin, Yassin, Yaseen et Yassine désignent le même nom.
+final _yaSinSplit = RegExp(r'\bya+\s+s+[ie]+n+\b');
+final _yaSinWord = RegExp(r'\bya+s+[ie]+n+e?\b');
+
 /// Vrai quand [text] contient chaque mot de [query], avec les mêmes
-/// tolérances que la recherche du catalogue (titre ou corps).
+/// tolérances que la recherche du catalogue.
 bool matchesSearchQuery(String query, String text) {
   final words = _searchable(query)
       .split(' ')
@@ -231,6 +241,5 @@ bool matchesSearchQuery(String query, String text) {
       .toList();
   if (words.isEmpty) return false;
   final doc = _SearchDoc.fromPlain(text);
-  final inBody = words.every((word) => word.length >= 3);
-  return words.every((word) => _wordMatches(word, doc, inBody));
+  return words.every((word) => _bodyMatches(word, doc));
 }

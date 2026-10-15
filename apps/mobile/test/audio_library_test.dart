@@ -70,6 +70,16 @@ void main() {
       'Doua-e-Kumayl',
     ]);
     expect(
+      searchTracks('yassin', [
+        _track('Ziarat E Ale Yassine'),
+      ]).map((t) => t.title),
+      ['Ziarat E Ale Yassine'],
+    );
+    expect(
+      searchTracks('yassin', [_track('Zyaarat du Lundi Imam Hassan (as)')]),
+      isEmpty,
+    );
+    expect(
       searchTracks(
         'matin',
         [linked, ramzane],

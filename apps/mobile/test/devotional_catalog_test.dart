@@ -60,8 +60,8 @@ void main() {
       audioIds: [],
     );
     const spelled = LocalDevotionalCatalog([dua, ashura, kumayl]);
-    expect(spelled.search('dua'), [kumayl, dua]);
-    expect(spelled.search('doua'), [kumayl, dua]);
+    expect(spelled.search('dua'), [kumayl]);
+    expect(spelled.search('doua'), [kumayl]);
     expect(spelled.search('ashura'), [ashura]);
     expect(spelled.search('achoura'), [ashura]);
     expect(spelled.search('azomal'), [ashura]);
@@ -88,6 +88,26 @@ void main() {
     expect(wide.search('zzzz'), isEmpty);
     watch.stop();
     expect(watch.elapsedMilliseconds, lessThan(400));
+  });
+
+  test('yassin trouve la sourate Ya-Sin, pas les titres voisins', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    final catalog = await LocalDevotionalCatalog.load();
+    expect(catalog.search('yassin').map((item) => item.title), [
+      'Sourate Yâ-Sîn (36)',
+    ]);
+    expect(catalog.search('ya sin').map((item) => item.title), [
+      'Sourate Yâ-Sîn (36)',
+    ]);
+    expect(catalog.search('yaseen').map((item) => item.title), [
+      'Sourate Yâ-Sîn (36)',
+    ]);
+    final hassan = catalog.search('hassan').map((item) => item.title);
+    expect(hassan, isNot(contains('Sourate Yâ-Sîn (36)')));
+    expect(
+      hassan.every((title) => title.toLowerCase().contains('hassan')),
+      isTrue,
+    );
   });
 
   test('le filtre de catégorie isole ziyārāt et duʿā', () {
