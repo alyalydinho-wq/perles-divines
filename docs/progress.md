@@ -10,7 +10,8 @@
 - import isolé du site et inventaire autonome des MP3/M4A ;
 - retrait complet de l'ancien système serveur : le produit est désormais exclusivement embarqué ;
 - lecture R2 publique et téléchargement à la demande pour l’écoute hors ligne ;
-- gujarati de Doua-e-Nudba repris du livre jusqu’à la page PDF 154, avant Ziyârat Wâressa (23 paragraphes).
+- gujarati de Doua-e-Nudba repris du livre jusqu’à la page PDF 154, avant Ziyârat Wâressa (23 paragraphes) ;
+- barre de taille toujours visible dans la lecture : cinq niveaux communs aux quatre onglets, à la place du panneau ⚙️. Les pages HTML s’agrandissent au pincement.
 
 ## À compléter avec les sources validées
 
