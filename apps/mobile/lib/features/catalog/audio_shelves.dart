@@ -1,4 +1,7 @@
 import '../../core/track.dart';
+import '../duas/catalog.dart';
+import '../duas/dua.dart';
+import 'sections.dart';
 
 enum AudioShelf {
   doua('doua', 'Doua'),
@@ -33,6 +36,44 @@ AudioShelf shelfOf(Track track) {
   }
   if (_isAamal(title)) return AudioShelf.aamal;
   return AudioShelf.autres;
+}
+
+/// Pistes dont le titre correspond à [query], plus celles liées aux textes déjà trouvés.
+List<Track> searchTracks(
+  String query,
+  Iterable<Track> tracks, {
+  Iterable<DevotionalText> linkedFrom = const [],
+}) {
+  final byId = {for (final track in tracks) track.id: track};
+  final found = <String, Track>{};
+  for (final track in tracks) {
+    final author = track.author;
+    final haystack = author == null || author.trim().isEmpty
+        ? track.title
+        : '${track.title} $author';
+    if (matchesSearchQuery(query, haystack)) found[track.id] = track;
+  }
+  for (final text in linkedFrom) {
+    for (final id in text.audioIds) {
+      final track = byId[id];
+      if (track != null) found[track.id] = track;
+    }
+  }
+  final items = found.values.toList();
+  items.sort(compareAudioTitles);
+  return items;
+}
+
+List<Track> tracksForSection(CatalogSection section, Iterable<Track> tracks) {
+  final shelf = switch (section) {
+    CatalogSection.douas => AudioShelf.doua,
+    CatalogSection.zyaraate => AudioShelf.zyaraate,
+    CatalogSection.aamalMensuel ||
+    CatalogSection.aamalSpecifique => AudioShelf.aamal,
+    CatalogSection.quran || CatalogSection.namaz => null,
+  };
+  if (shelf == null) return const [];
+  return tracksOf(shelf, tracks);
 }
 
 List<Track> tracksOf(AudioShelf shelf, Iterable<Track> tracks) {

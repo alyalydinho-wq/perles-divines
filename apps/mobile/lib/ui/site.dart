@@ -100,7 +100,13 @@ class SitePage extends StatelessWidget {
               Expanded(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final bodyWidth = constraints.maxWidth * 0.92;
+                    // Le site d’origine est une colonne de téléphone.
+                    // Sans ce plafond, un grand écran étire chaque résultat
+                    // de recherche sur toute la fenêtre.
+                    final frame = constraints.maxWidth < 480
+                        ? constraints.maxWidth
+                        : 480.0;
+                    final bodyWidth = frame * 0.92;
                     Widget wrap(Widget child) => Center(
                       child: SizedBox(width: bodyWidth, child: child),
                     );
@@ -240,11 +246,17 @@ class SiteButton extends StatelessWidget {
     required this.label,
     this.onTap,
     this.green = false,
+    this.caption,
+    this.icon,
+    this.maxLines = 4,
   });
 
   final String label;
   final VoidCallback? onTap;
   final bool green;
+  final String? caption;
+  final IconData? icon;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -287,26 +299,13 @@ class SiteButton extends StatelessWidget {
                     vertical: 14.72,
                     horizontal: 3.2,
                   ),
-                  child: Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Lucida Grande',
-                      fontFamilyFallback: siteSansFallbacks,
-                      color: textColor,
-                      fontSize: 16,
-                      height: 1,
-                      fontWeight: FontWeight.w700,
-                      shadows: green
-                          ? const [
-                              Shadow(
-                                color: Color(0x4d000000),
-                                offset: Offset(0, 2),
-                                blurRadius: 2,
-                              ),
-                            ]
-                          : null,
-                    ),
+                  child: _SiteButtonLabel(
+                    label: label,
+                    caption: caption,
+                    icon: icon,
+                    maxLines: maxLines,
+                    color: textColor,
+                    green: green,
                   ),
                 ),
               ),
@@ -314,6 +313,84 @@ class SiteButton extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _SiteButtonLabel extends StatelessWidget {
+  const _SiteButtonLabel({
+    required this.label,
+    required this.color,
+    required this.green,
+    required this.maxLines,
+    this.caption,
+    this.icon,
+  });
+
+  final String label;
+  final String? caption;
+  final IconData? icon;
+  final int maxLines;
+  final Color color;
+  final bool green;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontFamily: 'Lucida Grande',
+      fontFamilyFallback: siteSansFallbacks,
+      color: color,
+      fontSize: 16,
+      height: 1.15,
+      fontWeight: FontWeight.w700,
+      shadows: green
+          ? const [
+              Shadow(
+                color: Color(0x4d000000),
+                offset: Offset(0, 2),
+                blurRadius: 2,
+              ),
+            ]
+          : null,
+    );
+    final title = Text(
+      label,
+      textAlign: TextAlign.center,
+      maxLines: maxLines,
+      softWrap: true,
+      overflow: TextOverflow.ellipsis,
+      style: style,
+    );
+    if (icon == null && caption == null) return title;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 20, color: siteGreenSolid),
+              const SizedBox(width: 6),
+            ],
+            Flexible(child: title),
+          ],
+        ),
+        if (caption != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            caption!,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: siteText(
+              color: siteGreen,
+              fontSize: 12,
+              lineHeight: 14,
+              weight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

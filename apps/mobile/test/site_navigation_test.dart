@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:perles_divines/core/track.dart';
 import 'package:perles_divines/features/about/about_screen.dart';
 import 'package:perles_divines/features/catalog/favorites_screen.dart';
 import 'package:perles_divines/features/catalog/section_screen.dart';
@@ -209,6 +210,56 @@ void main() {
     expect(find.text('Doua-e-Kumayl'), findsOneWidget);
     expect(find.text('Namaz'), findsNothing);
   });
+
+  testWidgets(
+    'la recherche trouve un audio et ne s’étire pas sur un grand écran',
+    (tester) async {
+      tester.view.physicalSize = const Size(1100, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      const track = Track(
+        id: 'ramzane-10',
+        title: 'Douà 10 Mahé Ramzane',
+        version: 1,
+        durationMs: 1000,
+        sizeBytes: 10,
+        sha256: 'abc',
+        file: 'audio/ramzane.m4a',
+      );
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: SommaireScreen(catalog: _catalog, tracks: [track]),
+        ),
+      );
+      await _settle(tester);
+      await tester.enterText(find.byKey(const Key('site-search')), 'Ramzane');
+      await _settle(tester);
+
+      expect(find.text('Douà 10 Mahé Ramzane'), findsOneWidget);
+      expect(find.text('Audio'), findsOneWidget);
+      expect(find.text('Doua'), findsNothing);
+      expect(
+        find.text('Aucun texte ni audio ne correspond à cette recherche.'),
+        findsNothing,
+      );
+      final result = tester.getSize(
+        find.byKey(const Key('search-audio-ramzane-10')),
+      );
+      expect(result.width, lessThan(450));
+      expect(result.width, lessThan(tester.view.physicalSize.width / 2));
+      expect(tester.takeException(), isNull);
+
+      tester.view.physicalSize = const Size(360, 740);
+      await _settle(tester);
+      expect(tester.takeException(), isNull);
+      expect(
+        tester.getSize(find.byKey(const Key('search-audio-ramzane-10'))).width,
+        lessThanOrEqualTo(360),
+      );
+    },
+  );
 
   testWidgets('une rubrique affiche ses prières', (tester) async {
     await tester.pumpWidget(_app());

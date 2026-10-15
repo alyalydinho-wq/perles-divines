@@ -46,6 +46,40 @@ void main() {
     expect(shelfOf(_track('Hadiçe é Kissà')), AudioShelf.hadith);
   });
 
+  test('la recherche retrouve un audio par son titre', () {
+    final ramzane = _track('Douà 10 Mahé Ramzane');
+    final kumayl = _track('Doua-e-Kumayl');
+    final linked = _track('Piste du soir');
+    const text = DevotionalText(
+      id: 'matin',
+      kind: DevotionalKind.dua,
+      title: 'Invocation du matin',
+      arabic: '',
+      translation: '',
+      transliteration: '',
+      references: [],
+      audioIds: ['Piste du soir'],
+    );
+    expect(searchTracks('ramzane', [ramzane, kumayl]).map((t) => t.title), [
+      'Douà 10 Mahé Ramzane',
+    ]);
+    expect(searchTracks('ramadan', [ramzane]).map((t) => t.title), [
+      'Douà 10 Mahé Ramzane',
+    ]);
+    expect(searchTracks('kumail', [kumayl, ramzane]).map((t) => t.title), [
+      'Doua-e-Kumayl',
+    ]);
+    expect(
+      searchTracks(
+        'matin',
+        [linked, ramzane],
+        linkedFrom: [text],
+      ).map((t) => t.id),
+      ['Piste du soir'],
+    );
+    expect(searchTracks('zzzz', [ramzane, kumayl]), isEmpty);
+  });
+
   test('les jours de Ramadan restent dans l’ordre numérique', () {
     final tracks = [
       _track('Douà 10 Mahé Ramzane'),

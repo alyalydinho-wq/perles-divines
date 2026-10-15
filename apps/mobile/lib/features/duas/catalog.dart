@@ -133,6 +133,32 @@ class _SearchDoc {
       tokensByLength: tokensByLength,
     );
   }
+
+  factory _SearchDoc.fromPlain(String text) {
+    final heading = _searchable(text);
+    final tokensByLength = <int, List<String>>{};
+    final seen = <String>{};
+    for (final token in heading.split(' ')) {
+      if (token.length < 3 || !seen.add(token)) continue;
+      (tokensByLength[token.length] ??= []).add(token);
+    }
+    return _SearchDoc(
+      item: DevotionalText(
+        id: '',
+        kind: DevotionalKind.dua,
+        title: text,
+        arabic: '',
+        translation: '',
+        transliteration: '',
+        references: const [],
+        audioIds: const [],
+      ),
+      haystack: heading,
+      heading: heading,
+      title: heading,
+      tokensByLength: tokensByLength,
+    );
+  }
 }
 
 bool _wordMatches(String word, _SearchDoc doc, bool inBody) {
@@ -188,5 +214,23 @@ String _searchable(String value) {
   return text
       .replaceAll(_notSearchable, ' ')
       .replaceAll(_whitespace, ' ')
+      .replaceAll(_ramadanSpellings, 'ramadan')
       .trim();
+}
+
+final _ramadanSpellings = RegExp(
+  r'\bramadha+n\b|\bramzane\b|\bramzan\b|\bramadan\b',
+);
+
+/// Vrai quand [text] contient chaque mot de [query], avec les mêmes
+/// tolérances que la recherche du catalogue (titre ou corps).
+bool matchesSearchQuery(String query, String text) {
+  final words = _searchable(query)
+      .split(' ')
+      .where((word) => word.isNotEmpty)
+      .toList();
+  if (words.isEmpty) return false;
+  final doc = _SearchDoc.fromPlain(text);
+  final inBody = words.every((word) => word.length >= 3);
+  return words.every((word) => _wordMatches(word, doc, inBody));
 }

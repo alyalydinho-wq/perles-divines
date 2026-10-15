@@ -2,18 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/scope.dart';
+import '../../core/track.dart';
 import '../../ui/site.dart';
 import '../duas/catalog.dart';
 import '../duas/dua.dart';
 import '../duas/favorites.dart';
+import '../player/audio_controller.dart';
+import 'audio_shelves.dart';
+import 'search_results.dart';
 import 'sections.dart';
 import 'text_screen.dart';
 
 class SectionScreen extends StatefulWidget {
-  const SectionScreen({super.key, required this.section, this.catalog});
+  const SectionScreen({
+    super.key,
+    required this.section,
+    this.catalog,
+    this.tracks,
+    this.audio,
+  });
 
   final CatalogSection section;
   final LocalDevotionalCatalog? catalog;
+  final List<Track>? tracks;
+  final PerlesAudioHandler? audio;
 
   @override
   State<SectionScreen> createState() => _SectionScreenState();
@@ -35,6 +47,7 @@ class _SectionScreenState extends State<SectionScreen> {
   @override
   Widget build(BuildContext context) {
     final catalog = _catalog(context);
+    final services = ServicesScope.maybeOf(context);
     final searching = query.trim().length >= 2;
     final items = widget.section.itemsOf(catalog?.items ?? const []);
     final filtered = searching
@@ -42,6 +55,16 @@ class _SectionScreenState extends State<SectionScreen> {
               .where(widget.section.matches)
               .toList()
         : items;
+    final audios = searching
+        ? searchTracks(
+            query,
+            tracksForSection(
+              widget.section,
+              widget.tracks ?? services?.tracks ?? const <Track>[],
+            ),
+            linkedFrom: filtered,
+          )
+        : const <Track>[];
 
     return SitePage(
       header: [
@@ -69,10 +92,16 @@ class _SectionScreenState extends State<SectionScreen> {
         ),
       ],
       children: [
-        if (filtered.isEmpty)
+        if (searching)
+          SearchResults(
+            texts: filtered,
+            tracks: audios,
+            audio: widget.audio ?? services?.audio,
+          )
+        else if (items.isEmpty)
           const SiteBlackText('Aucune prière ne correspond à cette recherche.')
         else
-          for (final item in filtered) ...[
+          for (final item in items) ...[
             SiteButton(
               label: item.title,
               onTap: () => context.push('/text/${item.id}'),
