@@ -34,5 +34,53 @@
     "textId": "d6345176-fbb2-588d-877f-7253f1014936",
     "sourceFile": "Ziarat É Aminullah.m4a.mp4",
     "catalogTitle": "Zyaarat-e-Amin-Allàh"
+  },
+  {
+    "audioId": "61e3e7cb-3517-5581-8e18-6db60e08913f",
+    "textId": "b88cd11a-9959-55be-ba74-1e958218c796",
+    "sourceFile": "audio/doua-e-baha.m4a",
+    "catalogTitle": "Doua-e-Baha"
+  },
+  {
+    "audioId": "940dd9f9-d440-515d-a659-9ebaff13a338",
+    "textId": "bd372372-0149-523f-8e9f-d6caf3a2961a",
+    "sourceFile": "audio/doua-e-mashlou.m4a",
+    "catalogTitle": "Doua-e-Mashlool"
+  },
+  {
+    "audioId": "f907f384-f00b-5b89-a3cb-93dd72ba22f3",
+    "textId": "f3f8ad63-59e7-5c0c-8fa9-eeb232d61558",
+    "sourceFile": "audio/doua-e-moudjir.m4a",
+    "catalogTitle": "Doua-e-Mujir"
+  },
+  {
+    "audioId": "63f18e60-190c-5718-a22a-eb033ecc4e79",
+    "textId": "06dd970c-d3b5-5d4c-98a0-b26bcd1b1d12",
+    "sourceFile": "audio/doua-e-tawassoul.m4a",
+    "catalogTitle": "Doua-e-Tawassoul"
+  },
+  {
+    "audioId": "553df9a3-c789-5386-bf4d-b42daa18c075",
+    "textId": "6ac4fc3f-78bf-5e53-8305-60d38367bb81",
+    "sourceFile": "audio/hadic-e-e-kissa.m4a",
+    "catalogTitle": "Hadith-e-Kissa"
+  },
+  {
+    "audioId": "e50009a6-9bd3-520d-89da-6ec80d86eb43",
+    "textId": "2a866ff7-b7f1-51af-baf7-880af8c82e9f",
+    "sourceFile": "audio/ziarat-e-imame-zaman-atfs-du-vendredi.m4a",
+    "catalogTitle": "Zyaarat du Vendredi (Jum'a) Imam al Mahdi (aj)"
+  },
+  {
+    "audioId": "9bc208ef-d86f-5eee-9558-556fadf58344",
+    "textId": "62cc12a3-f248-549a-887d-76e01435839f",
+    "sourceFile": "audio/ziarat-h-mouhammad-moustapha-saw.m4a",
+    "catalogTitle": "Zyaarat du Samedi Prophète Mohammad (saw)"
+  },
+  {
+    "audioId": "5026f5c8-6734-5608-aa8e-5cc1cf907aa8",
+    "textId": "12849e71-3748-55da-a379-2cb3d3e878d1",
+    "sourceFile": "audio/ziarat-imam-hassan-askari-as.m4a",
+    "catalogTitle": "Zyaarat du Jeudi Imam Hassan al Askari (as)"
   }
 ]
