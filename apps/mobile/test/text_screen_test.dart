@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -604,6 +607,56 @@ void main() {
     await tester.tap(find.byTooltip('Taille du texte'));
     await tester.pumpAndSettle();
     expect(find.byTooltip('Agrandir le gujarati'), findsOneWidget);
+  });
+
+  testWidgets('Nudba en gujarati montre tout le texte, défile et suit la taille', (
+    tester,
+  ) async {
+    final catalog =
+        jsonDecode(File('assets/content/catalog.json').readAsStringSync())
+            as List<dynamic>;
+    final item = DevotionalText.fromJson(
+      catalog.cast<Map<String, dynamic>>().firstWhere(
+        (entry) => entry['title'] == 'Doua-e-Nudba',
+      ),
+    );
+    final paragraphs = item.gujarati
+        .split(RegExp(r'\n{2,}'))
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .toList();
+    expect(paragraphs.length, 23);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TextScreen(
+          item: item,
+          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+          favorite: false,
+          onFavorite: () async {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Gujarati'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(paragraphs.first), findsOneWidget);
+    final before = tester
+        .widget<Text>(find.text(paragraphs.first))
+        .style!
+        .fontSize;
+
+    await tester.scrollUntilVisible(find.text(paragraphs.last), 400);
+    expect(find.text(paragraphs.last), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Taille du texte'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Agrandir le gujarati'));
+    await tester.pumpAndSettle();
+    final grown = tester.widget<Text>(find.text(paragraphs.last)).style!.fontSize;
+    expect(grown, greaterThan(before!));
   });
 }
 

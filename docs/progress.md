@@ -9,7 +9,8 @@
 - lecture native des traductions et translittérations, page originale pour l’arabe calligraphié ;
 - import isolé du site et inventaire autonome des MP3/M4A ;
 - retrait complet de l'ancien système serveur : le produit est désormais exclusivement embarqué ;
-- lecture R2 publique et téléchargement à la demande pour l’écoute hors ligne.
+- lecture R2 publique et téléchargement à la demande pour l’écoute hors ligne ;
+- gujarati de Doua-e-Nudba repris du livre jusqu’à la page PDF 154, avant Ziyârat Wâressa (23 paragraphes).
 
 ## À compléter avec les sources validées
 

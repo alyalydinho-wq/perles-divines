@@ -42,8 +42,11 @@ Revue : `docs/gujarati/kumayl-review.md`.
 
 ## Doua-e-Nudba
 
-Pages PDF 129–134 (imprimées 128–133).
-Paragraphes gujarati retenus : 7.
+Pages PDF 129–154 (imprimées 128–153).
+Paragraphes gujarati retenus : 23.
+S’arrête avant le titre ઝિયારતે વારેસા, au milieu de la page PDF 154. Les lignes en corps 20 des pages 135 et 141 sont des citations dans le du‘â, pas un nouveau titre. `stopAtNextTitle` les aurait prises pour la fin du texte : l’extraction va donc jusqu’à la page 154 et s’arrête au vrai titre suivant.
+La page PDF 144 ne contient que de l’arabe. Aucun bloc gujarati n’en est tiré.
+Le livre ouvre par une consigne absente du français de l’application : ce du‘â est recommandé pour quatre fêtes (Aïd al-Adha, Aïd al-Fitr, Aïd al-Ghadir et le vendredi). Le français commence à la basmala. Les deux textes se terminent ensemble : la coupe de Kawthar, à la main de l’aïeul, puis « le plus miséricordieux des miséricordieux ».
 Revue : `docs/gujarati/nudba-review.md`.
 
 ## Zyaarat-e-Wâressa
@@ -101,6 +104,8 @@ Les corrections automatiques se limitent aux erreurs d’OCR déjà vues sur Âc
 - બાનાવ (Ahad) : le texte brut a la même forme. Pas changé en બનાવ.
 - બ્રાઇ, કળ્ર, ધૂતકરાએલો (Abou Hamza) : lectures isolées, non corrigées.
 - Dou‘â Mujir : 93 paragraphes. Le livre coupe ce texte en lignes courtes. Elles n’ont pas été fusionnées.
+- Nudba, page 130, bloc déjà relu : le texte gardé a « આપ્યુ » là où une nouvelle lecture voit « આપ્યું ». Non modifié.
+- Nudba, page 139 : « ખયાલ » est imprimé ainsi, pas « ખ્યાલ ». Laissé tel quel.
 
 Le français des revues est réparti au prorata. Ce n’est pas un alignement vérifié phrase par phrase.
 
