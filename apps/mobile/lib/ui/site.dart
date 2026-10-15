@@ -513,11 +513,16 @@ class SiteGap extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(height: height);
 }
 
+/// Hauteur des deux barres du bas du lecteur : réglage de police et langues.
+const siteReaderBarHeight = 44.0;
+
 class SiteReaderHeader extends StatelessWidget {
   const SiteReaderHeader({
     super.key,
     required this.title,
     required this.onBack,
+    this.onHome,
+    this.onScrollToTop,
     this.onShare,
     this.onFavorite,
     this.onPlay,
@@ -527,11 +532,18 @@ class SiteReaderHeader extends StatelessWidget {
 
   final String title;
   final VoidCallback onBack;
+  final VoidCallback? onHome;
+  final VoidCallback? onScrollToTop;
   final VoidCallback? onShare;
   final VoidCallback? onFavorite;
   final VoidCallback? onPlay;
   final VoidCallback? onDownload;
   final bool favorite;
+
+  static const _barHeight = 56.0;
+  static const _iconSlot = 48.0;
+  static const _iconMin = 40.0;
+  static const _titleMin = 150.0;
 
   @override
   Widget build(BuildContext context) => Material(
@@ -547,69 +559,156 @@ class SiteReaderHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: SizedBox(
-          height: 56,
+          height: _barHeight,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              children: [
-                IconButton(
-                  tooltip: 'Retour',
-                  color: siteButtonText,
-                  onPressed: onBack,
-                  icon: const Icon(Icons.arrow_back),
-                ),
-                Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: siteText(
-                      color: siteButtonText,
-                      fontSize: 15,
-                      lineHeight: 18,
-                      weight: FontWeight.w700,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final leading = <Widget>[
+                  _headerButton(
+                    tooltip: 'Retour',
+                    icon: Icons.arrow_back,
+                    onPressed: onBack,
+                    slot: _slotFor(constraints.maxWidth),
+                  ),
+                  if (onHome != null)
+                    _headerButton(
+                      tooltip: 'Sommaire',
+                      icon: Icons.home,
+                      onPressed: onHome!,
+                      slot: _slotFor(constraints.maxWidth),
                     ),
-                  ),
-                ),
-                if (onPlay != null)
-                  IconButton(
-                    tooltip: 'Lire',
-                    color: siteButtonText,
-                    onPressed: onPlay,
-                    icon: const Icon(Icons.play_arrow),
-                  ),
-                if (onDownload != null)
-                  IconButton(
-                    tooltip: 'Télécharger',
-                    color: siteButtonText,
-                    onPressed: onDownload,
-                    icon: const Icon(Icons.download),
-                  ),
-                if (onFavorite != null)
-                  IconButton(
-                    tooltip: favorite
-                        ? 'Retirer des favoris'
-                        : 'Ajouter aux favoris',
-                    onPressed: onFavorite,
-                    icon: ExcludeSemantics(
-                      child: _FavoriteHeart(selected: favorite),
+                ];
+                final trailing = <Widget>[
+                  if (onScrollToTop != null)
+                    _headerButton(
+                      tooltip: 'Haut de la page',
+                      icon: Icons.keyboard_arrow_up,
+                      onPressed: onScrollToTop!,
+                      slot: _slotFor(constraints.maxWidth),
                     ),
-                  ),
-                if (onShare != null)
-                  IconButton(
-                    tooltip: 'Partager',
-                    color: siteButtonText,
-                    onPressed: onShare,
-                    icon: const Icon(Icons.share),
-                  ),
-              ],
+                  if (onPlay != null)
+                    _headerButton(
+                      tooltip: 'Lire',
+                      icon: Icons.play_arrow,
+                      onPressed: onPlay!,
+                      slot: _slotFor(constraints.maxWidth),
+                    ),
+                  if (onDownload != null)
+                    _headerButton(
+                      tooltip: 'Télécharger',
+                      icon: Icons.download,
+                      onPressed: onDownload!,
+                      slot: _slotFor(constraints.maxWidth),
+                    ),
+                  if (onFavorite != null)
+                    _headerButton(
+                      tooltip: favorite
+                          ? 'Retirer des favoris'
+                          : 'Ajouter aux favoris',
+                      onPressed: onFavorite!,
+                      slot: _slotFor(constraints.maxWidth),
+                      iconWidget: ExcludeSemantics(
+                        child: _FavoriteHeart(selected: favorite),
+                      ),
+                    ),
+                  if (onShare != null)
+                    _headerButton(
+                      tooltip: 'Partager',
+                      icon: Icons.share,
+                      onPressed: onShare!,
+                      slot: _slotFor(constraints.maxWidth),
+                    ),
+                ];
+                return Row(
+                  children: [
+                    ...leading,
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          softWrap: false,
+                          textAlign: TextAlign.center,
+                          style: siteText(
+                            color: siteButtonText,
+                            fontSize: 15,
+                            lineHeight: 18,
+                            weight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    ...trailing,
+                  ],
+                );
+              },
             ),
           ),
         ),
       ),
     ),
   );
+
+  double _slotFor(double width) {
+    final count =
+        1 +
+        (onHome != null ? 1 : 0) +
+        (onScrollToTop != null ? 1 : 0) +
+        (onPlay != null ? 1 : 0) +
+        (onDownload != null ? 1 : 0) +
+        (onFavorite != null ? 1 : 0) +
+        (onShare != null ? 1 : 0);
+    if (count <= 0 || !width.isFinite || width <= 0) return _iconSlot;
+    if (count * _iconSlot + _titleMin <= width) return _iconSlot;
+    final fitted = (width - _titleMin) / count;
+    if (fitted >= _iconMin) return fitted;
+    if (count * _iconMin < width) return _iconMin;
+    return width / count;
+  }
+
+  Widget _headerButton({
+    required String tooltip,
+    required VoidCallback onPressed,
+    required double slot,
+    IconData? icon,
+    Widget? iconWidget,
+  }) {
+    final glyph =
+        iconWidget ??
+        Icon(icon!, size: _glyphSize(slot), color: siteButtonText);
+    return Semantics(
+      button: true,
+      label: tooltip,
+      child: ExcludeSemantics(
+        child: SizedBox(
+          width: slot,
+          height: _iconSlot,
+          child: IconButton(
+            tooltip: tooltip,
+            color: iconWidget == null ? siteButtonText : null,
+            padding: EdgeInsets.zero,
+            constraints: BoxConstraints.tightFor(
+              width: slot,
+              height: _iconSlot,
+            ),
+            style: IconButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              fixedSize: Size(slot, _iconSlot),
+            ),
+            onPressed: onPressed,
+            icon: glyph,
+          ),
+        ),
+      ),
+    );
+  }
+
+  double _glyphSize(double slot) =>
+      slot >= _iconMin ? 24 : (24 * slot / _iconMin).clamp(20.0, 24.0);
 }
 
 /// Cœur blanc quand le texte est en favori. Sinon, cœur vert cerclé de blanc.
@@ -659,7 +758,7 @@ class SiteTextTabs extends StatelessWidget {
       // L’inset bas appartient au lecteur du shell. Le réserver ici laissait
       // une bande blanche entre ces onglets et la barre audio.
       child: SizedBox(
-        height: 44,
+        height: siteReaderBarHeight,
         child: Row(
           children: [
             for (var i = 0; i < labels.length; i++)

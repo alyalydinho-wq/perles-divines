@@ -673,46 +673,63 @@ void main() {
         expect(find.bySemanticsLabel('Plus petit'), findsOneWidget);
         expect(find.bySemanticsLabel('Plus grand'), findsOneWidget);
         expect(find.bySemanticsLabel('Sommaire'), findsOneWidget);
-        expect(find.bySemanticsLabel('Page précédente'), findsOneWidget);
+        expect(find.bySemanticsLabel('Page précédente'), findsNothing);
+        expect(find.byIcon(Icons.chevron_left), findsNothing);
         expect(find.bySemanticsLabel('Haut de la page'), findsOneWidget);
 
         final bar = tester.getRect(find.byKey(const Key('text-size-bar')));
         final tabs = tester.getRect(find.byType(SiteTextTabs));
         final reading = tester.getRect(find.byType(Scrollable));
-        expect(bar.height, greaterThanOrEqualTo(56));
-        expect(bar.height, lessThanOrEqualTo(64));
+        final header = tester.getRect(find.byType(SiteReaderHeader));
+        expect(bar.height, tabs.height);
+        expect(bar.height, siteReaderBarHeight);
+        expect(reading.top, closeTo(header.bottom, 0.5));
         expect(reading.bottom, lessThanOrEqualTo(bar.top + 0.5));
         expect(bar.bottom, lessThanOrEqualTo(tabs.top + 0.5));
 
         final smaller = tester.widget<Text>(find.text('Plus petit'));
         final level = tester.widget<Text>(find.text('Normal'));
-        expect(smaller.style!.fontSize, greaterThanOrEqualTo(18));
+        expect(smaller.style!.fontSize, 14);
         expect(smaller.style!.color, Colors.white);
         expect(smaller.style!.fontWeight, FontWeight.w700);
-        expect(level.style!.fontSize, greaterThanOrEqualTo(16));
+        expect(level.style!.fontSize, 13);
         expect(level.style!.fontWeight, FontWeight.w700);
         expect(
           tester.widget<Material>(_buttonMaterial('smaller-text')).color,
           siteGreenSolid,
         );
-        expect(
-          tester.getSize(find.byKey(const Key('smaller-text'))).height,
-          greaterThanOrEqualTo(56),
+        final smallerBox = tester.getRect(
+          find.byKey(const Key('smaller-text')),
         );
+        final largerBox = tester.getRect(find.byKey(const Key('larger-text')));
+        final levelBox = tester.getRect(find.text('Normal'));
+        expect(smallerBox.height, closeTo(bar.height, 0.5));
+        expect(smallerBox.center.dy, closeTo(largerBox.center.dy, 0.5));
+        expect(levelBox.center.dy, closeTo(smallerBox.center.dy, 0.5));
+        expect(smallerBox.center.dx, lessThan(levelBox.center.dx));
+        expect(levelBox.center.dx, lessThan(largerBox.center.dx));
 
-        final width = tester.getSize(find.byType(TextScreen)).width;
-        expect(
-          tester.getCenter(find.byTooltip('Sommaire')).dx,
-          closeTo(width / 6, 2),
+        final back = tester.getCenter(find.byTooltip('Retour'));
+        final home = tester.getCenter(find.byTooltip('Sommaire'));
+        final up = tester.getCenter(find.byTooltip('Haut de la page'));
+        final play = tester.getCenter(find.byTooltip('Lire'));
+        final share = tester.getCenter(find.byTooltip('Partager'));
+        final title = tester.getRect(
+          find.descendant(
+            of: find.byType(SiteReaderHeader),
+            matching: find.text('Texte'),
+          ),
         );
-        expect(
-          tester.getCenter(find.byTooltip('Page précédente')).dx,
-          closeTo(width / 2, 2),
-        );
-        expect(
-          tester.getCenter(find.byTooltip('Haut de la page')).dx,
-          closeTo(width * 5 / 6, 2),
-        );
+        expect(header.contains(home), isTrue);
+        expect(header.contains(up), isTrue);
+        expect(back.dx, lessThan(home.dx));
+        expect(home.dx, lessThan(title.left));
+        expect(title.right, lessThan(up.dx));
+        expect(up.dx, lessThan(play.dx));
+        expect(play.dx, lessThan(share.dx));
+        expect(home.dy, closeTo(back.dy, 1));
+        expect(up.dy, closeTo(back.dy, 1));
+        expect(play.dy, closeTo(back.dy, 1));
       } finally {
         handle.dispose();
       }
@@ -954,9 +971,7 @@ void main() {
     expect(saved['gujarati'], 14);
   });
 
-  testWidgets('sommaire, page précédente et haut de page fonctionnent', (
-    tester,
-  ) async {
+  testWidgets('sommaire, retour et haut de page fonctionnent', (tester) async {
     final item = _sample(
       arabic: List.filled(
         24,
@@ -1016,7 +1031,7 @@ void main() {
     );
     await tester.tap(find.text('Ouvrir la lecture'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Page précédente'));
+    await tester.tap(find.byTooltip('Retour'));
     await tester.pumpAndSettle();
     expect(find.text('Ouvrir la lecture'), findsOneWidget);
     expect(find.byType(TextScreen), findsNothing);

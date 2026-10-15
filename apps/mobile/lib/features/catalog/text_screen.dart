@@ -237,6 +237,8 @@ class _TextScreenState extends State<TextScreen> {
             title: item.title,
             favorite: favorite,
             onBack: () => Navigator.of(context).maybePop(),
+            onHome: () => GoRouter.maybeOf(context)?.go('/sommaire'),
+            onScrollToTop: _scrollToTop,
             onPlay: _play,
             onDownload: widget.downloads == null || widget.tracks.isEmpty
                 ? null
@@ -247,7 +249,6 @@ class _TextScreenState extends State<TextScreen> {
             },
             onShare: _share,
           ),
-          _actionBar(),
           Expanded(child: _pane(item)),
           _textSizeBar(),
           SiteTextTabs(
@@ -262,70 +263,6 @@ class _TextScreenState extends State<TextScreen> {
                 setState(() => pane = TextPane.values[index]),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _actionBar() {
-    return Material(
-      color: siteGreenSolid,
-      child: SizedBox(
-        height: 52,
-        child: Row(
-          children: [
-            Expanded(
-              child: Center(
-                child: _barButton(
-                  tooltip: 'Sommaire',
-                  icon: Icons.home,
-                  onPressed: () => GoRouter.maybeOf(context)?.go('/sommaire'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: _barButton(
-                  tooltip: 'Page précédente',
-                  icon: Icons.chevron_left,
-                  onPressed: () => Navigator.of(context).maybePop(),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: _barButton(
-                  tooltip: 'Haut de la page',
-                  icon: Icons.keyboard_arrow_up,
-                  onPressed: _scrollToTop,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _barButton({
-    required String tooltip,
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return Semantics(
-      button: true,
-      label: tooltip,
-      child: ExcludeSemantics(
-        child: IconButton(
-          tooltip: tooltip,
-          onPressed: onPressed,
-          icon: Icon(icon, size: 28, color: Colors.white),
-          style: IconButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.transparent,
-            fixedSize: const Size(52, 44),
-            shape: const CircleBorder(),
-          ),
-        ),
       ),
     );
   }
@@ -353,9 +290,9 @@ class _TextScreenState extends State<TextScreen> {
             border: Border(top: BorderSide(color: Color(0xFFD9E3C8))),
           ),
           child: SizedBox(
-            height: 56,
+            height: siteReaderBarHeight,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 3),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -384,8 +321,8 @@ class _TextScreenState extends State<TextScreen> {
                             textAlign: TextAlign.center,
                             style: siteText(
                               color: siteBlack,
-                              fontSize: 16,
-                              lineHeight: 20,
+                              fontSize: 13,
+                              lineHeight: 16,
                               weight: FontWeight.w700,
                             ),
                           ),
@@ -425,8 +362,8 @@ class _TextScreenState extends State<TextScreen> {
   }) {
     final style = siteText(
       color: enabled ? Colors.white : const Color(0xFF616161),
-      fontSize: 18,
-      lineHeight: 21,
+      fontSize: 14,
+      lineHeight: 16,
       weight: FontWeight.w700,
     );
     return Tooltip(
@@ -440,7 +377,7 @@ class _TextScreenState extends State<TextScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 2),
             child: Material(
               color: enabled ? siteGreenSolid : const Color(0xFFD0D0D0),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 key: key,
