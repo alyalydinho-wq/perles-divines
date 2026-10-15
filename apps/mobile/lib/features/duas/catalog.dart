@@ -15,7 +15,8 @@ final _whitespace = RegExp(r'\s+');
 
 const _folds = <String, String>{
   'àáâäãåāăą': 'a',
-  'çćč': 'c',
+  'ćč': 'c',
+  'ç': 's',
   'ďđḍ': 'd',
   'èéêëēĕėę': 'e',
   'ìíîïī': 'i',
@@ -65,6 +66,8 @@ class LocalDevotionalCatalog {
         .toList();
     // Une ou deux lettres se trouvent dans presque chaque prière.
     // On les cherche dans le titre, pas dans le corps.
+    // Dès qu’un titre correspond, les autres textes qui ne font que
+    // citer le mot ne sont pas proposés.
     final inBody = words.isNotEmpty && words.every((word) => word.length >= 3);
     final titles = <DevotionalText>[];
     final others = <DevotionalText>[];
@@ -80,8 +83,6 @@ class LocalDevotionalCatalog {
         others.add(doc.item);
       }
     }
-    // Un titre qui correspond suffit : le corps citerait le mot
-    // dans des prières sans rapport avec la demande.
     if (titles.isNotEmpty) return titles;
     return others;
   }
@@ -96,16 +97,18 @@ class _SearchDoc {
   const _SearchDoc({
     required this.item,
     required this.title,
-    required this.titleTokens,
+    required this.forms,
+    required this.tokenKeys,
     required this.bodyTokens,
-    required this.titleTokensByLength,
   });
 
   final DevotionalText item;
   final String title;
-  final Set<String> titleTokens;
+
+  /// Mots du titre, mots collés (Ya-Sin, al-Fatiha) et leurs graphies.
+  final Set<String> forms;
+  final List<String> tokenKeys;
   final Set<String> bodyTokens;
-  final Map<int, List<String>> titleTokensByLength;
 
   factory _SearchDoc.from(DevotionalText item) {
     final title = _searchable(item.title);
@@ -120,20 +123,14 @@ class _SearchDoc {
         ...item.references,
       ].join(' '),
     );
-    return _SearchDoc(
-      item: item,
-      title: title,
-      titleTokens: _tokenSet(title),
-      bodyTokens: _tokenSet(haystack),
-      titleTokensByLength: _tokensByLength(title),
-    );
+    return _SearchDoc._(item, title, _tokenSet(haystack));
   }
 
   factory _SearchDoc.fromPlain(String text) {
     final title = _searchable(text);
     final tokens = _tokenSet(title);
-    return _SearchDoc(
-      item: DevotionalText(
+    return _SearchDoc._(
+      DevotionalText(
         id: '',
         kind: DevotionalKind.dua,
         title: text,
@@ -143,63 +140,155 @@ class _SearchDoc {
         references: const [],
         audioIds: const [],
       ),
+      title,
+      tokens,
+    );
+  }
+
+  factory _SearchDoc._(DevotionalText item, String title, Set<String> body) {
+    final tokens = title.split(' ').where((token) => token.isNotEmpty).toList();
+    return _SearchDoc(
+      item: item,
       title: title,
-      titleTokens: tokens,
-      bodyTokens: tokens,
-      titleTokensByLength: _tokensByLength(title),
+      forms: _forms(tokens),
+      tokenKeys: _tokenKeys(tokens),
+      bodyTokens: body,
     );
   }
 }
 
-Set<String> _tokenSet(String text) =>
-    text.split(' ').where((token) => token.isNotEmpty).toSet();
+final _digits = RegExp(r'^\d+$');
 
-Map<int, List<String>> _tokensByLength(String text) {
-  final tokensByLength = <int, List<String>>{};
-  final seen = <String>{};
+Set<String> _tokenSet(String text) {
+  final tokens = <String>{};
   for (final token in text.split(' ')) {
-    if (token.length < 3 || !seen.add(token)) continue;
-    (tokensByLength[token.length] ??= []).add(token);
+    if (token.isEmpty) continue;
+    tokens.addAll(_keys(token));
   }
-  return tokensByLength;
+  return tokens;
+}
+
+Set<String> _forms(List<String> tokens) {
+  final forms = <String>{};
+  for (final token in tokens) {
+    forms.addAll(_keys(token));
+  }
+  for (var i = 0; i < tokens.length - 1; i++) {
+    if (_digits.hasMatch(tokens[i]) || _digits.hasMatch(tokens[i + 1])) {
+      continue;
+    }
+    forms.addAll(_keys(tokens[i] + tokens[i + 1]));
+  }
+  return forms;
+}
+
+List<String> _tokenKeys(List<String> tokens) {
+  final keys = <String>{};
+  for (final token in tokens) {
+    for (final key in _keys(token)) {
+      if (key.length >= 4) keys.add(key);
+    }
+  }
+  return keys.toList();
+}
+
+/// Lettres doublées, h final et e muet comptent pour la même graphie.
+String _stem(String word) {
+  final buffer = StringBuffer();
+  var previous = 0;
+  for (final code in word.codeUnits) {
+    if (code == previous) continue;
+    buffer.writeCharCode(code);
+    previous = code;
+  }
+  final stem = buffer.toString();
+  if (stem.endsWith('h') && stem.length >= 6) {
+    return stem.substring(0, stem.length - 1);
+  }
+  return stem;
+}
+
+Set<String> _keys(String word) {
+  final stem = _stem(word);
+  final keys = <String>{stem};
+  if (stem.endsWith('e') && stem.length > 4) {
+    keys.add(stem.substring(0, stem.length - 1));
+  }
+  final swapped = <String>[];
+  for (final key in keys) {
+    if (key.length <= 4) continue;
+    if (key.endsWith('c')) {
+      swapped.add('${key.substring(0, key.length - 1)}s');
+    } else if (key.endsWith('s')) {
+      swapped.add('${key.substring(0, key.length - 1)}c');
+    }
+  }
+  keys.addAll(swapped);
+  return keys;
 }
 
 bool _titleMatches(String word, _SearchDoc doc) {
   if (word.length < 3) return doc.title.contains(word);
-  if (doc.titleTokens.contains(word)) return true;
-  if (word.length < 4) return false;
-  for (var length = word.length - 1; length <= word.length + 1; length++) {
-    final tokens = doc.titleTokensByLength[length];
-    if (tokens == null) continue;
-    for (final token in tokens) {
-      if (_distance(word, token) <= 1) return true;
-    }
+  for (final key in _keys(word)) {
+    if (doc.forms.contains(key)) return true;
+  }
+  final stem = _stem(word);
+  if (stem.length < 4) return false;
+  for (final token in doc.tokenKeys) {
+    if (_nearName(stem, token)) return true;
   }
   return false;
 }
 
-bool _bodyMatches(String word, _SearchDoc doc) =>
-    _titleMatches(word, doc) || doc.bodyTokens.contains(word);
-
-int _distance(String a, String b) {
-  if (a == b) return 0;
-  if (a.isEmpty) return b.length;
-  if (b.isEmpty) return a.length;
-  var previous = List<int>.generate(b.length + 1, (index) => index);
-  for (var i = 0; i < a.length; i++) {
-    final current = List<int>.filled(b.length + 1, 0);
-    current[0] = i + 1;
-    for (var j = 0; j < b.length; j++) {
-      final cost = a.codeUnitAt(i) == b.codeUnitAt(j) ? 0 : 1;
-      current[j + 1] = [
-        current[j] + 1,
-        previous[j + 1] + 1,
-        previous[j] + cost,
-      ].reduce((left, right) => left < right ? left : right);
-    }
-    previous = current;
+bool _bodyMatches(String word, _SearchDoc doc) {
+  if (_titleMatches(word, doc)) return true;
+  for (final key in _keys(word)) {
+    if (doc.bodyTokens.contains(key)) return true;
   }
-  return previous.last;
+  return false;
+}
+
+bool _isVowel(int code) =>
+    code == 0x61 ||
+    code == 0x65 ||
+    code == 0x69 ||
+    code == 0x6f ||
+    code == 0x75 ||
+    code == 0x79;
+
+/// Une voyelle changée, ou une lettre en plus ou en moins.
+/// Une consonne remplacée (hassan / yassin, qadr / qabr) ne correspond pas.
+bool _nearName(String a, String b) {
+  if (a == b || (a.length - b.length).abs() > 1) return false;
+  if (a.length < 4 || b.length < 4) return false;
+  if (a.length == b.length) {
+    var diffs = 0;
+    for (var i = 0; i < a.length; i++) {
+      if (a.codeUnitAt(i) == b.codeUnitAt(i)) continue;
+      if (!_isVowel(a.codeUnitAt(i)) || !_isVowel(b.codeUnitAt(i))) {
+        return false;
+      }
+      if (++diffs > 1) return false;
+    }
+    return diffs == 1;
+  }
+  final longer = a.length > b.length ? a : b;
+  final shorter = a.length > b.length ? b : a;
+  var i = 0;
+  var j = 0;
+  var skipped = false;
+  while (i < longer.length && j < shorter.length) {
+    if (longer.codeUnitAt(i) == shorter.codeUnitAt(j)) {
+      i++;
+      j++;
+    } else if (skipped) {
+      return false;
+    } else {
+      skipped = true;
+      i++;
+    }
+  }
+  return true;
 }
 
 String _searchable(String value) {
@@ -215,22 +304,18 @@ String _searchable(String value) {
   text = text.replaceAll('ch', 'sh');
   text = text.replaceAll('ou', 'u');
   text = text.replaceAll('aa', 'a');
+  text = text.replaceAll('ee', 'i');
+  text = text.replaceAll('ii', 'i');
   return text
       .replaceAll(_notSearchable, ' ')
       .replaceAll(_whitespace, ' ')
       .replaceAll(_ramadanSpellings, 'ramadan')
-      .replaceAll(_yaSinSplit, 'yasin')
-      .replaceAll(_yaSinWord, 'yasin')
       .trim();
 }
 
 final _ramadanSpellings = RegExp(
   r'\bramadha+n\b|\bramzane\b|\bramzan\b|\bramadan\b',
 );
-
-/// Yâ-Sîn, Ya-Sin, Yassin, Yaseen et Yassine désignent le même nom.
-final _yaSinSplit = RegExp(r'\bya+\s+s+[ie]+n+\b');
-final _yaSinWord = RegExp(r'\bya+s+[ie]+n+e?\b');
 
 /// Vrai quand [text] contient chaque mot de [query], avec les mêmes
 /// tolérances que la recherche du catalogue.

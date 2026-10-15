@@ -90,19 +90,26 @@ void main() {
     expect(watch.elapsedMilliseconds, lessThan(400));
   });
 
-  test('yassin trouve la sourate Ya-Sin, pas les titres voisins', () async {
+  test('chaque recherche vise le titre demandé, pas un mot voisin', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
     final catalog = await LocalDevotionalCatalog.load();
-    expect(catalog.search('yassin').map((item) => item.title), [
-      'Sourate Yâ-Sîn (36)',
-    ]);
-    expect(catalog.search('ya sin').map((item) => item.title), [
-      'Sourate Yâ-Sîn (36)',
-    ]);
-    expect(catalog.search('yaseen').map((item) => item.title), [
-      'Sourate Yâ-Sîn (36)',
-    ]);
-    final hassan = catalog.search('hassan').map((item) => item.title);
+    List<String> titles(String query) =>
+        catalog.search(query).map((item) => item.title).toList();
+
+    expect(titles('yassin'), ['Sourate Yâ-Sîn (36)']);
+    expect(titles('ya sin'), ['Sourate Yâ-Sîn (36)']);
+    expect(titles('yaseen'), ['Sourate Yâ-Sîn (36)']);
+    expect(titles('yassine'), ['Sourate Yâ-Sîn (36)']);
+    expect(titles('fatiha'), ['Sourate al-Fâtihah (1)']);
+    expect(titles('alfatiha'), ['Sourate al-Fâtihah (1)']);
+    expect(titles('ikhlas'), ['Sourate al-Ikhlâç (112)']);
+    expect(titles('qadr'), ['Sourate al-Qadr (97)']);
+    expect(titles('annas'), ['Sourate an-Nâs (114)']);
+    expect(titles('kumail'), ['Doua-e-Kumayl']);
+    expect(titles('achoura'), contains('Zyaarat-e-Âchourâ'));
+    expect(titles('achoura'), isNot(contains('Sourate Yâ-Sîn (36)')));
+
+    final hassan = titles('hassan');
     expect(hassan, isNot(contains('Sourate Yâ-Sîn (36)')));
     expect(
       hassan.every((title) => title.toLowerCase().contains('hassan')),
