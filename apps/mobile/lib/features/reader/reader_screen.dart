@@ -64,6 +64,8 @@ class ReaderScreenState extends State<ReaderScreen> {
 
   Future<void> _initialize() async {
     await controller.setJavaScriptMode(JavaScriptMode.disabled);
+    // Pincement natif. enableZoom(true) ne réactive pas JavaScript.
+    await controller.enableZoom(true);
     if (controller.platform is AndroidWebViewController) {
       await (controller.platform as AndroidWebViewController)
           .setAllowContentAccess(false);

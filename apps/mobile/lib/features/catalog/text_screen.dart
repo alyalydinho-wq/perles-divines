@@ -28,6 +28,22 @@ const _arabicMax = 48.0;
 const _proseMin = 14.0;
 const _proseMax = 32.0;
 
+/// Un seul cran pour les quatre lectures. L’arabe reste plus grand.
+const _textSizeLevels = <_TextSizeLevel>[
+  _TextSizeLevel('Petit', 24, 16),
+  _TextSizeLevel('Normal', 28, 18),
+  _TextSizeLevel('Grand', 34, 22),
+  _TextSizeLevel('Très grand', 40, 26),
+  _TextSizeLevel('Énorme', 46, 30),
+];
+
+class _TextSizeLevel {
+  const _TextSizeLevel(this.name, this.arabic, this.prose);
+  final String name;
+  final double arabic;
+  final double prose;
+}
+
 /// L’encre de la police IndoPak occupe environ 2,04 em. En dessous, les
 /// voyelles de deux lignes se touchent ; au-dessus, ce n’est que du vide.
 const _arabicLineHeight = 2.06;
@@ -79,7 +95,7 @@ class _TextScreenState extends State<TextScreen> {
   double transliterationSize = 18;
   double gujaratiSize = 18;
   bool _customSizes = false;
-  bool _sizesOpen = false;
+  int _levelIndex = 1;
   late bool favorite = widget.favorite;
   late TextPane pane;
 
@@ -135,6 +151,7 @@ class _TextScreenState extends State<TextScreen> {
         _proseMax,
         gujaratiSize,
       );
+      _levelIndex = _nearestLevelIndex();
     });
   }
 
@@ -143,29 +160,70 @@ class _TextScreenState extends State<TextScreen> {
     return number.clamp(min, max).toDouble();
   }
 
-  void _setSizes({
-    double? arabic,
-    double? translation,
-    double? transliteration,
-    double? gujarati,
-  }) {
+  int _nearestLevelIndex() {
+    var best = 0;
+    var bestScore = double.infinity;
+    for (var index = 0; index < _textSizeLevels.length; index++) {
+      final level = _textSizeLevels[index];
+      final score =
+          (arabicSize - level.arabic).abs() +
+          (translationSize - level.prose).abs() +
+          (transliterationSize - level.prose).abs() +
+          (gujaratiSize - level.prose).abs();
+      if (score < bestScore) {
+        bestScore = score;
+        best = index;
+      }
+    }
+    return best;
+  }
+
+  void _stepLevel(int delta) {
+    final next = _levelIndex + delta;
+    if (next < 0 || next >= _textSizeLevels.length) return;
+    final fraction = _readingFraction();
+    final level = _textSizeLevels[next];
     setState(() {
       _customSizes = true;
-      if (arabic != null) arabicSize = arabic;
-      if (translation != null) translationSize = translation;
-      if (transliteration != null) transliterationSize = transliteration;
-      if (gujarati != null) gujaratiSize = gujarati;
+      _levelIndex = next;
+      arabicSize = level.arabic;
+      translationSize = level.prose;
+      transliterationSize = level.prose;
+      gujaratiSize = level.prose;
     });
     final store = widget.store;
-    if (store == null) return;
-    unawaited(
-      store.writeState(_fontKey, {
-        'arabic': arabicSize,
-        'translation': translationSize,
-        'transliteration': transliterationSize,
-        'gujarati': gujaratiSize,
-      }),
-    );
+    if (store != null) {
+      unawaited(
+        store.writeState(_fontKey, {
+          'arabic': arabicSize,
+          'translation': translationSize,
+          'transliteration': transliterationSize,
+          'gujarati': gujaratiSize,
+        }),
+      );
+    }
+    _restoreReadingFraction(fraction);
+  }
+
+  double? _readingFraction() {
+    if (!_scroll.hasClients) return null;
+    final position = _scroll.position;
+    final max = position.maxScrollExtent;
+    if (!max.isFinite || max <= 0) return 0;
+    return (position.pixels / max).clamp(0.0, 1.0);
+  }
+
+  void _restoreReadingFraction(double? fraction) {
+    if (fraction == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scroll.hasClients) return;
+      final position = _scroll.position;
+      final max = position.maxScrollExtent;
+      if (!max.isFinite || max <= 0) return;
+      final target = (fraction * max).clamp(0.0, max);
+      if ((position.pixels - target).abs() < 1) return;
+      position.jumpTo(target);
+    });
   }
 
   @override
@@ -191,6 +249,7 @@ class _TextScreenState extends State<TextScreen> {
           ),
           _actionBar(),
           Expanded(child: _pane(item)),
+          _textSizeBar(),
           SiteTextTabs(
             selected: pane.index,
             labels: [
@@ -208,42 +267,42 @@ class _TextScreenState extends State<TextScreen> {
   }
 
   Widget _actionBar() {
-    return Column(
-      children: [
-        Material(
-          color: siteGreenSolid,
-          child: SizedBox(
-            height: 52,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _barButton(
-                  tooltip: 'Taille du texte',
-                  icon: Icons.settings,
-                  selected: _sizesOpen,
-                  onPressed: () => setState(() => _sizesOpen = !_sizesOpen),
-                ),
-                _barButton(
+    return Material(
+      color: siteGreenSolid,
+      child: SizedBox(
+        height: 52,
+        child: Row(
+          children: [
+            Expanded(
+              child: Center(
+                child: _barButton(
                   tooltip: 'Sommaire',
                   icon: Icons.home,
                   onPressed: () => GoRouter.maybeOf(context)?.go('/sommaire'),
                 ),
-                _barButton(
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: _barButton(
                   tooltip: 'Page précédente',
                   icon: Icons.chevron_left,
                   onPressed: () => Navigator.of(context).maybePop(),
                 ),
-                _barButton(
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: _barButton(
                   tooltip: 'Haut de la page',
                   icon: Icons.keyboard_arrow_up,
                   onPressed: _scrollToTop,
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
-        if (_sizesOpen) _fontControls(),
-      ],
+      ),
     );
   }
 
@@ -251,19 +310,156 @@ class _TextScreenState extends State<TextScreen> {
     required String tooltip,
     required IconData icon,
     required VoidCallback onPressed,
-    bool selected = false,
   }) {
-    return IconButton(
-      tooltip: tooltip,
-      onPressed: onPressed,
-      icon: Icon(icon, size: 28, color: Colors.white),
-      style: IconButton.styleFrom(
-        foregroundColor: Colors.white,
-        backgroundColor: selected
-            ? const Color(0x33FFFFFF)
-            : Colors.transparent,
-        fixedSize: const Size(52, 44),
-        shape: const CircleBorder(),
+    return Semantics(
+      button: true,
+      label: tooltip,
+      child: ExcludeSemantics(
+        child: IconButton(
+          tooltip: tooltip,
+          onPressed: onPressed,
+          icon: Icon(icon, size: 28, color: Colors.white),
+          style: IconButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.transparent,
+            fixedSize: const Size(52, 44),
+            shape: const CircleBorder(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _textSizeBar() {
+    if (pane == TextPane.arabic && widget.item.hasOriginalPage) {
+      return const _OriginalPageHint();
+    }
+    final atMin = _levelIndex <= 0;
+    final atMax = _levelIndex >= _textSizeLevels.length - 1;
+    final label = atMin
+        ? 'Taille minimale'
+        : atMax
+        ? 'Taille maximale'
+        : _textSizeLevels[_levelIndex].name;
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: 'Taille du texte',
+      child: Material(
+        key: const Key('text-size-bar'),
+        color: const Color(0xFFF7F8F4),
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: Color(0xFFD9E3C8))),
+          ),
+          child: SizedBox(
+            height: 56,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: _sizeStep(
+                      key: const Key('smaller-text'),
+                      lines: const ['A−', 'Plus petit'],
+                      tooltip: 'Plus petit',
+                      semantics: atMin
+                          ? 'Plus petit, taille minimale'
+                          : 'Plus petit',
+                      enabled: !atMin,
+                      onPressed: () => _stepLevel(-1),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 5,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            label,
+                            textAlign: TextAlign.center,
+                            style: siteText(
+                              color: siteBlack,
+                              fontSize: 16,
+                              lineHeight: 20,
+                              weight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child: _sizeStep(
+                      key: const Key('larger-text'),
+                      lines: const ['A+', 'Plus grand'],
+                      tooltip: 'Plus grand',
+                      semantics: atMax
+                          ? 'Plus grand, taille maximale'
+                          : 'Plus grand',
+                      enabled: !atMax,
+                      onPressed: () => _stepLevel(1),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sizeStep({
+    required Key key,
+    required List<String> lines,
+    required String tooltip,
+    required String semantics,
+    required bool enabled,
+    required VoidCallback onPressed,
+  }) {
+    final style = siteText(
+      color: enabled ? Colors.white : const Color(0xFF616161),
+      fontSize: 18,
+      lineHeight: 21,
+      weight: FontWeight.w700,
+    );
+    return Tooltip(
+      message: tooltip,
+      child: Semantics(
+        button: true,
+        enabled: enabled,
+        label: semantics,
+        child: ExcludeSemantics(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Material(
+              color: enabled ? siteGreenSolid : const Color(0xFFD0D0D0),
+              borderRadius: BorderRadius.circular(10),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                key: key,
+                onTap: enabled ? onPressed : null,
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final line in lines) Text(line, style: style),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -284,170 +480,6 @@ class _TextScreenState extends State<TextScreen> {
       0,
       duration: const Duration(milliseconds: 350),
       curve: Curves.easeOutCubic,
-    );
-  }
-
-  Widget _fontControls() {
-    return Material(
-      color: siteCanvas,
-      elevation: 0,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: Color(0xFFF7F8F4),
-          border: Border(bottom: BorderSide(color: Color(0xFFD9E3C8))),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-          child: Row(
-            children: [
-              _stepper(
-                label: 'Arabe',
-                value: arabicSize,
-                min: _arabicMin,
-                max: _arabicMax,
-                step: 2,
-                active: pane == TextPane.arabic,
-                onChanged: (value) => _setSizes(arabic: value),
-              ),
-              const SizedBox(width: 6),
-              _stepper(
-                label: 'Traduction',
-                value: translationSize,
-                min: _proseMin,
-                max: _proseMax,
-                step: 1,
-                active: pane == TextPane.translation,
-                onChanged: (value) => _setSizes(translation: value),
-              ),
-              const SizedBox(width: 6),
-              _stepper(
-                label: 'Translit.',
-                value: transliterationSize,
-                min: _proseMin,
-                max: _proseMax,
-                step: 1,
-                active: pane == TextPane.transliteration,
-                onChanged: (value) => _setSizes(transliteration: value),
-              ),
-              if (widget.item.hasGujarati) ...[
-                const SizedBox(width: 6),
-                _stepper(
-                  label: 'Gujarati',
-                  value: gujaratiSize,
-                  min: _proseMin,
-                  max: _proseMax,
-                  step: 1,
-                  active: pane == TextPane.gujarati,
-                  onChanged: (value) => _setSizes(gujarati: value),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _stepper({
-    required String label,
-    required double value,
-    required double min,
-    required double max,
-    required double step,
-    required bool active,
-    required ValueChanged<double> onChanged,
-  }) {
-    final target = switch (label) {
-      'Arabe' => 'l’arabe',
-      'Traduction' => 'la traduction',
-      'Gujarati' => 'le gujarati',
-      _ => 'la translittération',
-    };
-    return Expanded(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: active ? const Color(0xFFE7F2D4) : siteCanvas,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: active ? siteGreenSolid : const Color(0xFFD5D5D5),
-            width: active ? 1.4 : 1,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(2, 5, 2, 4),
-          child: Column(
-            children: [
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style: siteText(
-                  color: active ? siteGreen : const Color(0xFF5C5C5C),
-                  fontSize: 11,
-                  lineHeight: 13,
-                  weight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _sizeButton(
-                    tooltip: 'Réduire $target',
-                    icon: Icons.remove,
-                    enabled: value > min,
-                    onPressed: () => onChanged(math.max(min, value - step)),
-                  ),
-                  SizedBox(
-                    width: 28,
-                    child: Text(
-                      '${value.round()}',
-                      textAlign: TextAlign.center,
-                      style: siteText(
-                        color: siteBlack,
-                        fontSize: 14,
-                        lineHeight: 16,
-                        weight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  _sizeButton(
-                    tooltip: 'Agrandir $target',
-                    icon: Icons.add,
-                    enabled: value < max,
-                    onPressed: () => onChanged(math.min(max, value + step)),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _sizeButton({
-    required String tooltip,
-    required IconData icon,
-    required bool enabled,
-    required VoidCallback onPressed,
-  }) {
-    return IconButton(
-      tooltip: tooltip,
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(width: 28, height: 28),
-      style: IconButton.styleFrom(
-        backgroundColor: enabled ? siteGreenSolid : const Color(0xFFE6E6E6),
-        foregroundColor: enabled ? Colors.white : const Color(0xFF9A9A9A),
-        disabledBackgroundColor: const Color(0xFFE6E6E6),
-        disabledForegroundColor: const Color(0xFF9A9A9A),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: const CircleBorder(),
-      ),
-      onPressed: enabled ? onPressed : null,
-      icon: Icon(icon, size: 16),
     );
   }
 
@@ -844,6 +876,41 @@ class _TextScreenState extends State<TextScreen> {
         : item.title;
     await SharePlus.instance.share(
       ShareParams(text: '${item.title}\n\n$body', title: item.title),
+    );
+  }
+}
+
+class _OriginalPageHint extends StatelessWidget {
+  const _OriginalPageHint();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      key: const Key('text-size-bar'),
+      color: const Color(0xFFF7F8F4),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: Color(0xFFD9E3C8))),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Center(
+              child: Text(
+                'Pour agrandir cette page, écartez deux doigts',
+                textAlign: TextAlign.center,
+                style: siteText(
+                  color: siteBlack,
+                  fontSize: 16,
+                  lineHeight: 22,
+                  weight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
