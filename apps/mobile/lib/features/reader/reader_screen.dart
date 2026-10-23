@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import 'content_install.dart';
+import 'page_history.dart';
 
 final _catalogPage = RegExp(
   r'^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.html$',
@@ -35,6 +37,7 @@ class ReaderScreen extends StatefulWidget {
     this.compact = false,
     this.opensUpdatedText,
     this.onOpenUpdatedText,
+    this.onPageHistory,
   });
   final LocalEdition edition;
   final String? initialPage;
@@ -46,15 +49,25 @@ class ReaderScreen extends StatefulWidget {
   /// Ouvre cette lecture à la place de l’ancienne page HTML.
   final void Function(String id)? onOpenUpdatedText;
 
+  /// Vrai tant qu’une page précédente peut être réaffichée ici.
+  final ValueChanged<bool>? onPageHistory;
+
   @override
   State<ReaderScreen> createState() => ReaderScreenState();
 }
 
 class ReaderScreenState extends State<ReaderScreen> {
   late final WebViewController controller;
+  final history = LocalPageHistory();
+  final Map<String, Offset> _offsets = {};
   String? error;
   String current = '';
   List<String> anchors = [];
+  bool _ready = false;
+  bool _publishedHistory = false;
+  int _blankHops = 0;
+  String? _restoreId;
+
   @override
   void initState() {
     super.initState();
@@ -97,6 +110,7 @@ class ReaderScreenState extends State<ReaderScreen> {
               }
               return NavigationDecision.prevent;
             }
+            await _rememberScroll();
             return NavigationDecision.navigate;
           }
           if (['https', 'http', 'mailto'].contains(uri.scheme)) {
@@ -135,26 +149,7 @@ class ReaderScreenState extends State<ReaderScreen> {
           return NavigationDecision.prevent;
         },
         onPageFinished: (url) {
-          final path = Uri.parse(url).path;
-          final pages = (widget.edition.manifest['pages'] as List).where(
-            (page) => path.endsWith(page['path']),
-          );
-          if (mounted) {
-            setState(() {
-              current = url;
-              anchors = pages.isEmpty
-                  ? []
-                  : List<String>.from(pages.first['anchors'])
-                        .where(
-                          (a) => [
-                            'TRADUCTION',
-                            'TRANSLITTERATION',
-                            'INFO',
-                          ].contains(a),
-                        )
-                        .toList();
-            });
-          }
+          unawaited(_finished(url));
         },
         onWebResourceError: (e) {
           if (e.isForMainFrame == true && mounted) {
@@ -166,6 +161,103 @@ class ReaderScreenState extends State<ReaderScreen> {
       ),
     );
     await _open(_startFile());
+    _ready = true;
+  }
+
+  Future<void> _finished(String url) async {
+    if (!mounted) return;
+    final arrival = history.noteFinished(url);
+    if (arrival == HistoryArrival.reloadPrevious) {
+      final target = history.previous;
+      if (target != null && _blankHops < 2) {
+        _blankHops++;
+        await _reload(target);
+        return;
+      }
+      history.cancelBack();
+      _blankHops = 0;
+      _publishHistory();
+      return;
+    }
+    _blankHops = 0;
+    final restoreId = _restoreId;
+    _restoreId = null;
+    _publishHistory();
+    final path = Uri.parse(url).path;
+    final pages = (widget.edition.manifest['pages'] as List).where(
+      (page) => path.endsWith(page['path']),
+    );
+    if (!mounted) return;
+    setState(() {
+      current = url;
+      anchors = pages.isEmpty
+          ? []
+          : List<String>.from(pages.first['anchors'])
+                .where(
+                  (a) => ['TRADUCTION', 'TRANSLITTERATION', 'INFO'].contains(a),
+                )
+                .toList();
+    });
+    if (restoreId != null && LocalPageHistory.identity(url) == restoreId) {
+      final offset = _offsets[restoreId];
+      if (offset != null && offset.dy > 1) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          unawaited(controller.scrollTo(offset.dx.round(), offset.dy.round()));
+        });
+      }
+    }
+  }
+
+  void _publishHistory() {
+    final can = history.canGoBack;
+    if (can == _publishedHistory) return;
+    _publishedHistory = can;
+    widget.onPageHistory?.call(can);
+  }
+
+  Future<void> _rememberScroll() async {
+    final id = history.current == null
+        ? null
+        : LocalPageHistory.identity(history.current!);
+    if (id == null) return;
+    try {
+      _offsets[id] = await controller.getScrollPosition();
+    } catch (_) {}
+  }
+
+  /// Revient à la page précédente du WebView.
+  ///
+  /// `goBack` conserve le défilement. S’il n’y a pas d’historique natif,
+  /// la page précédente est rechargée et le défilement mémorisé est reposé.
+  /// Retourne faux seulement quand l’écran Flutter doit se fermer.
+  Future<bool> goBack() async {
+    if (!_ready || history.restoring) return history.canGoBack;
+    final target = history.beginBack();
+    if (target == null) return false;
+    try {
+      if (await controller.canGoBack()) {
+        await controller.goBack();
+        return true;
+      }
+      await _reload(target);
+      return true;
+    } catch (_) {
+      history.cancelBack();
+      _publishHistory();
+      return false;
+    }
+  }
+
+  Future<void> _reload(String url) async {
+    final file = LocalPageHistory.fileOf(url);
+    if (file == null) {
+      history.cancelBack();
+      _publishHistory();
+      return;
+    }
+    _restoreId = LocalPageHistory.identity(url);
+    await _open(file);
   }
 
   String _startFile() {
@@ -203,8 +295,8 @@ class ReaderScreenState extends State<ReaderScreen> {
           children: [
             IconButton(
               tooltip: 'Page précédente',
-              onPressed: () async {
-                if (await controller.canGoBack()) await controller.goBack();
+              onPressed: () {
+                unawaited(goBack());
               },
               icon: const Icon(Icons.arrow_back),
             ),

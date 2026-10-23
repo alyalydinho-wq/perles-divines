@@ -12,6 +12,7 @@ import '../duas/dua.dart';
 import '../downloads/download_controller.dart';
 import '../player/audio_controller.dart';
 import '../reader/content_install.dart';
+import '../reader/page_history.dart';
 import '../reader/reader_screen.dart';
 
 enum TextPane { arabic, translation, transliteration, gujarati }
@@ -98,6 +99,7 @@ class _TextScreenState extends State<TextScreen> {
   int _levelIndex = 1;
   late bool favorite = widget.favorite;
   late TextPane pane;
+  bool _pageHistory = false;
 
   @override
   void initState() {
@@ -226,44 +228,67 @@ class _TextScreenState extends State<TextScreen> {
     });
   }
 
+  void _setPageHistory(bool value) {
+    if (!mounted || _pageHistory == value) return;
+    setState(() => _pageHistory = value);
+  }
+
+  bool _showsOriginal(TextPane value) =>
+      value == TextPane.arabic && widget.item.hasOriginalPage;
+
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-    return Scaffold(
-      backgroundColor: siteCanvas,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SiteReaderHeader(
-            title: item.title,
-            favorite: favorite,
-            onBack: () => Navigator.of(context).maybePop(),
-            onHome: () => GoRouter.maybeOf(context)?.go('/sommaire'),
-            onScrollToTop: _scrollToTop,
-            onPlay: _play,
-            onDownload: widget.downloads == null || widget.tracks.isEmpty
-                ? null
-                : _download,
-            onFavorite: () async {
-              await widget.onFavorite();
-              if (mounted) setState(() => favorite = !favorite);
-            },
-            onShare: _share,
-          ),
-          Expanded(child: _pane(item)),
-          _textSizeBar(),
-          SiteTextTabs(
-            selected: pane.index,
-            labels: [
-              'Arabic',
-              'Translation',
-              'Transliteration',
-              if (item.hasGujarati) 'Gujarati',
-            ],
-            onSelected: (index) =>
-                setState(() => pane = TextPane.values[index]),
-          ),
-        ],
+    return PageBackScope(
+      hasPageHistory: _pageHistory,
+      onPageBack: () {
+        final reader = _readerKey.currentState;
+        if (reader == null) return;
+        unawaited(reader.goBack());
+      },
+      child: Scaffold(
+        backgroundColor: siteCanvas,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SiteReaderHeader(
+              title: item.title,
+              favorite: favorite,
+              onBack: () => Navigator.of(context).maybePop(),
+              onHome: () => GoRouter.maybeOf(context)?.go('/sommaire'),
+              onScrollToTop: _scrollToTop,
+              onPlay: _play,
+              onDownload: widget.downloads == null || widget.tracks.isEmpty
+                  ? null
+                  : _download,
+              onFavorite: () async {
+                await widget.onFavorite();
+                if (mounted) setState(() => favorite = !favorite);
+              },
+              onShare: _share,
+            ),
+            Expanded(
+              child: IosReadingBackEdge(
+                enabled: _pageHistory,
+                child: _pane(item),
+              ),
+            ),
+            _textSizeBar(),
+            SiteTextTabs(
+              selected: pane.index,
+              labels: [
+                'Arabic',
+                'Translation',
+                'Transliteration',
+                if (item.hasGujarati) 'Gujarati',
+              ],
+              onSelected: (index) => setState(() {
+                pane = TextPane.values[index];
+                if (!_showsOriginal(pane)) _pageHistory = false;
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -459,6 +484,7 @@ class _TextScreenState extends State<TextScreen> {
               compact: true,
               opensUpdatedText: widget.opensUpdatedText,
               onOpenUpdatedText: _openUpdatedText,
+              onPageHistory: _setPageHistory,
             ),
           );
         }
@@ -1152,7 +1178,9 @@ class _QuranArabic extends StatelessWidget {
 
 bool _isBasmala(String text) {
   final compact = text.replaceAll(
-    RegExp(r'[\u064B-\u065F\u0670\u06D6-\u06ED\u0640\u200C\u200D\s\uE000-\uF8FF]'),
+    RegExp(
+      r'[\u064B-\u065F\u0670\u06D6-\u06ED\u0640\u200C\u200D\s\uE000-\uF8FF]',
+    ),
     '',
   );
   return compact.startsWith('بسم') && compact.length <= 24;
@@ -1217,7 +1245,12 @@ List<InlineSpan> _ayahSpans(
   return (before: match.group(1)!, word: match.group(2)!);
 }
 
-Size _tailSize(String word, TextStyle style, TextScaler scaler, double diameter) {
+Size _tailSize(
+  String word,
+  TextStyle style,
+  TextScaler scaler,
+  double diameter,
+) {
   final painter = TextPainter(
     text: TextSpan(text: '$word\u2060', style: style),
     textDirection: TextDirection.rtl,
