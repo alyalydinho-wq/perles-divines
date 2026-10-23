@@ -484,6 +484,8 @@ class _TextScreenState extends State<TextScreen> {
               compact: true,
               opensUpdatedText: widget.opensUpdatedText,
               onOpenUpdatedText: _openUpdatedText,
+              onOpenAppSommaire: () =>
+                  GoRouter.maybeOf(context)?.go('/sommaire'),
               onPageHistory: _setPageHistory,
             ),
           );

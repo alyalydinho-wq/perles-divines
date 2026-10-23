@@ -96,6 +96,12 @@ class LocalPageHistory {
   void cancelBack() {
     restoring = false;
   }
+
+  /// Oublie les pages déjà vues, par exemple avant de quitter pour le sommaire.
+  void clear() {
+    _urls.clear();
+    restoring = false;
+  }
 }
 
 /// Intercepte le retour (flèche, bouton système, geste) tant qu’une page

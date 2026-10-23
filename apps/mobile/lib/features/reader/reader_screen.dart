@@ -16,6 +16,92 @@ final _catalogPage = RegExp(
   caseSensitive: false,
 );
 
+/// Ancien sommaire (`sommaire.html`) et ancienne page d’accueil (`index.html`).
+const legacySommairePageNames = {
+  '1af50233-0b26-5c4b-993e-c96c078fdb46.html',
+  '386bba3e-88c0-5136-bd4e-8215613a7064.html',
+};
+
+const _legacySitePaths = {
+  '/',
+  '/index.html',
+  '/sommaire.html',
+  '/fr',
+  '/fr/index.html',
+  '/fr/sommaire.html',
+};
+
+/// Vrai pour le sommaire ou l’accueil de l’ancien site, en local ou en ligne.
+///
+/// L’ancre et les paramètres ne comptent pas. Le nom du bouton non plus.
+bool isLegacySommaireUrl(Uri uri) {
+  if (uri.scheme == 'mailto') return false;
+  final name = _pageFileName(uri);
+  if (name != null && legacySommairePageNames.contains(name)) return true;
+  final localFile = uri.scheme == 'file' || uri.scheme.isEmpty;
+  if (localFile && (name == 'index.html' || name == 'sommaire.html')) {
+    return true;
+  }
+  if (uri.scheme != 'http' && uri.scheme != 'https') return false;
+  final host = uri.host.toLowerCase();
+  if (host != 'perlesdivines.fr' && host != 'www.perlesdivines.fr') {
+    return false;
+  }
+  if (name == 'index.html' || name == 'sommaire.html') return true;
+  final path = uri.path.isEmpty ? '/' : uri.path;
+  final normalized = path.length > 1 && path.endsWith('/')
+      ? path.substring(0, path.length - 1)
+      : path;
+  return _legacySitePaths.contains(normalized.toLowerCase());
+}
+
+String? _pageFileName(Uri uri) {
+  final raw = uri.scheme == 'file' ? _filePath(uri) : uri.path;
+  if (raw == null || raw.isEmpty || raw == '/') return null;
+  final name = p.basename(raw).toLowerCase();
+  return name.isEmpty ? null : name;
+}
+
+String? _filePath(Uri uri) {
+  try {
+    return p.normalize(uri.replace(query: '', fragment: '').toFilePath());
+  } on UnsupportedError {
+    return uri.path;
+  }
+}
+
+/// Où mène un lien du WebView, avant tout chargement.
+enum ReaderNavigation {
+  showPage,
+  openUpdatedText,
+  openAppSommaire,
+  external,
+  blocked,
+}
+
+ReaderNavigation decideReaderNavigation(
+  Uri uri, {
+  required String editionDirectory,
+  bool Function(String id)? opensUpdatedText,
+}) {
+  if (isLegacySommaireUrl(uri)) return ReaderNavigation.openAppSommaire;
+  if (uri.scheme == 'file') {
+    final file = _filePath(uri);
+    if (file == null || !p.isWithin(editionDirectory, file)) {
+      return ReaderNavigation.blocked;
+    }
+    final id = localCatalogId(uri, editionDirectory);
+    if (id != null && (opensUpdatedText?.call(id) ?? false)) {
+      return ReaderNavigation.openUpdatedText;
+    }
+    return ReaderNavigation.showPage;
+  }
+  if (uri.scheme == 'https' || uri.scheme == 'http' || uri.scheme == 'mailto') {
+    return ReaderNavigation.external;
+  }
+  return ReaderNavigation.blocked;
+}
+
 /// Identifiant catalogue d’une page locale, si l’adresse reste dans l’édition.
 String? localCatalogId(Uri uri, String editionDirectory) {
   if (uri.scheme != 'file') return null;
@@ -37,6 +123,7 @@ class ReaderScreen extends StatefulWidget {
     this.compact = false,
     this.opensUpdatedText,
     this.onOpenUpdatedText,
+    this.onOpenAppSommaire,
     this.onPageHistory,
   });
   final LocalEdition edition;
@@ -48,6 +135,9 @@ class ReaderScreen extends StatefulWidget {
 
   /// Ouvre cette lecture à la place de l’ancienne page HTML.
   final void Function(String id)? onOpenUpdatedText;
+
+  /// Remplace l’ancien sommaire HTML par le sommaire de l’application.
+  final VoidCallback? onOpenAppSommaire;
 
   /// Vrai tant qu’une page précédente peut être réaffichée ici.
   final ValueChanged<bool>? onPageHistory;
@@ -88,30 +178,31 @@ class ReaderScreenState extends State<ReaderScreen> {
         onNavigationRequest: (request) async {
           final uri = Uri.tryParse(request.url);
           if (uri == null) return NavigationDecision.prevent;
-          if (uri.scheme == 'file') {
-            final String file;
-            try {
-              file = p.normalize(
-                uri.replace(query: '', fragment: '').toFilePath(),
-              );
-            } on UnsupportedError {
+          final decision = decideReaderNavigation(
+            uri,
+            editionDirectory: widget.edition.directory,
+            opensUpdatedText: widget.opensUpdatedText,
+          );
+          switch (decision) {
+            case ReaderNavigation.openAppSommaire:
+              _leaveForAppSommaire();
               return NavigationDecision.prevent;
-            }
-            if (!p.isWithin(widget.edition.directory, file)) {
-              return NavigationDecision.prevent;
-            }
-            final id = localCatalogId(uri, widget.edition.directory);
-            if (id != null && (widget.opensUpdatedText?.call(id) ?? false)) {
+            case ReaderNavigation.openUpdatedText:
+              final id = localCatalogId(uri, widget.edition.directory);
               final open = widget.onOpenUpdatedText;
-              if (open != null) {
+              if (id != null && open != null) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (mounted) open(id);
                 });
               }
               return NavigationDecision.prevent;
-            }
-            await _rememberScroll();
-            return NavigationDecision.navigate;
+            case ReaderNavigation.showPage:
+              await _rememberScroll();
+              return NavigationDecision.navigate;
+            case ReaderNavigation.blocked:
+              return NavigationDecision.prevent;
+            case ReaderNavigation.external:
+              break;
           }
           if (['https', 'http', 'mailto'].contains(uri.scheme)) {
             if (!mounted) return NavigationDecision.prevent;
@@ -209,6 +300,18 @@ class ReaderScreenState extends State<ReaderScreen> {
     }
   }
 
+  void _leaveForAppSommaire() {
+    history.clear();
+    _blankHops = 0;
+    _restoreId = null;
+    _publishHistory();
+    final open = widget.onOpenAppSommaire;
+    if (open == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) open();
+    });
+  }
+
   void _publishHistory() {
     final can = history.canGoBack;
     if (can == _publishedHistory) return;
@@ -301,7 +404,7 @@ class ReaderScreenState extends State<ReaderScreen> {
               icon: const Icon(Icons.arrow_back),
             ),
             TextButton(
-              onPressed: () => _open(widget.edition.home),
+              onPressed: _leaveForAppSommaire,
               child: const Text('Sommaire'),
             ),
             const Spacer(),

@@ -12,6 +12,7 @@ import 'package:perles_divines/features/duas/dua.dart';
 import 'package:perles_divines/features/duas/favorites.dart';
 import 'package:perles_divines/features/reader/content_install.dart';
 import 'package:perles_divines/features/reader/page_history.dart';
+import 'package:perles_divines/features/reader/reader_screen.dart';
 import 'package:perles_divines/features/sommaire/sommaire_screen.dart';
 import 'package:perles_divines/ui/site.dart';
 
@@ -118,19 +119,97 @@ void main() {
       references: [],
       audioIds: [],
     );
-    final history = LocalPageHistory()..noteFinished(_url(_ramadhanNamaz));
     expect(surah.opensUpdatedReading, isTrue);
-    expect(history.canGoBack, isFalse);
-
-    history.noteFinished(_url(_logo));
-    expect(history.canGoBack, isTrue);
-    history.noteFinished(history.beginBack()!);
-    expect(history.canGoBack, isFalse);
     expect(
-      LocalPageHistory.identity(history.current!),
-      LocalPageHistory.identity(_url(_ramadhanNamaz)),
+      decideReaderNavigation(
+        Uri.parse(_url(_fatihah)),
+        editionDirectory: r'C:\edition',
+        opensUpdatedText: (id) => id == _fatihah,
+      ),
+      ReaderNavigation.openUpdatedText,
     );
+    expect(
+      decideReaderNavigation(
+        Uri.parse(_url(_logo)),
+        editionDirectory: r'C:\edition',
+      ),
+      ReaderNavigation.openAppSommaire,
+    );
+    final history = LocalPageHistory()..noteFinished(_url(_ramadhanNamaz));
+    expect(history.canGoBack, isFalse);
   });
+
+  test('isLegacySommaireUrl reconnaît sommaire et accueil, pas les autres pages', () {
+    const legacy = [
+      'file:///C:/edition/pages/1af50233-0b26-5c4b-993e-c96c078fdb46.html',
+      'file:///C:/edition/pages/1af50233-0b26-5c4b-993e-c96c078fdb46.html#haut',
+      'file:///C:/edition/pages/1af50233-0b26-5c4b-993e-c96c078fdb46.html?x=1',
+      'file:///data/user/0/app/pages/386bba3e-88c0-5136-bd4e-8215613a7064.html',
+      'file:///C:/edition/sommaire.html',
+      'file:///C:/edition/index.html#accueil',
+      'sommaire.html',
+      'pages/386bba3e-88c0-5136-bd4e-8215613a7064.html',
+      'https://www.perlesdivines.fr/sommaire.html',
+      'https://www.perlesdivines.fr/sommaire.html#liste',
+      'https://perlesdivines.fr/index.html?ref=1',
+      'http://www.perlesdivines.fr/',
+      'https://perlesdivines.fr',
+      'https://www.perlesdivines.fr/fr/',
+      'https://WWW.perlesdivines.fr/fr/index.html',
+      'https://www.perlesdivines.fr/fr/sommaire.html',
+    ];
+    for (final url in legacy) {
+      expect(isLegacySommaireUrl(Uri.parse(url)), isTrue, reason: url);
+    }
+    const kept = [
+      'file:///C:/edition/pages/50ebee15-3228-5bd9-944b-a1d847c06e5a.html',
+      'file:///C:/edition/pages/c97581bf-b0ab-5a0b-8c74-0c4813dce712.html#TRADUCTION',
+      'https://www.perlesdivines.fr/fr/aamal_safar.html',
+      'https://www.perlesdivines.fr/aamal_safar.html',
+      'https://example.com/sommaire.html',
+      'https://example.com/',
+      'mailto:contact@perlesdivines.fr',
+    ];
+    for (final url in kept) {
+      expect(isLegacySommaireUrl(Uri.parse(url)), isFalse, reason: url);
+    }
+  });
+
+  test(
+    'la décision de navigation distingue sommaire, page et lien externe',
+    () {
+      const edition = r'C:\edition';
+      ReaderNavigation go(String url) => decideReaderNavigation(
+        Uri.parse(url),
+        editionDirectory: edition,
+        opensUpdatedText: (id) => id == _fatihah,
+      );
+
+      expect(go(_url(_sommaireHtml)), ReaderNavigation.openAppSommaire);
+      expect(
+        go('https://www.perlesdivines.fr/index.html#haut'),
+        ReaderNavigation.openAppSommaire,
+      );
+      expect(go(_url(_safarDua)), ReaderNavigation.showPage);
+      expect(go(_url(_fatihah)), ReaderNavigation.openUpdatedText);
+      expect(
+        go('https://www.perlesdivines.fr/fr/doua.html'),
+        ReaderNavigation.external,
+      );
+      expect(go('mailto:a@b.c'), ReaderNavigation.external);
+      expect(
+        go('file:///C:/ailleurs/pages/$_safarDua.html'),
+        ReaderNavigation.blocked,
+      );
+
+      final history = LocalPageHistory()
+        ..noteFinished(_url(_safar))
+        ..noteFinished(_url(_safarDua));
+      history.clear();
+      expect(history.canGoBack, isFalse);
+      expect(history.beginBack(), isNull);
+    },
+  );
 
   test('une page ouverte depuis la recherche n’a pas l’historique du mois', () {
     final history = LocalPageHistory()..noteFinished(_url(_safarDua));
@@ -217,36 +296,37 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Retour au sommaire HTML reste dans la page, la maison va au sommaire',
-    (tester) async {
-      await _pumpCatalog(tester);
-      await _openSafar(tester);
-      await _tapText(tester, 'Doua du mois de Safar');
-      await tester.tap(find.byTooltip('Retour').hitTestable());
-      await _settle(tester);
-      await tester.tap(
-        find.descendant(
-          of: find.byKey(const Key('reading-body')),
-          matching: find.text('Retour au sommaire'),
-        ),
-      );
-      await _settle(tester);
-      expect(_heading(tester), 'Sommaire du site');
-      await tester.tap(find.byTooltip('Retour').hitTestable());
-      await _settle(tester);
-      expect(_heading(tester), 'Aamal du mois de Safar');
-      expect(_bodyText('Doua du mois de Safar'), findsOneWidget);
+  testWidgets('Retour au sommaire HTML ouvre le sommaire de l’application', (
+    tester,
+  ) async {
+    await _pumpCatalog(tester);
+    await _openSafar(tester);
+    await _tapText(tester, 'Doua du mois de Safar');
+    await tester.tap(find.byTooltip('Retour').hitTestable());
+    await _settle(tester);
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('reading-body')),
+        matching: find.text('Retour au sommaire'),
+      ),
+    );
+    await _settle(tester);
+    expect(find.byKey(const Key('reading-body')), findsNothing);
+    expect(find.text('Aamal Mensuel'), findsOneWidget);
+    expect(find.text('Doua'), findsOneWidget);
+    final stayed = await tester.binding.handlePopRoute();
+    await _settle(tester);
+    expect(stayed, isFalse);
+    expect(find.text('Aamal Mensuel'), findsOneWidget);
+    expect(find.text('Aamal du mois de Safar'), findsNothing);
 
-      await tester.tap(find.text('Doua du mois de Safar'));
-      await _settle(tester);
-      await tester.tap(find.byTooltip('Sommaire').hitTestable());
-      await _settle(tester);
-      expect(find.text('Zyaraate'), findsOneWidget);
-      expect(find.byKey(const Key('reading-body')), findsNothing);
-      expect(find.byTooltip('Lire'), findsNothing);
-    },
-  );
+    await _openSafar(tester);
+    await tester.tap(find.byTooltip('Sommaire').hitTestable());
+    await _settle(tester);
+    expect(find.text('Zyaraate'), findsOneWidget);
+    expect(find.byKey(const Key('reading-body')), findsNothing);
+    expect(find.byTooltip('Lire'), findsNothing);
+  });
 
   testWidgets('la liste du mois garde son défilement au retour', (
     tester,
@@ -569,7 +649,17 @@ class _WebReadingState extends State<_WebReading> {
   }
 
   void _open(_Node node) {
-    if (node.opensRoute) {
+    final decision = decideReaderNavigation(
+      Uri.parse(_url(node.id)),
+      editionDirectory: r'C:\edition',
+      opensUpdatedText: (id) => node.opensRoute && id == node.id,
+    );
+    if (decision == ReaderNavigation.openAppSommaire) {
+      history.clear();
+      GoRouter.of(context).go('/sommaire');
+      return;
+    }
+    if (decision == ReaderNavigation.openUpdatedText) {
       GoRouter.of(context).push('/text/${node.id}');
       return;
     }
