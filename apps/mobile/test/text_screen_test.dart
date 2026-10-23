@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:perles_divines/core/store.dart';
@@ -211,60 +210,44 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('بِسْمِ اللّٰهِ'), findsOneWidget);
       expect(find.text('Quand l’événement arrivera.'), findsNothing);
-      expect(_verse(verse1), findsOneWidget);
-      expect(_verse(verse2), findsOneWidget);
-      expect(find.textContaining('﴿'), findsNothing);
+      final flow = tester.widget<Text>(find.byKey(const Key('quran-flow')));
+      final plain = _quranPlain(flow);
+      expect(plain.startsWith('بِسْمِ اللّٰهِ'), isTrue);
+      expect(plain.contains(verse1), isTrue);
+      expect(plain.contains(verse2), isTrue);
+      expect(plain.contains('\u2060'), isTrue);
+      expect(plain.contains('﴿'), isFalse);
+      expect(flow.textAlign, TextAlign.justify);
+      expect(flow.textDirection, TextDirection.rtl);
+      expect(flow.textWidthBasis, TextWidthBasis.parent);
+      expect(flow.maxLines, isNull);
+      expect(flow.style!.fontFamily, 'Indopak');
+      expect(flow.style!.height, 2.06);
+      expect(flow.style!.decoration, isNot(TextDecoration.underline));
       expect(find.text('\u06F1'), findsOneWidget);
       expect(find.text('\u06F2'), findsOneWidget);
-
-      final first = tester.getTopLeft(_verse(verse1));
-      final second = tester.getTopLeft(_verse(verse2));
-      expect(first.dy, lessThan(second.dy - 8));
-      expect(tester.widget<Text>(_verse(verse1)).maxLines, isNull);
-      expect(
-        tester.widget<Text>(_verse(verse1)).style!.fontSize,
-        tester.widget<Text>(_verse(verse2)).style!.fontSize,
-      );
-      expect(
-        tester.getTopLeft(find.text('بِسْمِ اللّٰهِ')).dy,
-        lessThan(first.dy),
-      );
-      final paragraph = _paragraph(tester, verse1);
-      final boxes = paragraph.getBoxesForSelection(
-        const TextSelection(baseOffset: 0, extentOffset: verse1.length),
-      );
-      final origin = paragraph.localToGlobal(Offset.zero);
+      final word = tester.getRect(find.byKey(const ValueKey('ayah-word-1')));
       final number = tester.getRect(find.text('\u06F1'));
-      final nearestEnd = boxes
-          .map((box) => (origin.dx + box.left - number.right).abs())
-          .reduce((a, b) => a < b ? a : b);
-      expect(nearestEnd, lessThan(12));
-      expect(number.left, greaterThan(origin.dx + 24));
-      expect(
-        number.center.dy,
-        inInclusiveRange(origin.dy, origin.dy + paragraph.size.height),
-      );
-      expect(
-        tester.widget<Text>(_verse(verse1)).style!.decoration,
-        TextDecoration.underline,
-      );
-      expect(
-        tester.widget<Text>(find.text('بِسْمِ اللّٰهِ')).style!.decoration,
-        TextDecoration.underline,
-      );
+      expect((word.center.dy - number.center.dy).abs(), lessThan(flow.style!.fontSize!));
+      expect(number.center.dx, lessThan(word.center.dx));
       expect(find.text('Infos sur la sourate'), findsOneWidget);
       expect(find.text('La Mecque'), findsNothing);
       await tester.tap(find.text('Infos sur la sourate'));
       await tester.pumpAndSettle();
       expect(find.text('La Mecque'), findsOneWidget);
 
-      final before = tester.widget<Text>(_verse(verse1)).style!.fontSize;
+      final before = tester
+          .widget<Text>(find.byKey(const Key('quran-flow')))
+          .style!
+          .fontSize;
       expect(before, 28);
       await tester.tap(find.text('Plus grand'));
       await tester.pump();
-      expect(tester.widget<Text>(_verse(verse1)).style!.fontSize, 34);
+      expect(
+        tester.widget<Text>(find.byKey(const Key('quran-flow'))).style!.fontSize,
+        34,
+      );
 
       await tester.tap(find.text('Translation'));
       await tester.pumpAndSettle();
@@ -307,7 +290,10 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 200)),
       );
       await tester.pumpAndSettle();
-      expect(tester.widget<Text>(_verse(verse1)).style!.fontSize, 34);
+      expect(
+        tester.widget<Text>(find.byKey(const Key('quran-flow'))).style!.fontSize,
+        34,
+      );
     },
   );
 
@@ -439,22 +425,25 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(_verse(short), findsOneWidget);
+    final before = tester.widget<Text>(find.byKey(const Key('quran-flow')));
+    expect(_quranPlain(before), contains(short));
     for (var i = 0; i < 4; i++) {
       await tester.tap(find.text('Plus grand'));
       await tester.pump();
     }
-    final shortText = tester.widget<Text>(_verse(short));
-    final longText = tester.widget<Text>(_verse(long));
-    expect(shortText.style!.fontSize, 46);
-    expect(longText.style!.fontSize, shortText.style!.fontSize);
+    final flow = tester.widget<Text>(find.byKey(const Key('quran-flow')));
+    final plain = _quranPlain(flow);
+    expect(flow.style!.fontSize, 46);
+    expect(flow.style!.fontFamily, 'Indopak');
+    expect(plain, contains(short));
+    expect(plain, contains(long));
     expect(
-      find.ancestor(of: _verse(long), matching: find.byType(FittedBox)),
+      find.ancestor(of: find.byKey(const Key('quran-flow')), matching: find.byType(FittedBox)),
       findsNothing,
     );
     expect(
-      tester.getSize(_verse(long)).height,
-      greaterThan(tester.getSize(_verse(short)).height * 1.4),
+      tester.getSize(find.byKey(const Key('quran-flow'))).height,
+      greaterThan(46 * 2.06 * 1.4),
     );
   });
 
@@ -1127,20 +1116,21 @@ void main() {
   );
 }
 
-RenderParagraph _paragraph(WidgetTester tester, String value) {
-  final element = tester.element(_verse(value));
-  RenderParagraph? found;
-  void walk(Element node) {
-    final render = node.renderObject;
-    if (render is RenderParagraph &&
-        render.text.toPlainText(includePlaceholders: false) == value) {
-      found = render;
+String _quranPlain(Text flow) {
+  final buffer = StringBuffer();
+  void walk(InlineSpan span) {
+    if (span is TextSpan) {
+      buffer.write(span.text ?? '');
+      span.children?.forEach(walk);
+    } else if (span is WidgetSpan && span.child is Row) {
+      for (final child in (span.child as Row).children) {
+        if (child is Text) buffer.write(child.data ?? '');
+      }
     }
-    node.visitChildElements(walk);
   }
 
-  walk(element);
-  return found!;
+  walk(flow.textSpan!);
+  return buffer.toString();
 }
 
 void _expectInfoCard(WidgetTester tester, String value) {
