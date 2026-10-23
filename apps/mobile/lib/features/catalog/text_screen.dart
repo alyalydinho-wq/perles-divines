@@ -1080,6 +1080,39 @@ class _QuranArabic extends StatelessWidget {
     final lines = _markedArabic(text);
     if (lines.isEmpty) return const SizedBox.shrink();
     final scaler = MediaQuery.textScalerOf(context);
+    final opening = _isBasmala(lines.first.text) ? lines.first : null;
+    final body = opening == null ? lines : lines.sublist(1);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (opening != null)
+            _ruledArabic(
+              lines: [opening],
+              scaler: scaler,
+              align: TextAlign.center,
+              flowKey: const Key('quran-basmala'),
+            ),
+          if (opening != null && body.isNotEmpty) const SizedBox(height: 18),
+          if (body.isNotEmpty)
+            _ruledArabic(
+              lines: body,
+              scaler: scaler,
+              align: TextAlign.justify,
+              flowKey: const Key('quran-flow'),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _ruledArabic({
+    required List<_Line> lines,
+    required TextScaler scaler,
+    required TextAlign align,
+    required Key flowKey,
+  }) {
     final placeholders = <PlaceholderDimensions>[];
     final span = TextSpan(
       style: style,
@@ -1094,29 +1127,35 @@ class _QuranArabic extends StatelessWidget {
           ),
       ],
     );
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: SizedBox(
-        width: double.infinity,
-        child: CustomPaint(
-          painter: _QuranLineRulesPainter(
-            span: span,
-            textScaler: scaler,
-            placeholders: placeholders,
-          ),
-          child: Text.rich(
-            span,
-            key: const Key('quran-flow'),
-            style: style,
-            textDirection: TextDirection.rtl,
-            textAlign: TextAlign.justify,
-            textWidthBasis: TextWidthBasis.parent,
-            textScaler: scaler,
-          ),
+    return SizedBox(
+      width: double.infinity,
+      child: CustomPaint(
+        painter: _QuranLineRulesPainter(
+          span: span,
+          textScaler: scaler,
+          placeholders: placeholders,
+          textAlign: align,
+        ),
+        child: Text.rich(
+          span,
+          key: flowKey,
+          style: style,
+          textDirection: TextDirection.rtl,
+          textAlign: align,
+          textWidthBasis: TextWidthBasis.parent,
+          textScaler: scaler,
         ),
       ),
     );
   }
+}
+
+bool _isBasmala(String text) {
+  final compact = text.replaceAll(
+    RegExp(r'[\u064B-\u065F\u0670\u06D6-\u06ED\u0640\u200C\u200D\s\uE000-\uF8FF]'),
+    '',
+  );
+  return compact.startsWith('بسم') && compact.length <= 24;
 }
 
 List<InlineSpan> _ayahSpans(
@@ -1203,11 +1242,13 @@ class _QuranLineRulesPainter extends CustomPainter {
     required this.span,
     required this.textScaler,
     required this.placeholders,
+    required this.textAlign,
   });
 
   final TextSpan span;
   final TextScaler textScaler;
   final List<PlaceholderDimensions> placeholders;
+  final TextAlign textAlign;
 
   static const _rule = Color(0xFF8A8A8A);
 
@@ -1215,7 +1256,7 @@ class _QuranLineRulesPainter extends CustomPainter {
     final painter = TextPainter(
       text: span,
       textDirection: TextDirection.rtl,
-      textAlign: TextAlign.justify,
+      textAlign: textAlign,
       textWidthBasis: TextWidthBasis.parent,
       textScaler: textScaler,
     );
@@ -1234,8 +1275,9 @@ class _QuranLineRulesPainter extends CustomPainter {
       ..strokeCap = StrokeCap.butt
       ..isAntiAlias = true;
     try {
+      final gap = (span.style?.fontSize ?? 28) * 0.55;
       for (final line in painter.computeLineMetrics()) {
-        final y = line.baseline + 1.5;
+        final y = line.baseline + gap;
         if (y < 0 || y > size.height || line.width <= 0) continue;
         canvas.drawLine(
           Offset(line.left, y),
@@ -1253,6 +1295,7 @@ class _QuranLineRulesPainter extends CustomPainter {
     return oldDelegate.span.toPlainText() != span.toPlainText() ||
         oldDelegate.span.style != span.style ||
         oldDelegate.textScaler != textScaler ||
+        oldDelegate.textAlign != textAlign ||
         oldDelegate.placeholders.length != placeholders.length;
   }
 }

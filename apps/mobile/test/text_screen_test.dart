@@ -211,9 +211,14 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Quand l’événement arrivera.'), findsNothing);
+      final basmala = tester.widget<Text>(find.byKey(const Key('quran-basmala')));
+      expect(_quranPlain(basmala), 'بِسْمِ اللّٰهِ');
+      expect(basmala.textAlign, TextAlign.center);
+      expect(basmala.textDirection, TextDirection.rtl);
       final flow = tester.widget<Text>(find.byKey(const Key('quran-flow')));
       final plain = _quranPlain(flow);
-      expect(plain.startsWith('بِسْمِ اللّٰهِ'), isTrue);
+      expect(plain.startsWith(verse1), isTrue);
+      expect(plain.contains('بِسْمِ'), isFalse);
       expect(plain.contains(verse1), isTrue);
       expect(plain.contains(verse2), isTrue);
       expect(plain.contains('\u2060'), isTrue);
