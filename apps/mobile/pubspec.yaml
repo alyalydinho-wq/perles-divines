@@ -40,6 +40,9 @@ flutter:
     - assets/site/assets/
     - assets/fixtures/
   fonts:
+    - family: AmiriQuran
+      fonts:
+        - asset: assets/fonts/AmiriQuran-Regular.ttf
     - family: Indopak
       fonts:
         - asset: assets/fonts/indopak.ttf

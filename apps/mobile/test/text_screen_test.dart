@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:perles_divines/core/store.dart';
+import 'package:perles_divines/features/catalog/justified_quran_text.dart';
 import 'package:perles_divines/features/catalog/text_screen.dart';
 import 'package:perles_divines/features/duas/dua.dart';
 import 'package:perles_divines/features/reader/content_install.dart';
@@ -15,6 +18,18 @@ import 'package:perles_divines/ui/heritage.dart';
 import 'package:perles_divines/ui/site.dart';
 
 void main() {
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    final font = await rootBundle.load('assets/fonts/AmiriQuran-Regular.ttf');
+    final loader = FontLoader(quranFontFamily);
+    loader.addFont(Future.value(font));
+    await loader.load();
+    final indopak = await rootBundle.load('assets/fonts/indopak.ttf');
+    final fallback = FontLoader('Indopak');
+    fallback.addFont(Future.value(indopak));
+    await fallback.load();
+  });
+
   test('le chronomètre de lecture reste lisible', () {
     expect(formatPlaybackClock(Duration.zero), '0:00');
     expect(
@@ -213,46 +228,47 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('بِسْمِ اللّٰهِ'), findsOneWidget);
       expect(find.text('Quand l’événement arrivera.'), findsNothing);
-      expect(_verse(verse1), findsOneWidget);
-      expect(_verse(verse2), findsOneWidget);
-      expect(find.textContaining('﴿'), findsNothing);
-      expect(find.text('\u06F1'), findsOneWidget);
-      expect(find.text('\u06F2'), findsOneWidget);
-
-      final first = tester.getTopLeft(_verse(verse1));
-      final second = tester.getTopLeft(_verse(verse2));
-      expect(first.dy, lessThan(second.dy - 8));
-      expect(tester.widget<Text>(_verse(verse1)).maxLines, isNull);
+      final flow = tester.widget<Text>(_quranFlow);
+      final plain = flow.textSpan!.toPlainText(includeSemanticsLabels: false);
+      final readable = plain.replaceAll('\u0640', '');
+      expect(readable.contains(verse1), isTrue);
+      expect(readable.contains(verse2), isTrue);
+      expect(plain.contains('\u2060\u00A0﴿\u0661﴾'), isTrue);
+      expect(plain.contains('\u2060\u00A0﴿\u0662﴾'), isTrue);
+      expect(flow.textAlign, TextAlign.justify);
+      expect(flow.textDirection, TextDirection.rtl);
+      expect(flow.textWidthBasis, TextWidthBasis.parent);
+      expect(flow.maxLines, isNull);
+      expect(flow.style!.fontFamily, 'AmiriQuran');
+      expect(flow.style!.height, quranLineHeight);
+      expect(flow.style!.decoration, isNot(TextDecoration.underline));
       expect(
-        tester.widget<Text>(_verse(verse1)).style!.fontSize,
-        tester.widget<Text>(_verse(verse2)).style!.fontSize,
+        tester.widget<Text>(find.byKey(const Key('quran-basmala'))).textAlign,
+        TextAlign.justify,
       );
       expect(
-        tester.getTopLeft(find.text('بِسْمِ اللّٰهِ')).dy,
-        lessThan(first.dy),
+        tester.getTopLeft(find.byKey(const Key('quran-basmala'))).dy,
+        lessThan(tester.getTopLeft(_quranFlow).dy),
       );
-      final paragraph = _paragraph(tester, verse1);
-      final boxes = paragraph.getBoxesForSelection(
-        const TextSelection(baseOffset: 0, extentOffset: verse1.length),
+      final paragraph = _paragraphOf(tester, _quranFlow);
+      final markAt = plain.indexOf('﴿\u0661﴾');
+      final glueAt = plain.lastIndexOf('\u2060', markAt);
+      var letterAt = glueAt - 1;
+      var letterBoxes = const <TextBox>[];
+      while (letterAt > 0 && letterBoxes.isEmpty) {
+        letterBoxes = paragraph.getBoxesForSelection(
+          TextSelection(baseOffset: letterAt, extentOffset: letterAt + 1),
+        );
+        letterAt--;
+      }
+      final markBoxes = paragraph.getBoxesForSelection(
+        TextSelection(baseOffset: markAt, extentOffset: markAt + 3),
       );
-      final origin = paragraph.localToGlobal(Offset.zero);
-      final number = tester.getRect(find.text('\u06F1'));
-      final nearestEnd = boxes
-          .map((box) => (origin.dx + box.left - number.right).abs())
-          .reduce((a, b) => a < b ? a : b);
-      expect(nearestEnd, lessThan(12));
-      expect(number.left, greaterThan(origin.dx + 24));
+      expect(letterBoxes, isNotEmpty);
+      expect(markBoxes, isNotEmpty);
       expect(
-        number.center.dy,
-        inInclusiveRange(origin.dy, origin.dy + paragraph.size.height),
-      );
-      expect(
-        tester.widget<Text>(_verse(verse1)).style!.decoration,
-        TextDecoration.underline,
-      );
-      expect(
-        tester.widget<Text>(find.text('بِسْمِ اللّٰهِ')).style!.decoration,
-        TextDecoration.underline,
+        (letterBoxes.last.top - markBoxes.first.top).abs(),
+        lessThan(4),
       );
       expect(find.text('Infos sur la sourate'), findsOneWidget);
       expect(find.text('La Mecque'), findsNothing);
@@ -260,11 +276,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('La Mecque'), findsOneWidget);
 
-      final before = tester.widget<Text>(_verse(verse1)).style!.fontSize;
+      final before = tester.widget<Text>(_quranFlow).style!.fontSize;
       expect(before, 28);
       await tester.tap(find.text('Plus grand'));
       await tester.pump();
-      expect(tester.widget<Text>(_verse(verse1)).style!.fontSize, 34);
+      expect(tester.widget<Text>(_quranFlow).style!.fontSize, 34);
 
       await tester.tap(find.text('Translation'));
       await tester.pumpAndSettle();
@@ -307,7 +323,7 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 200)),
       );
       await tester.pumpAndSettle();
-      expect(tester.widget<Text>(_verse(verse1)).style!.fontSize, 34);
+      expect(tester.widget<Text>(_quranFlow).style!.fontSize, 34);
     },
   );
 
@@ -340,11 +356,22 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('\u06F2\u06F5\u06F5'), findsOneWidget);
-    expect(find.text('\u06F2\u06F5\u06F6'), findsOneWidget);
-    expect(find.text('\u06F2\u06F5\u06F7'), findsOneWidget);
-    final arabicNumber = tester.getSize(find.text('\u06F2\u06F5\u06F5'));
-    expect(arabicNumber.height, lessThan(arabicNumber.width));
+    final plain = tester
+        .widget<Text>(_quranFlow)
+        .textSpan!
+        .toPlainText(includeSemanticsLabels: false);
+    expect(plain.contains('\u2060\u00A0﴿\u0662\u0665\u0665﴾'), isTrue);
+    expect(plain.contains('\u2060\u00A0﴿\u0662\u0665\u0666﴾'), isTrue);
+    expect(plain.contains('\u2060\u00A0﴿\u0662\u0665\u0667﴾'), isTrue);
+    final paragraph = _paragraphOf(tester, _quranFlow);
+    final at = plain.indexOf('\u0662\u0665\u0665');
+    final boxes = paragraph.getBoxesForSelection(
+      TextSelection(baseOffset: at, extentOffset: at + 3),
+    );
+    expect(boxes, isNotEmpty);
+    final top = boxes.map((box) => box.top).reduce(math.min);
+    final bottom = boxes.map((box) => box.bottom).reduce(math.max);
+    expect(bottom - top, lessThan(boxes.first.bottom - boxes.first.top + 2));
 
     await tester.tap(find.text('Transliteration'));
     await tester.pumpAndSettle();
@@ -439,22 +466,31 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(_verse(short), findsOneWidget);
+    expect(
+      tester
+          .widget<Text>(_quranFlow)
+          .textSpan!
+          .toPlainText(includeSemanticsLabels: false)
+          .replaceAll('\u0640', ''),
+      contains(short),
+    );
     for (var i = 0; i < 4; i++) {
       await tester.tap(find.text('Plus grand'));
       await tester.pump();
     }
-    final shortText = tester.widget<Text>(_verse(short));
-    final longText = tester.widget<Text>(_verse(long));
-    expect(shortText.style!.fontSize, 46);
-    expect(longText.style!.fontSize, shortText.style!.fontSize);
+    final flow = tester.widget<Text>(_quranFlow);
+    expect(flow.style!.fontSize, 46);
     expect(
-      find.ancestor(of: _verse(long), matching: find.byType(FittedBox)),
+      flow.textSpan!.toPlainText(includeSemanticsLabels: false).replaceAll('\u0640', ''),
+      contains(long),
+    );
+    expect(
+      find.ancestor(of: _quranFlow, matching: find.byType(FittedBox)),
       findsNothing,
     );
     expect(
-      tester.getSize(_verse(long)).height,
-      greaterThan(tester.getSize(_verse(short)).height * 1.4),
+      tester.getSize(_quranFlow).height,
+      greaterThan(46 * 2 * 1.4),
     );
   });
 
@@ -1127,15 +1163,14 @@ void main() {
   );
 }
 
-RenderParagraph _paragraph(WidgetTester tester, String value) {
-  final element = tester.element(_verse(value));
+Finder get _quranFlow => find.byKey(const Key('quran-flow'));
+
+RenderParagraph _paragraphOf(WidgetTester tester, Finder finder) {
+  final element = tester.element(finder);
   RenderParagraph? found;
   void walk(Element node) {
     final render = node.renderObject;
-    if (render is RenderParagraph &&
-        render.text.toPlainText(includePlaceholders: false) == value) {
-      found = render;
-    }
+    if (render is RenderParagraph) found = render;
     node.visitChildElements(walk);
   }
 

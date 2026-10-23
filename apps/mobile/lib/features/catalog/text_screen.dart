@@ -13,6 +13,7 @@ import '../downloads/download_controller.dart';
 import '../player/audio_controller.dart';
 import '../reader/content_install.dart';
 import '../reader/reader_screen.dart';
+import 'justified_quran_text.dart';
 
 enum TextPane { arabic, translation, transliteration, gujarati }
 
@@ -50,10 +51,8 @@ const _arabicLineHeight = 2.06;
 
 const _ayahGold = Color(0xFFC6A15A);
 
-/// Les chiffres arabes-indiens (U+0660) d’IndoPak ont une chasse nulle :
-/// ils doivent se poser dans l’ornement ﴿ ﴾, ce que le rendu Flutter ne fait
-/// pas. On retire donc le marqueur du texte et on redessine le numéro.
-final _ayahMarker = RegExp(r'\s*﴿\s*([0-9٠-٩۰-۹]+)\s*﴾\s*$');
+/// Marqueur ﴿١٢٣﴾ en fin de ligne dans le texte source.
+final _ayahMarker = quranAyahMarker;
 
 class TextScreen extends StatefulWidget {
   const TextScreen({
@@ -232,6 +231,7 @@ class _TextScreenState extends State<TextScreen> {
     return Scaffold(
       backgroundColor: siteCanvas,
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SiteReaderHeader(
             title: item.title,
@@ -692,7 +692,7 @@ class _TextScreenState extends State<TextScreen> {
             if (text.isNotEmpty &&
                 rtl &&
                 widget.item.kind == DevotionalKind.quran)
-              _QuranArabic(text: text, style: _arabicStyle())
+              JustifiedQuranText(text: text, style: _arabicStyle())
             else if (text.isNotEmpty && rtl) ...[
               for (final block in text.split(RegExp(r'\n{2,}')))
                 if (block.trim().isNotEmpty)
@@ -999,12 +999,6 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-TextStyle _ruled(TextStyle style) => style.copyWith(
-  decoration: TextDecoration.underline,
-  decorationColor: const Color(0xFF8A8A8A),
-  decorationThickness: 1,
-);
-
 TextStyle _ruledBlack(TextStyle style) => style.copyWith(
   decoration: TextDecoration.underline,
   decorationColor: siteBlack,
@@ -1053,18 +1047,7 @@ double _badgeSize(double textSize, int number) {
   return (textSize * factor).clamp(24.0, 64.0);
 }
 
-int? _digitsToInt(String value) {
-  const arabic = '٠١٢٣٤٥٦٧٨٩';
-  const extended = '۰۱۲۳۴۵۶۷۸۹';
-  final western = value.split('').map((char) {
-    final arabicIndex = arabic.indexOf(char);
-    if (arabicIndex >= 0) return '$arabicIndex';
-    final extendedIndex = extended.indexOf(char);
-    if (extendedIndex >= 0) return '$extendedIndex';
-    return RegExp(r'\d').hasMatch(char) ? char : '';
-  }).join();
-  return int.tryParse(western);
-}
+int? _digitsToInt(String value) => parseEasternDigits(value);
 
 String _indoDigits(int value) {
   const extended = '۰۱۲۳۴۵۶۷۸۹';
@@ -1072,86 +1055,6 @@ String _indoDigits(int value) {
     RegExp(r'\d'),
     (match) => extended[int.parse(match[0]!)],
   );
-}
-
-class _QuranArabic extends StatelessWidget {
-  const _QuranArabic({required this.text, required this.style});
-
-  final String text;
-  final TextStyle style;
-
-  @override
-  Widget build(BuildContext context) {
-    final lines = _markedArabic(text);
-    final children = <Widget>[];
-    final verses = <_Line>[];
-    void flush() {
-      if (verses.isEmpty) return;
-      children.addAll([
-        for (final verse in verses)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: _AyahCell(line: verse, style: style),
-          ),
-      ]);
-      verses.clear();
-    }
-
-    for (final line in lines) {
-      if (line.number == null) {
-        flush();
-        children.add(
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Text(
-              line.text,
-              textDirection: TextDirection.rtl,
-              textAlign: TextAlign.center,
-              style: _ruled(style),
-            ),
-          ),
-        );
-      } else {
-        verses.add(line);
-      }
-    }
-    flush();
-    return Column(mainAxisSize: MainAxisSize.min, children: children);
-  }
-}
-
-class _AyahCell extends StatelessWidget {
-  const _AyahCell({required this.line, required this.style});
-
-  final _Line line;
-  final TextStyle style;
-
-  @override
-  Widget build(BuildContext context) {
-    final digits = line.number == null ? 1 : '${line.number}'.length;
-    final diameter = ((style.fontSize ?? 28) * (digits >= 3 ? 1.4 : 0.9)).clamp(
-      26.0,
-      64.0,
-    );
-    final ruled = _ruled(style);
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(text: line.text),
-          WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Padding(
-              padding: const EdgeInsetsDirectional.only(start: 4),
-              child: _AyahBadge(number: line.number!, diameter: diameter),
-            ),
-          ),
-        ],
-      ),
-      textDirection: TextDirection.rtl,
-      textAlign: TextAlign.center,
-      style: ruled,
-    );
-  }
 }
 
 class _AyahBadge extends StatelessWidget {
