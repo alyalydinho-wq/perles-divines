@@ -9,6 +9,7 @@ import '../../core/store.dart';
 import '../../core/track.dart';
 import '../../ui/site.dart';
 import '../duas/dua.dart';
+import 'jawshan.dart';
 import '../downloads/download_controller.dart';
 import '../player/audio_controller.dart';
 import '../reader/content_install.dart';
@@ -68,6 +69,7 @@ class TextScreen extends StatefulWidget {
     this.tracks = const [],
     this.store,
     this.opensUpdatedText,
+    this.jawshanTitles,
   });
 
   final DevotionalText item;
@@ -81,6 +83,9 @@ class TextScreen extends StatefulWidget {
 
   /// Vrai pour une sourate dont la lecture native remplace l’ancienne page.
   final bool Function(String id)? opensUpdatedText;
+
+  /// Titres déjà chargés. Sinon, Jawshan les lit dans l’asset au démarrage.
+  final List<JawshanTitle>? jawshanTitles;
 
   @override
   State<TextScreen> createState() => _TextScreenState();
@@ -100,12 +105,24 @@ class _TextScreenState extends State<TextScreen> {
   late bool favorite = widget.favorite;
   late TextPane pane;
   bool _pageHistory = false;
+  int? _jawshanPart;
+  List<JawshanTitle> _jawshanTitles = const [];
+  List<GlobalKey> _jawshanKeys = const [];
 
   @override
   void initState() {
     super.initState();
     pane = _openingPane(widget.item);
     unawaited(_loadSizes());
+    if (isJawshanKabirId(widget.item.id)) {
+      _jawshanKeys = List<GlobalKey>.generate(100, (_) => GlobalKey());
+      final provided = widget.jawshanTitles;
+      if (provided != null) {
+        _jawshanTitles = provided;
+      } else {
+        unawaited(_loadJawshanTitles());
+      }
+    }
   }
 
   @override
@@ -282,10 +299,16 @@ class _TextScreenState extends State<TextScreen> {
                 'Transliteration',
                 if (item.hasGujarati) 'Gujarati',
               ],
-              onSelected: (index) => setState(() {
-                pane = TextPane.values[index];
-                if (!_showsOriginal(pane)) _pageHistory = false;
-              }),
+              onSelected: (index) {
+                setState(() {
+                  pane = TextPane.values[index];
+                  if (!_showsOriginal(pane)) _pageHistory = false;
+                });
+                final part = _jawshanPart;
+                if (isJawshanKabirId(item.id) && part != null) {
+                  _revealJawshanPart(part);
+                }
+              },
             ),
           ],
         ),
@@ -472,6 +495,7 @@ class _TextScreenState extends State<TextScreen> {
   }
 
   Widget _pane(DevotionalText item) {
+    if (isJawshanKabirId(item.id)) return _jawshanReading(item);
     switch (pane) {
       case TextPane.arabic:
         if (item.hasOriginalPage) {
@@ -843,6 +867,260 @@ class _TextScreenState extends State<TextScreen> {
     await SharePlus.instance.share(
       ShareParams(text: '${item.title}\n\n$body', title: item.title),
     );
+  }
+
+  Future<void> _loadJawshanTitles() async {
+    final titles = await loadJawshanTitles();
+    if (!mounted) return;
+    setState(() => _jawshanTitles = titles);
+  }
+
+  String _jawshanFrench(int number) {
+    for (final title in _jawshanTitles) {
+      if (title.number == number) return title.french;
+    }
+    return '';
+  }
+
+  void _revealJawshanPart(int number) {
+    if (number < 1 || number > _jawshanKeys.length) return;
+    setState(() => _jawshanPart = number);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final target = _jawshanKeys[number - 1].currentContext;
+      if (target == null || !mounted) return;
+      Scrollable.ensureVisible(
+        target,
+        duration: Duration.zero,
+        alignment: 0,
+      );
+    });
+  }
+
+  double get _jawshanHeaderSize => switch (pane) {
+    TextPane.arabic || TextPane.translation => translationSize,
+    TextPane.transliteration => transliterationSize,
+    TextPane.gujarati => gujaratiSize,
+  };
+
+  Widget _jawshanReading(DevotionalText item) {
+    final hadith = jawshanHadith(_hadith(item.introduction));
+    final headerSize = _jawshanHeaderSize;
+    final List<String> blocks;
+    var preamble = '';
+    switch (pane) {
+      case TextPane.arabic:
+        blocks = jawshanBlocks(item.arabic);
+      case TextPane.transliteration:
+        blocks = jawshanBlocks(item.transliteration);
+      case TextPane.translation:
+        final parsed = parseJawshanTranslation(item.translation);
+        if (parsed == null) return _fallbackJawshan(item);
+        preamble = parsed.preamble;
+        blocks = parsed.parts;
+      case TextPane.gujarati:
+        return _reading('', item.gujarati, const [], gujarati: true);
+    }
+    if (blocks.length != 100 || _jawshanKeys.length != 100) {
+      return _fallbackJawshan(item);
+    }
+    return ColoredBox(
+      color: siteCanvas,
+      child: SelectionArea(
+        child: SingleChildScrollView(
+          key: const Key('jawshan-reading'),
+          controller: _scroll,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                item.title.toUpperCase(),
+                textAlign: TextAlign.center,
+                style: siteText(
+                  color: siteGreenSolid,
+                  fontSize: 16,
+                  lineHeight: 22,
+                  weight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            if (hadith.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _InfoCard(text: hadith, size: headerSize),
+              ),
+            _jawshanToc(headerSize),
+            if (preamble.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 16, bottom: 4),
+                child: Text(
+                  preamble,
+                  textAlign: TextAlign.start,
+                  style: siteText(
+                    color: siteBlack,
+                    fontSize: headerSize,
+                    lineHeight: headerSize * 1.4,
+                  ),
+                ),
+              ),
+            for (var i = 0; i < blocks.length; i++) ...[
+              if (i > 0)
+                const Divider(
+                  height: 28,
+                  thickness: 1,
+                  color: Color(0xFFB7C7A4),
+                ),
+              _jawshanHeader(i + 1, headerSize),
+              ..._jawshanBody(blocks[i], headerSize),
+            ],
+            // Laisse la dernière partie atteindre le haut de l’écran.
+            SizedBox(height: MediaQuery.sizeOf(context).height * 0.55),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _fallbackJawshan(DevotionalText item) {
+    final hadith = _hadith(item.introduction);
+    return switch (pane) {
+      TextPane.arabic => _reading(hadith, item.arabic, const [], rtl: true),
+      TextPane.translation => _reading(hadith, item.translation, item.references),
+      TextPane.transliteration => _reading(
+        hadith,
+        item.transliteration,
+        const [],
+        verses: true,
+      ),
+      TextPane.gujarati => _reading('', item.gujarati, const [], gujarati: true),
+    };
+  }
+
+  Widget _jawshanToc(double size) {
+    final style = siteText(
+      color: siteBlack,
+      fontSize: size,
+      lineHeight: size * 1.35,
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8F4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD9E3C8)),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 220),
+        child: SingleChildScrollView(
+          key: const Key('jawshan-toc'),
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var number = 1; number <= 100; number++)
+                InkWell(
+                  key: Key('jawshan-toc-$number'),
+                  onTap: () => _revealJawshanPart(number),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    child: Text('Doua - $number', style: style),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _jawshanHeader(int number, double size) {
+    final french = _jawshanFrench(number);
+    return Padding(
+      key: _jawshanKeys[number - 1],
+      padding: const EdgeInsets.only(top: 18, bottom: 16),
+      child: Column(
+        children: [
+          Text(
+            'Doua - $number',
+            textAlign: TextAlign.center,
+            style: siteText(
+              color: siteGreenSolid,
+              fontSize: size,
+              lineHeight: size * 1.3,
+              weight: FontWeight.w700,
+            ),
+          ),
+          if (french.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              french,
+              textAlign: TextAlign.center,
+              style: siteText(
+                color: siteBlack,
+                fontSize: size,
+                lineHeight: size * 1.35,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _jawshanBody(String block, double size) {
+    switch (pane) {
+      case TextPane.arabic:
+        return [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              block.trim(),
+              textDirection: _arabicScript(block)
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
+              textAlign: TextAlign.center,
+              style: _arabicScript(block)
+                  ? _ruledBlack(_arabicStyle())
+                  : siteText(
+                      color: siteBlack,
+                      fontSize: size,
+                      lineHeight: size * 1.4,
+                      weight: FontWeight.w700,
+                    ),
+            ),
+          ),
+        ];
+      case TextPane.transliteration:
+        return [
+          for (final raw in block.split(RegExp(r'\n+')))
+            if (raw.trim().isNotEmpty)
+              _verseLine(_Line(raw.trim()), size, italic: true),
+        ];
+      case TextPane.translation:
+        return [
+          for (final paragraph in _paragraphs(block))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                paragraph,
+                textAlign: TextAlign.start,
+                style: siteText(
+                  color: siteBlack,
+                  fontSize: size,
+                  lineHeight: size * 1.4,
+                ),
+              ),
+            ),
+        ];
+      case TextPane.gujarati:
+        return const [];
+    }
   }
 }
 

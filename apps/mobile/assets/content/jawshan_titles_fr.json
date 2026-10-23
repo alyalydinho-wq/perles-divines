@@ -1,0 +1,521 @@
+{
+  "source": {
+    "url": "https://www.duas.org/dua-jawshan-kabeer.html",
+    "dataUrl": "https://www.duas.org/data_v2/dua-jawshan-kabeer.json",
+    "retrievedAt": "2026-10-23"
+  },
+  "titles": [
+    {
+      "n": 1,
+      "en": "To overcome difficulties",
+      "fr": "Pour surmonter les difficultés"
+    },
+    {
+      "n": 2,
+      "en": "To seek help",
+      "fr": "Pour demander de l'aide"
+    },
+    {
+      "n": 3,
+      "en": "To attain honor, dignity",
+      "fr": "Pour obtenir l'honneur et la dignité"
+    },
+    {
+      "n": 4,
+      "en": "To acquire nobility",
+      "fr": "Pour acquérir la noblesse"
+    },
+    {
+      "n": 5,
+      "en": "To achieve renown, success",
+      "fr": "Pour obtenir la renommée et le succès"
+    },
+    {
+      "n": 6,
+      "en": "To obtain blessings, ranks",
+      "fr": "Pour obtenir des bénédictions et des rangs"
+    },
+    {
+      "n": 7,
+      "en": "To disperse calamities",
+      "fr": "Pour disperser les calamités"
+    },
+    {
+      "n": 8,
+      "en": "To ask pardon",
+      "fr": "Pour demander le pardon"
+    },
+    {
+      "n": 9,
+      "en": "To clear away fear, disease",
+      "fr": "Pour écarter la peur et la maladie"
+    },
+    {
+      "n": 10,
+      "en": "To get conduct approved",
+      "fr": "Pour faire approuver la conduite"
+    },
+    {
+      "n": 11,
+      "en": "To avoid evil and gain prosperity",
+      "fr": "Pour éviter le mal et obtenir la prospérité"
+    },
+    {
+      "n": 12,
+      "en": "To dismiss affliction and secure good fortune",
+      "fr": "Pour écarter l'affliction et assurer la bonne fortune"
+    },
+    {
+      "n": 13,
+      "en": "To cure eye disease",
+      "fr": "Pour guérir une maladie des yeux"
+    },
+    {
+      "n": 14,
+      "en": "To increase health",
+      "fr": "Pour augmenter la santé",
+      "note": "« increase » est traduit par « augmenter », sans reformuler en « améliorer »."
+    },
+    {
+      "n": 15,
+      "en": "To ask for more benefits",
+      "fr": "Pour demander davantage de bienfaits"
+    },
+    {
+      "n": 16,
+      "en": "To solve problems",
+      "fr": "Pour résoudre les problèmes"
+    },
+    {
+      "n": 17,
+      "en": "To succeed in all tasks",
+      "fr": "Pour réussir dans toutes les tâches"
+    },
+    {
+      "n": 18,
+      "en": "To increase livelihood",
+      "fr": "Pour augmenter la subsistance"
+    },
+    {
+      "n": 19,
+      "en": "To attain distinction",
+      "fr": "Pour obtenir la distinction"
+    },
+    {
+      "n": 20,
+      "en": "To disperse worries",
+      "fr": "Pour disperser les soucis"
+    },
+    {
+      "n": 21,
+      "en": "To ask for pardon",
+      "fr": "Pour demander le pardon"
+    },
+    {
+      "n": 22,
+      "en": "To increase livelihood",
+      "fr": "Pour augmenter la subsistance"
+    },
+    {
+      "n": 23,
+      "en": "To get more beneficence",
+      "fr": "Pour obtenir davantage de bienfaisance"
+    },
+    {
+      "n": 24,
+      "en": "To receive bliss from Allah",
+      "fr": "Pour recevoir la félicité d'Allah",
+      "note": "« bliss » est traduit par « félicité »."
+    },
+    {
+      "n": 25,
+      "en": "To dispel ill-luck",
+      "fr": "Pour dissiper la malchance"
+    },
+    {
+      "n": 26,
+      "en": "To get rid of fever",
+      "fr": "Pour se débarrasser de la fièvre"
+    },
+    {
+      "n": 27,
+      "en": "To dismiss fear of rulers",
+      "fr": "Pour écarter la peur des gouvernants"
+    },
+    {
+      "n": 28,
+      "en": "To cure migraine",
+      "fr": "Pour guérir la migraine"
+    },
+    {
+      "n": 29,
+      "en": "To build up defence",
+      "fr": "Pour constituer la défense"
+    },
+    {
+      "n": 30,
+      "en": "To win in war",
+      "fr": "Pour vaincre à la guerre"
+    },
+    {
+      "n": 31,
+      "en": "To cure eye disease",
+      "fr": "Pour guérir une maladie des yeux"
+    },
+    {
+      "n": 32,
+      "en": "To subdue enemies",
+      "fr": "Pour soumettre les ennemis"
+    },
+    {
+      "n": 33,
+      "en": "To face rulers",
+      "fr": "Pour faire face aux gouvernants"
+    },
+    {
+      "n": 34,
+      "en": "To dispel fear of dark nights",
+      "fr": "Pour dissiper la peur des nuits obscures"
+    },
+    {
+      "n": 35,
+      "en": "To cure toothache",
+      "fr": "Pour guérir le mal de dents"
+    },
+    {
+      "n": 36,
+      "en": "To drive away Jinn",
+      "fr": "Pour éloigner les Jinn",
+      "note": "« Jinn » est conservé tel quel."
+    },
+    {
+      "n": 37,
+      "en": "To win in battle",
+      "fr": "Pour vaincre au combat"
+    },
+    {
+      "n": 38,
+      "en": "To Seek Allah's help",
+      "fr": "Pour demander l'aide d'Allah"
+    },
+    {
+      "n": 39,
+      "en": "To overwhelm enemy",
+      "fr": "Pour submerger l'ennemi"
+    },
+    {
+      "n": 40,
+      "en": "To seek forgiveness",
+      "fr": "Pour demander le pardon",
+      "note": "« forgiveness » est rendu par « pardon », comme les parties 8 et 21."
+    },
+    {
+      "n": 41,
+      "en": "To disperse poisonous winds",
+      "fr": "Pour disperser les vents empoisonnés"
+    },
+    {
+      "n": 42,
+      "en": "To avoid calamities",
+      "fr": "Pour éviter les calamités"
+    },
+    {
+      "n": 43,
+      "en": "To get rid of sins",
+      "fr": "Pour se débarrasser des péchés"
+    },
+    {
+      "n": 44,
+      "en": "To cultivate love",
+      "fr": "Pour cultiver l'amour"
+    },
+    {
+      "n": 45,
+      "en": "To dispel fearful dreams",
+      "fr": "Pour dissiper les rêves effrayants"
+    },
+    {
+      "n": 46,
+      "en": "To cure infantile paralysis",
+      "fr": "Pour guérir la paralysie infantile"
+    },
+    {
+      "n": 47,
+      "en": "To cure epilepsy",
+      "fr": "Pour guérir l'épilepsie"
+    },
+    {
+      "n": 48,
+      "en": "To get rid of constipation",
+      "fr": "Pour se débarrasser de la constipation"
+    },
+    {
+      "n": 49,
+      "en": "To cure heart ailments",
+      "fr": "Pour guérir les maux du cœur",
+      "note": "« heart » est traduit par « cœur », sans choisir entre l’organe et le sens figuré."
+    },
+    {
+      "n": 50,
+      "en": "To improve eye sight",
+      "fr": "Pour améliorer la vue"
+    },
+    {
+      "n": 51,
+      "en": "To dispel mischief of enemy",
+      "fr": "Pour dissiper le méfait de l'ennemi",
+      "note": "« mischief » est traduit par « méfait »."
+    },
+    {
+      "n": 52,
+      "en": "To get rid of poverty",
+      "fr": "Pour se débarrasser de la pauvreté"
+    },
+    {
+      "n": 53,
+      "en": "To cultivate love",
+      "fr": "Pour cultiver l'amour"
+    },
+    {
+      "n": 54,
+      "en": "To cure toothache",
+      "fr": "Pour guérir le mal de dents"
+    },
+    {
+      "n": 55,
+      "en": "To cure pain in ribs",
+      "fr": "Pour guérir la douleur des côtes"
+    },
+    {
+      "n": 56,
+      "en": "To cure diseases",
+      "fr": "Pour guérir les maladies"
+    },
+    {
+      "n": 57,
+      "en": "To prevent hurricane",
+      "fr": "Pour empêcher un ouragan"
+    },
+    {
+      "n": 58,
+      "en": "To obtain honor and respect",
+      "fr": "Pour obtenir l'honneur et le respect"
+    },
+    {
+      "n": 59,
+      "en": "To cure stomachache",
+      "fr": "Pour guérir le mal d'estomac"
+    },
+    {
+      "n": 60,
+      "en": "To succeed in vital jobs",
+      "fr": "Pour réussir dans les travaux vitaux"
+    },
+    {
+      "n": 61,
+      "en": "For satisfaction of heart",
+      "fr": "Pour la satisfaction du cœur"
+    },
+    {
+      "n": 62,
+      "en": "To win friendship of the rich",
+      "fr": "Pour gagner l'amitié des riches"
+    },
+    {
+      "n": 63,
+      "en": "To make profit in business",
+      "fr": "Pour faire un profit dans le commerce"
+    },
+    {
+      "n": 64,
+      "en": "To cure headache",
+      "fr": "Pour guérir le mal de tête"
+    },
+    {
+      "n": 65,
+      "en": "To seek forgiveness",
+      "fr": "Pour demander le pardon",
+      "note": "« forgiveness » est rendu par « pardon », comme les parties 8 et 21."
+    },
+    {
+      "n": 66,
+      "en": "To get rid of poverty",
+      "fr": "Pour se débarrasser de la pauvreté"
+    },
+    {
+      "n": 67,
+      "en": "To cure eye ailment",
+      "fr": "Pour guérir un mal des yeux"
+    },
+    {
+      "n": 68,
+      "en": "To ward off plague",
+      "fr": "Pour écarter la peste"
+    },
+    {
+      "n": 69,
+      "en": "To achieve eminence",
+      "fr": "Pour atteindre l'éminence"
+    },
+    {
+      "n": 70,
+      "en": "To have long life",
+      "fr": "Pour avoir une longue vie"
+    },
+    {
+      "n": 71,
+      "en": "To prevent cyclone",
+      "fr": "Pour empêcher un cyclone"
+    },
+    {
+      "n": 72,
+      "en": "To cure pain in breast",
+      "fr": "Pour guérir la douleur de la poitrine",
+      "note": "« breast » est traduit par « poitrine »."
+    },
+    {
+      "n": 73,
+      "en": "To cure rheumatism",
+      "fr": "Pour guérir le rhumatisme"
+    },
+    {
+      "n": 74,
+      "en": "To have a son",
+      "fr": "Pour avoir un fils"
+    },
+    {
+      "n": 75,
+      "en": "To get high position",
+      "fr": "Pour obtenir une haute position"
+    },
+    {
+      "n": 76,
+      "en": "To cure leprosy",
+      "fr": "Pour guérir la lèpre"
+    },
+    {
+      "n": 77,
+      "en": "To liquidate debts",
+      "fr": "Pour liquider les dettes"
+    },
+    {
+      "n": 78,
+      "en": "To receive love",
+      "fr": "Pour recevoir l'amour"
+    },
+    {
+      "n": 79,
+      "en": "To seek freedom",
+      "fr": "Pour chercher la liberté"
+    },
+    {
+      "n": 80,
+      "en": "To seek prosperity",
+      "fr": "Pour chercher la prospérité"
+    },
+    {
+      "n": 81,
+      "en": "To cure migraine",
+      "fr": "Pour guérir la migraine"
+    },
+    {
+      "n": 82,
+      "en": "To cure ulcer",
+      "fr": "Pour guérir l'ulcère"
+    },
+    {
+      "n": 83,
+      "en": "To cure backache",
+      "fr": "Pour guérir le mal de dos"
+    },
+    {
+      "n": 84,
+      "en": "To cure pain the ribs",
+      "fr": "Pour guérir la douleur des côtes",
+      "note": "L’anglais omet « in » (« pain the ribs ») ; même traduction que la partie 55."
+    },
+    {
+      "n": 85,
+      "en": "To cure pain in the waist",
+      "fr": "Pour guérir la douleur de la taille"
+    },
+    {
+      "n": 86,
+      "en": "To cure spleen ailments",
+      "fr": "Pour guérir les maux de la rate"
+    },
+    {
+      "n": 87,
+      "en": "To cure headache",
+      "fr": "Pour guérir le mal de tête"
+    },
+    {
+      "n": 88,
+      "en": "To cure pain in forehead",
+      "fr": "Pour guérir la douleur du front"
+    },
+    {
+      "n": 89,
+      "en": "To cure urinary incontinence",
+      "fr": "Pour guérir l'incontinence urinaire"
+    },
+    {
+      "n": 90,
+      "en": "To cure pain in navel",
+      "fr": "Pour guérir la douleur du nombril"
+    },
+    {
+      "n": 91,
+      "en": "To remove stone from bladder",
+      "fr": "Pour retirer une pierre de la vessie",
+      "note": "« stone » est traduit littéralement par « pierre »."
+    },
+    {
+      "n": 92,
+      "en": "To cure piles",
+      "fr": "Pour guérir les hémorroïdes",
+      "note": "« piles » est traduit par le terme médical français « hémorroïdes »."
+    },
+    {
+      "n": 93,
+      "en": "To cure ulcers",
+      "fr": "Pour guérir les ulcères"
+    },
+    {
+      "n": 94,
+      "en": "To cure nose ailments",
+      "fr": "Pour guérir les maux du nez"
+    },
+    {
+      "n": 95,
+      "en": "To cure stomachache",
+      "fr": "Pour guérir le mal d'estomac"
+    },
+    {
+      "n": 96,
+      "en": "To cure knee pain",
+      "fr": "Pour guérir la douleur du genou"
+    },
+    {
+      "n": 97,
+      "en": "To cure throat pain",
+      "fr": "Pour guérir la douleur de la gorge"
+    },
+    {
+      "n": 98,
+      "en": "To seek fulfillment of ligitimate desires",
+      "fr": "Pour chercher l'accomplissement de désirs légitimes",
+      "note": "La source écrit « ligitimate » ; traduit « légitimes »."
+    },
+    {
+      "n": 99,
+      "en": "To cure pain in legs",
+      "fr": "Pour guérir la douleur des jambes"
+    },
+    {
+      "n": 100,
+      "en": "To cure thigh pain",
+      "fr": "Pour guérir la douleur de la cuisse"
+    }
+  ]
+}

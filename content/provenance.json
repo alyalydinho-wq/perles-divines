@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "id": "a6a50d78-0076-5d00-95f2-c3a732c97077",
+      "title": "Doua-e-Jawshan-e-Kabir",
+      "url": "https://www.duas.org/dua-jawshan-kabeer.html",
+      "dataUrl": "https://www.duas.org/data_v2/dua-jawshan-kabeer.json",
+      "retrievedAt": "2026-10-23",
+      "usedFor": "Découpage en 100 parties et intentions anglaises des titres de navigation. L'arabe et la translittération du catalogue proviennent déjà de ce JSON (tools/import-duas-org.mjs). La traduction française reste celle de https://www.perlesdivines.fr/fr/jawshane.html, seulement regroupée aux marqueurs « N - »."
+    }
+  ]
+}

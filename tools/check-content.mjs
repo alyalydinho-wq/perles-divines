@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import {load} from 'cheerio';
 import {decode,sha256} from './import-site/content.mjs';
+import {checkJawshanParts} from './jawshan-parts.mjs';
 const current=JSON.parse(await fs.readFile('content/current-import.json','utf8'));
 const records=JSON.parse(await fs.readFile('content/source-inventory.json','utf8'));
 const failures=[];let pages=0,images=0;
@@ -24,6 +25,9 @@ for(const r of records){
    const value=b(el).attr(el.tagName==='img'?'src':'href');
    if(/^https?:|^\/\//.test(value))failures.push({url:r.url,reason:'Sous-ressource distante',value});
  }
+}
+for (const reason of await checkJawshanParts()) {
+  failures.push({url:'https://www.duas.org/dua-jawshan-kabeer.html',reason});
 }
 const result={date:new Date().toISOString(),pages,images,rawHashesChecked:records.filter(r=>r.rawPath).length,failures};
 await fs.writeFile('docs/evidence/content-integrity.json',JSON.stringify(result,null,2));
