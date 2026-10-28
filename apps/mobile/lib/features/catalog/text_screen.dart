@@ -1617,7 +1617,7 @@ List<({List<String> words, bool fill, int? number})> layoutQuranLines({
       final needed = width + (last ? badge : 0);
       final space = pending.isEmpty ? 0.0 : gap;
       // Le rendu réel est un peu plus large que la mesure : on coupe avant.
-      if (pending.isNotEmpty && used + space + needed + 16 > maxWidth) {
+      if (pending.isNotEmpty && used + space + needed + 28 > maxWidth) {
         flush(wrapped: true);
       }
       if (pending.isNotEmpty) used += gap;
