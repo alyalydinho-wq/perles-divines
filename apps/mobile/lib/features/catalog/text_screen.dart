@@ -1519,6 +1519,7 @@ class _QuranVisualLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final fontSize = style.fontSize ?? 28;
     final content = math.min(maxWidth, _runsWidth(runs, style, scaler));
+    final justified = fill ? _justifiedGlyphs() : null;
     return SizedBox(
       width: maxWidth,
       height: fontSize * (style.height ?? 1),
@@ -1527,37 +1528,20 @@ class _QuranVisualLine extends StatelessWidget {
         children: [
           Align(
             alignment: Alignment.centerRight,
-            child: Row(
-              textDirection: TextDirection.rtl,
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                for (var i = 0; i < runs.length; i++) ...[
-                  if (i > 0)
-                    SizedBox(width: _measureQuran(' ', style, scaler)),
-                  if (runs[i].text.isNotEmpty)
-                    Text(
-                      runs[i].text,
-                      key: runs[i].number == null
-                          ? null
-                          : ValueKey('ayah-word-${runs[i].number}'),
-                      softWrap: false,
-                      textAlign: TextAlign.right,
+            child: justified == null
+                ? _packedRow()
+                : SizedBox(
+                    width: maxWidth,
+                    child: Row(
+                      key: ValueKey('quran-line-$index'),
                       textDirection: TextDirection.rtl,
-                      textWidthBasis: TextWidthBasis.longestLine,
-                      style: style,
+                      mainAxisAlignment: justified.length > 1
+                          ? MainAxisAlignment.spaceBetween
+                          : MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: justified,
                     ),
-                  if (runs[i].number != null)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(start: 4),
-                      child: _AyahBadge(
-                        number: runs[i].number!,
-                        diameter: _badgeDiameter(style, runs[i].number!),
-                      ),
-                    ),
-                ],
-              ],
-            ),
+                  ),
           ),
           Positioned(
             right: 0,
@@ -1570,6 +1554,74 @@ class _QuranVisualLine extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Verset incomplet : les mots restent groupés à droite.
+  Widget _packedRow() {
+    return Row(
+      textDirection: TextDirection.rtl,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        for (var i = 0; i < runs.length; i++) ...[
+          if (i > 0) SizedBox(width: _measureQuran(' ', style, scaler)),
+          if (runs[i].text.isNotEmpty)
+            _arabicWord(runs[i].text, number: runs[i].number),
+          if (runs[i].number != null) _badge(runs[i].number!),
+        ],
+      ],
+    );
+  }
+
+  /// Ligne coupée : les mots se répartissent jusqu’au bord gauche.
+  List<Widget> _justifiedGlyphs() {
+    final glyphs = <Widget>[];
+    for (final run in runs) {
+      final words = run.text
+          .split(RegExp(r'\s+'))
+          .where((word) => word.isNotEmpty)
+          .toList();
+      for (var i = 0; i < words.length; i++) {
+        final last = i == words.length - 1;
+        final word = _arabicWord(words[i], number: last ? run.number : null);
+        if (!last || run.number == null) {
+          glyphs.add(word);
+          continue;
+        }
+        glyphs.add(
+          Row(
+            textDirection: TextDirection.rtl,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [word, _badge(run.number!)],
+          ),
+        );
+      }
+      if (words.isEmpty && run.number != null) glyphs.add(_badge(run.number!));
+    }
+    return glyphs;
+  }
+
+  Widget _arabicWord(String text, {int? number}) {
+    return Text(
+      text,
+      key: number == null ? null : ValueKey('ayah-word-$number'),
+      softWrap: false,
+      textAlign: TextAlign.right,
+      textDirection: TextDirection.rtl,
+      textWidthBasis: TextWidthBasis.longestLine,
+      style: style,
+    );
+  }
+
+  Widget _badge(int number) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: 4),
+      child: _AyahBadge(
+        number: number,
+        diameter: _badgeDiameter(style, number),
       ),
     );
   }

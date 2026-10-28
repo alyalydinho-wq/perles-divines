@@ -490,6 +490,55 @@ void main() {
     );
   });
 
+  testWidgets('une ligne pleine atteint le bord gauche', (tester) async {
+    final words = List.filled(40, 'كلمة').join(' ');
+    final item = DevotionalText(
+      id: 'quran-justify',
+      kind: DevotionalKind.quran,
+      title: 'Sourate',
+      arabic: 'بِسْمِ اللّٰهِ\n\n$words ﴿١﴾\nقصير ﴿٢﴾',
+      translation: 'Traduction.',
+      transliteration: 'Translit',
+      references: [],
+      audioIds: [],
+    );
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TextScreen(
+          item: item,
+          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+          favorite: false,
+          onFavorite: () async {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final flow = tester.getRect(find.byKey(const Key('quran-flow')));
+    final line = tester.getRect(find.byKey(const ValueKey('quran-line-0')));
+    expect(line.left, closeTo(flow.left, 1));
+    expect(line.right, closeTo(flow.right, 1));
+
+    final render = tester.renderObject<RenderFlex>(
+      find.byKey(const ValueKey('quran-line-0')),
+    );
+    final boxes = <RenderBox>[];
+    render.visitChildren((child) => boxes.add(child as RenderBox));
+    final origin = render.localToGlobal(Offset.zero);
+    final first = boxes.first;
+    final last = boxes.last;
+    expect(
+      first.localToGlobal(Offset(first.size.width, 0)).dx,
+      closeTo(origin.dx + render.size.width, 1),
+    );
+    expect(last.localToGlobal(Offset.zero).dx, closeTo(origin.dx, 1));
+    expect(boxes.length, greaterThan(1));
+  });
+
   testWidgets('un verset court reste groupé au lieu de s’étirer', (
     tester,
   ) async {
