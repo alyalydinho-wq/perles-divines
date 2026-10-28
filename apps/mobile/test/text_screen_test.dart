@@ -15,6 +15,23 @@ import 'package:perles_divines/ui/heritage.dart';
 import 'package:perles_divines/ui/site.dart';
 
 void main() {
+  test('une ligne coupée est soulignée sur toute la largeur', () {
+    const style = TextStyle(fontSize: 28, height: 2.06);
+    final lines = layoutQuranLines(
+      verses: [
+        (text: List.filled(24, 'كلمة').join(' '), number: 72),
+        (text: 'قصير', number: 73),
+      ],
+      style: style,
+      scaler: TextScaler.noScaling,
+      maxWidth: 180,
+    );
+    expect(lines.first.fill, isTrue);
+    expect(lines.last.words, ['قصير\u2060']);
+    expect(lines.last.fill, isFalse);
+    expect(lines.last.number, 73);
+  });
+
   test('le trait arabe couvre les glyphes au-delà de la métrique', () {
     final edges = quranRuleEdges(
       metricLeft: 180,
@@ -232,8 +249,8 @@ void main() {
       expect(_quranPlain(basmala), 'بِسْمِ اللّٰهِ');
       expect(basmala.textAlign, TextAlign.center);
       expect(basmala.textDirection, TextDirection.rtl);
-      final flow = tester.widget<Text>(find.byKey(const Key('quran-flow')));
-      final plain = _quranPlain(flow);
+      final flow = _flowText(tester);
+      final plain = _flowPlain(tester);
       expect(plain.startsWith(verse1), isTrue);
       expect(plain.contains('بِسْمِ'), isFalse);
       expect(plain.contains(verse1), isTrue);
@@ -259,15 +276,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('La Mecque'), findsOneWidget);
 
-      final before = tester
-          .widget<Text>(find.byKey(const Key('quran-flow')))
-          .style!
-          .fontSize;
+      final before = _flowText(tester).style!.fontSize;
       expect(before, 28);
       await tester.tap(find.text('Plus grand'));
       await tester.pump();
       expect(
-        tester.widget<Text>(find.byKey(const Key('quran-flow'))).style!.fontSize,
+        _flowText(tester).style!.fontSize,
         34,
       );
 
@@ -313,7 +327,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(
-        tester.widget<Text>(find.byKey(const Key('quran-flow'))).style!.fontSize,
+        _flowText(tester).style!.fontSize,
         34,
       );
     },
@@ -441,14 +455,13 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final before = tester.widget<Text>(find.byKey(const Key('quran-flow')));
-    expect(_quranPlain(before), contains(short));
+    expect(_flowPlain(tester), contains(short));
     for (var i = 0; i < 4; i++) {
       await tester.tap(find.text('Plus grand'));
       await tester.pump();
     }
-    final flow = tester.widget<Text>(find.byKey(const Key('quran-flow')));
-    final plain = _quranPlain(flow);
+    final flow = _flowText(tester);
+    final plain = _flowPlain(tester);
     expect(flow.style!.fontSize, 46);
     expect(flow.style!.fontFamily, 'Indopak');
     expect(plain, contains(short));
@@ -494,18 +507,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     final word = tester.getRect(find.byKey(const ValueKey('ayah-word-22')));
-    final paragraph = tester
-        .renderObjectList<RenderParagraph>(find.byType(RichText))
-        .singleWhere((item) => item.text.toPlainText().contains(before));
-    final plain = paragraph.text.toPlainText();
-    final at = plain.indexOf(before);
-    final box = paragraph
-        .getBoxesForSelection(
-          TextSelection(baseOffset: at, extentOffset: at + before.length),
-        )
-        .first;
-    final beforeLeft = paragraph.localToGlobal(Offset(box.left, box.top)).dx;
-    expect(beforeLeft - word.right, inInclusiveRange(0, 32));
+    final badge = tester.getRect(find.text('\u06F2\u06F2'));
+    expect(word.left - badge.right, inInclusiveRange(0, 16));
+    final rule = tester.getSize(find.byKey(const ValueKey('quran-rule-0')));
+    expect(rule.width, lessThan(tester.getSize(find.byKey(const Key('quran-flow'))).width - 40));
   });
 
   testWidgets('les infos d’une longue sourate s’affichent au tap', (
@@ -1177,7 +1182,32 @@ void main() {
   );
 }
 
+Text _flowText(WidgetTester tester) {
+  return tester.widget<Text>(
+    find
+        .descendant(
+          of: find.byKey(const Key('quran-flow')),
+          matching: find.byType(Text),
+        )
+        .first,
+  );
+}
+
+String _flowPlain(WidgetTester tester) {
+  final texts = tester.widgetList<Text>(
+    find.descendant(
+      of: find.byKey(const Key('quran-flow')),
+      matching: find.byType(Text),
+    ),
+  );
+  return texts
+      .map((text) => text.data ?? '')
+      .where((value) => value.isNotEmpty)
+      .join(' ');
+}
+
 String _quranPlain(Text flow) {
+  if (flow.textSpan == null) return flow.data ?? '';
   final buffer = StringBuffer();
   void walk(InlineSpan span) {
     if (span is TextSpan) {

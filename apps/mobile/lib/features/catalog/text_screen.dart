@@ -1394,66 +1394,257 @@ class _QuranArabic extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (opening != null)
-            _ruledArabic(
-              lines: [opening],
-              scaler: scaler,
-              align: TextAlign.center,
-              flowKey: const Key('quran-basmala'),
-            ),
+            _BasmalaLine(text: opening.text, style: style, scaler: scaler),
           if (opening != null && body.isNotEmpty) const SizedBox(height: 18),
           if (body.isNotEmpty)
-            _ruledArabic(
-              lines: body,
-              scaler: scaler,
-              align: TextAlign.right,
-              flowKey: const Key('quran-flow'),
-            ),
+            _QuranFlow(lines: body, style: style, scaler: scaler),
         ],
       ),
     );
   }
+}
 
-  Widget _ruledArabic({
-    required List<_Line> lines,
-    required TextScaler scaler,
-    required TextAlign align,
-    required Key flowKey,
-  }) {
-    final placeholders = <PlaceholderDimensions>[];
-    final span = TextSpan(
-      style: style,
-      children: [
-        for (var i = 0; i < lines.length; i++)
-          ..._ayahSpans(
-            lines[i],
-            spaced: i > 0,
-            style: style,
-            scaler: scaler,
-            placeholders: placeholders,
+class _BasmalaLine extends StatelessWidget {
+  const _BasmalaLine({
+    required this.text,
+    required this.style,
+    required this.scaler,
+  });
+
+  final String text;
+  final TextStyle style;
+  final TextScaler scaler;
+
+  @override
+  Widget build(BuildContext context) {
+    final fontSize = style.fontSize ?? 28;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = math.min(
+          constraints.maxWidth,
+          _measureQuran(text, style, scaler) + 4,
+        );
+        return SizedBox(
+          width: constraints.maxWidth,
+          height: fontSize * (style.height ?? 1),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(
+                text,
+                key: const Key('quran-basmala'),
+                textAlign: TextAlign.center,
+                textDirection: TextDirection.rtl,
+                style: style,
+                textScaler: scaler,
+              ),
+              Positioned(
+                bottom: fontSize * 0.28,
+                child: SizedBox(
+                  width: width,
+                  height: 1,
+                  child: const ColoredBox(color: Color(0xFF8A8A8A)),
+                ),
+              ),
+            ],
           ),
-      ],
+        );
+      },
+    );
+  }
+}
+
+class _QuranFlow extends StatelessWidget {
+  const _QuranFlow({
+    required this.lines,
+    required this.style,
+    required this.scaler,
+  });
+
+  final List<_Line> lines;
+  final TextStyle style;
+  final TextScaler scaler;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        final visual = layoutQuranLines(
+          verses: [
+            for (final line in lines) (text: line.text, number: line.number),
+          ],
+          style: style,
+          scaler: scaler,
+          maxWidth: maxWidth,
+        );
+        return Column(
+          key: const Key('quran-flow'),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < visual.length; i++)
+              _QuranVisualLine(
+                words: visual[i].words,
+                number: visual[i].number,
+                fill: visual[i].fill,
+                style: style,
+                scaler: scaler,
+                maxWidth: maxWidth,
+                index: i,
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _QuranVisualLine extends StatelessWidget {
+  const _QuranVisualLine({
+    required this.words,
+    required this.number,
+    required this.fill,
+    required this.style,
+    required this.scaler,
+    required this.maxWidth,
+    required this.index,
+  });
+
+  final List<String> words;
+  final int? number;
+  final bool fill;
+  final TextStyle style;
+  final TextScaler scaler;
+  final double maxWidth;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    final fontSize = style.fontSize ?? 28;
+    final shown = words.join(' ');
+    final badge = number == null ? 0.0 : 4 + _badgeDiameter(style, number!);
+    final content = math.min(
+      maxWidth,
+      _measureQuran(shown, style, scaler) + badge,
     );
     return SizedBox(
-      width: double.infinity,
-      child: CustomPaint(
-        painter: _QuranLineRulesPainter(
-          span: span,
-          textScaler: scaler,
-          placeholders: placeholders,
-          textAlign: align,
-        ),
-        child: Text.rich(
-          span,
-          key: flowKey,
-          style: style,
-          textDirection: TextDirection.rtl,
-          textAlign: align,
-          textWidthBasis: TextWidthBasis.parent,
-          textScaler: scaler,
-        ),
+      width: maxWidth,
+      height: fontSize * (style.height ?? 1),
+      child: Stack(
+        alignment: Alignment.centerRight,
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              textDirection: TextDirection.rtl,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  shown,
+                  key: number == null ? null : ValueKey('ayah-word-$number'),
+                  textAlign: TextAlign.right,
+                  textDirection: TextDirection.rtl,
+                  textWidthBasis: TextWidthBasis.parent,
+                  style: style,
+                ),
+                if (number != null)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 4),
+                    child: _AyahBadge(
+                      number: number!,
+                      diameter: _badgeDiameter(style, number!),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 0,
+            bottom: fontSize * 0.28,
+            child: SizedBox(
+              key: ValueKey('quran-rule-$index'),
+              width: fill ? maxWidth : content,
+              height: 1,
+              child: const ColoredBox(color: Color(0xFF8A8A8A)),
+            ),
+          ),
+        ],
       ),
     );
   }
+}
+
+@visibleForTesting
+List<({List<String> words, bool fill, int? number})> layoutQuranLines({
+  required List<({String text, int? number})> verses,
+  required TextStyle style,
+  required TextScaler scaler,
+  required double maxWidth,
+}) {
+  final lines = <({List<String> words, bool fill, int? number})>[];
+  final pending = <String>[];
+  var used = 0.0;
+  final gap = _measureQuran(' ', style, scaler);
+
+  void flush({int? number, required bool wrapped}) {
+    if (pending.isEmpty && number == null) return;
+    lines.add((
+      words: List<String>.of(pending),
+      fill: wrapped || used >= maxWidth - 1,
+      number: number,
+    ));
+    pending.clear();
+    used = 0;
+  }
+
+  for (final verse in verses) {
+    final parts = verse.text
+        .split(RegExp(r'\s+'))
+        .where((word) => word.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) continue;
+    final badge = verse.number == null
+        ? 0.0
+        : 4 + _badgeDiameter(style, verse.number!);
+    for (var i = 0; i < parts.length; i++) {
+      final last = i == parts.length - 1;
+      final width = _measureQuran(
+        last && verse.number != null ? '${parts[i]}\u2060' : parts[i],
+        style,
+        scaler,
+      );
+      final needed = width + (last ? badge : 0);
+      final space = pending.isEmpty ? 0.0 : gap;
+      // Le rendu réel est un peu plus large que la mesure : on coupe avant.
+      if (pending.isNotEmpty && used + space + needed + 16 > maxWidth) {
+        flush(wrapped: true);
+      }
+      if (pending.isNotEmpty) used += gap;
+      pending.add(
+        last && verse.number != null ? '${parts[i]}\u2060' : parts[i],
+      );
+      used += width;
+      if (last) {
+        used += badge;
+        flush(number: verse.number, wrapped: false);
+      }
+    }
+  }
+  if (pending.isNotEmpty) flush(wrapped: false);
+  return lines;
+}
+
+double _measureQuran(String text, TextStyle style, TextScaler scaler) {
+  final painter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    textDirection: TextDirection.rtl,
+    textScaler: scaler,
+    maxLines: 1,
+  )..layout();
+  final width = painter.width;
+  painter.dispose();
+  return width;
 }
 
 bool _isBasmala(String text) {
@@ -1464,84 +1655,6 @@ bool _isBasmala(String text) {
     '',
   );
   return compact.startsWith('بسم') && compact.length <= 24;
-}
-
-List<InlineSpan> _ayahSpans(
-  _Line line, {
-  required bool spaced,
-  required TextStyle style,
-  required TextScaler scaler,
-  required List<PlaceholderDimensions> placeholders,
-}) {
-  final lead = spaced ? ' ' : '';
-  final number = line.number;
-  if (number == null) return [TextSpan(text: '$lead${line.text}')];
-  // Flutter coupe avant un WidgetSpan même après U+2060. Le dernier mot
-  // voyage donc avec le médaillon : le collage reste dans ce bloc.
-  final split = _lastWord(line.text);
-  final diameter = _badgeDiameter(style, number);
-  placeholders.add(
-    PlaceholderDimensions(
-      size: _tailSize(split.word, style, scaler, diameter),
-      alignment: PlaceholderAlignment.middle,
-    ),
-  );
-  final before = '$lead${split.before}';
-  return [
-    TextSpan(
-      children: [
-        if (before.isNotEmpty) TextSpan(text: before),
-        WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child: Row(
-            key: ValueKey('ayah-tail-$number'),
-            mainAxisSize: MainAxisSize.min,
-            textDirection: TextDirection.rtl,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                '${split.word}\u2060',
-                key: ValueKey('ayah-word-$number'),
-                style: style,
-                textDirection: TextDirection.rtl,
-                softWrap: false,
-                overflow: TextOverflow.visible,
-              ),
-              Padding(
-                padding: const EdgeInsetsDirectional.only(start: 4),
-                child: _AyahBadge(number: number, diameter: diameter),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  ];
-}
-
-({String before, String word}) _lastWord(String text) {
-  final match = RegExp(r'^(.*\s)(\S+)\s*$').firstMatch(text);
-  if (match == null) return (before: '', word: text.trim());
-  return (before: match.group(1)!, word: match.group(2)!);
-}
-
-Size _tailSize(
-  String word,
-  TextStyle style,
-  TextScaler scaler,
-  double diameter,
-) {
-  final painter = TextPainter(
-    text: TextSpan(text: '$word\u2060', style: style),
-    textDirection: TextDirection.rtl,
-    textScaler: scaler,
-  )..layout();
-  final size = Size(
-    painter.width + 4 + diameter,
-    math.max(painter.height, diameter),
-  );
-  painter.dispose();
-  return size;
 }
 
 double _badgeDiameter(TextStyle style, int number) {
@@ -1568,86 +1681,6 @@ double _badgeDiameter(TextStyle style, int number) {
     right = math.max(right, box.right);
   }
   return (left: left, right: right);
-}
-
-/// Trait gris sous toute la ligne rendue, du premier au dernier glyphe.
-class _QuranLineRulesPainter extends CustomPainter {
-  _QuranLineRulesPainter({
-    required this.span,
-    required this.textScaler,
-    required this.placeholders,
-    required this.textAlign,
-  });
-
-  final TextSpan span;
-  final TextScaler textScaler;
-  final List<PlaceholderDimensions> placeholders;
-  final TextAlign textAlign;
-
-  static const _rule = Color(0xFF8A8A8A);
-
-  TextPainter _layout(double width) {
-    final painter = TextPainter(
-      text: span,
-      textDirection: TextDirection.rtl,
-      textAlign: textAlign,
-      textWidthBasis: TextWidthBasis.parent,
-      textScaler: textScaler,
-    );
-    painter.setPlaceholderDimensions(placeholders);
-    painter.layout(maxWidth: math.max(0, width));
-    return painter;
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (size.width <= 0 || size.height <= 0) return;
-    final painter = _layout(size.width);
-    final paint = Paint()
-      ..color = _rule
-      ..strokeWidth = 1
-      ..strokeCap = StrokeCap.butt
-      ..isAntiAlias = true;
-    try {
-      final metrics = painter.computeLineMetrics();
-      final plain = painter.text?.toPlainText() ?? '';
-      final boxes = plain.isEmpty
-          ? const <TextBox>[]
-          : painter.getBoxesForSelection(
-              TextSelection(baseOffset: 0, extentOffset: plain.length),
-            );
-      final gap = (span.style?.fontSize ?? 28) * 0.55;
-      for (final line in metrics) {
-        final edges = quranRuleEdges(
-          metricLeft: line.left,
-          metricWidth: line.width,
-          lineTop: line.baseline - line.ascent,
-          lineBottom: line.baseline + line.descent,
-          boxes: boxes,
-        );
-        final y = line.baseline + gap;
-        if (y < 0 || y > size.height || edges.right - edges.left < 1) {
-          continue;
-        }
-        canvas.drawLine(
-          Offset(edges.left, y),
-          Offset(edges.right, y),
-          paint,
-        );
-      }
-    } finally {
-      painter.dispose();
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _QuranLineRulesPainter oldDelegate) {
-    return oldDelegate.span.toPlainText() != span.toPlainText() ||
-        oldDelegate.span.style != span.style ||
-        oldDelegate.textScaler != textScaler ||
-        oldDelegate.textAlign != textAlign ||
-        oldDelegate.placeholders.length != placeholders.length;
-  }
 }
 
 class _AyahBadge extends StatelessWidget {
