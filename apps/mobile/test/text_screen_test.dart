@@ -27,9 +27,24 @@ void main() {
       maxWidth: 180,
     );
     expect(lines.first.fill, isTrue);
-    expect(lines.last.words, ['قصير\u2060']);
     expect(lines.last.fill, isFalse);
-    expect(lines.last.number, 73);
+    expect(lines.last.runs.any((run) => run.number == 73), isTrue);
+  });
+
+  test('deux versets courts restent sur la même ligne', () {
+    const style = TextStyle(fontSize: 28, height: 2.06);
+    final lines = layoutQuranLines(
+      verses: [
+        (text: 'عِينٌ', number: 22),
+        (text: 'كَأَمْثَالِ', number: 23),
+      ],
+      style: style,
+      scaler: TextScaler.noScaling,
+      maxWidth: 420,
+    );
+    expect(lines, hasLength(1));
+    expect(lines.single.fill, isFalse);
+    expect(lines.single.runs.map((run) => run.number).toList(), [22, 23]);
   });
 
   test('le trait arabe couvre les glyphes au-delà de la métrique', () {
@@ -255,11 +270,10 @@ void main() {
       expect(plain.contains('بِسْمِ'), isFalse);
       expect(plain.contains(verse1), isTrue);
       expect(plain.contains(verse2), isTrue);
-      expect(plain.contains('\u2060'), isTrue);
       expect(plain.contains('﴿'), isFalse);
       expect(flow.textAlign, TextAlign.right);
       expect(flow.textDirection, TextDirection.rtl);
-      expect(flow.textWidthBasis, TextWidthBasis.parent);
+      expect(flow.textWidthBasis, TextWidthBasis.longestLine);
       expect(flow.maxLines, isNull);
       expect(flow.style!.fontFamily, 'Indopak');
       expect(flow.style!.height, 2.06);

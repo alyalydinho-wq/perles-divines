@@ -1484,8 +1484,7 @@ class _QuranFlow extends StatelessWidget {
           children: [
             for (var i = 0; i < visual.length; i++)
               _QuranVisualLine(
-                words: visual[i].words,
-                number: visual[i].number,
+                runs: visual[i].runs,
                 fill: visual[i].fill,
                 style: style,
                 scaler: scaler,
@@ -1501,8 +1500,7 @@ class _QuranFlow extends StatelessWidget {
 
 class _QuranVisualLine extends StatelessWidget {
   const _QuranVisualLine({
-    required this.words,
-    required this.number,
+    required this.runs,
     required this.fill,
     required this.style,
     required this.scaler,
@@ -1510,8 +1508,7 @@ class _QuranVisualLine extends StatelessWidget {
     required this.index,
   });
 
-  final List<String> words;
-  final int? number;
+  final List<({String text, int? number})> runs;
   final bool fill;
   final TextStyle style;
   final TextScaler scaler;
@@ -1521,12 +1518,7 @@ class _QuranVisualLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fontSize = style.fontSize ?? 28;
-    final shown = words.join(' ');
-    final badge = number == null ? 0.0 : 4 + _badgeDiameter(style, number!);
-    final content = math.min(
-      maxWidth,
-      _measureQuran(shown, style, scaler) + badge,
-    );
+    final content = math.min(maxWidth, _runsWidth(runs, style, scaler));
     return SizedBox(
       width: maxWidth,
       height: fontSize * (style.height ?? 1),
@@ -1540,22 +1532,30 @@ class _QuranVisualLine extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  shown,
-                  key: number == null ? null : ValueKey('ayah-word-$number'),
-                  textAlign: TextAlign.right,
-                  textDirection: TextDirection.rtl,
-                  textWidthBasis: TextWidthBasis.parent,
-                  style: style,
-                ),
-                if (number != null)
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(start: 4),
-                    child: _AyahBadge(
-                      number: number!,
-                      diameter: _badgeDiameter(style, number!),
+                for (var i = 0; i < runs.length; i++) ...[
+                  if (i > 0)
+                    SizedBox(width: _measureQuran(' ', style, scaler)),
+                  if (runs[i].text.isNotEmpty)
+                    Text(
+                      runs[i].text,
+                      key: runs[i].number == null
+                          ? null
+                          : ValueKey('ayah-word-${runs[i].number}'),
+                      softWrap: false,
+                      textAlign: TextAlign.right,
+                      textDirection: TextDirection.rtl,
+                      textWidthBasis: TextWidthBasis.longestLine,
+                      style: style,
                     ),
-                  ),
+                  if (runs[i].number != null)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 4),
+                      child: _AyahBadge(
+                        number: runs[i].number!,
+                        diameter: _badgeDiameter(style, runs[i].number!),
+                      ),
+                    ),
+                ],
               ],
             ),
           ),
@@ -1576,24 +1576,36 @@ class _QuranVisualLine extends StatelessWidget {
 }
 
 @visibleForTesting
-List<({List<String> words, bool fill, int? number})> layoutQuranLines({
+List<({List<({String text, int? number})> runs, bool fill})> layoutQuranLines({
   required List<({String text, int? number})> verses,
   required TextStyle style,
   required TextScaler scaler,
   required double maxWidth,
 }) {
-  final lines = <({List<String> words, bool fill, int? number})>[];
-  final pending = <String>[];
+  final lines = <({List<({String text, int? number})> runs, bool fill})>[];
+  final pending = <({String? text, int? number})>[];
   var used = 0.0;
   final gap = _measureQuran(' ', style, scaler);
 
-  void flush({int? number, required bool wrapped}) {
-    if (pending.isEmpty && number == null) return;
-    lines.add((
-      words: List<String>.of(pending),
-      fill: wrapped || used >= maxWidth - 1,
-      number: number,
-    ));
+  void flush({required bool wrapped}) {
+    if (pending.isEmpty) return;
+    final runs = <({String text, int? number})>[];
+    final words = <String>[];
+    void push(int? number) {
+      if (words.isEmpty && number == null) return;
+      runs.add((text: words.join(' '), number: number));
+      words.clear();
+    }
+
+    for (final token in pending) {
+      if (token.number == null) {
+        words.add(token.text!);
+      } else {
+        push(token.number);
+      }
+    }
+    push(null);
+    lines.add((runs: runs, fill: wrapped || used >= maxWidth - 1));
     pending.clear();
     used = 0;
   }
@@ -1609,11 +1621,7 @@ List<({List<String> words, bool fill, int? number})> layoutQuranLines({
         : 4 + _badgeDiameter(style, verse.number!);
     for (var i = 0; i < parts.length; i++) {
       final last = i == parts.length - 1;
-      final width = _measureQuran(
-        last && verse.number != null ? '${parts[i]}\u2060' : parts[i],
-        style,
-        scaler,
-      );
+      final width = _measureQuran(parts[i], style, scaler);
       final needed = width + (last ? badge : 0);
       final space = pending.isEmpty ? 0.0 : gap;
       // Le rendu réel est un peu plus large que la mesure : on coupe avant.
@@ -1621,18 +1629,34 @@ List<({List<String> words, bool fill, int? number})> layoutQuranLines({
         flush(wrapped: true);
       }
       if (pending.isNotEmpty) used += gap;
-      pending.add(
-        last && verse.number != null ? '${parts[i]}\u2060' : parts[i],
-      );
+      pending.add((text: parts[i], number: null));
       used += width;
-      if (last) {
+      if (last && verse.number != null) {
+        pending.add((text: null, number: verse.number));
         used += badge;
-        flush(number: verse.number, wrapped: false);
       }
     }
   }
   if (pending.isNotEmpty) flush(wrapped: false);
   return lines;
+}
+
+double _runsWidth(
+  List<({String text, int? number})> runs,
+  TextStyle style,
+  TextScaler scaler,
+) {
+  final gap = _measureQuran(' ', style, scaler);
+  var width = 0.0;
+  for (var i = 0; i < runs.length; i++) {
+    if (i > 0) width += gap;
+    if (runs[i].text.isNotEmpty) {
+      width += _measureQuran(runs[i].text, style, scaler);
+    }
+    final number = runs[i].number;
+    if (number != null) width += 4 + _badgeDiameter(style, number);
+  }
+  return width;
 }
 
 double _measureQuran(String text, TextStyle style, TextScaler scaler) {
