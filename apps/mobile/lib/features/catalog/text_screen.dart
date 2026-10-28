@@ -679,7 +679,14 @@ class _TextScreenState extends State<TextScreen> {
   }) {
     final text = body.trim();
     final intro = introduction?.trim() ?? '';
-    if (text.isEmpty && intro.isEmpty && references.isEmpty) {
+    final greenCaption =
+        widget.item.title == 'Doua-e-Wahda' &&
+            intro.isNotEmpty &&
+            !intro.contains('\n')
+        ? intro
+        : '';
+    final cardIntro = greenCaption.isEmpty ? intro : '';
+    if (text.isEmpty && cardIntro.isEmpty && references.isEmpty) {
       return _empty(
         'Ce passage n’est pas en texte dans la page source. Ouvrez l’onglet Arabic pour la version originale.',
       );
@@ -714,6 +721,19 @@ class _TextScreenState extends State<TextScreen> {
                 ),
               ),
             ),
+            if (greenCaption.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                greenCaption,
+                textAlign: TextAlign.center,
+                style: siteText(
+                  color: siteGreenSolid,
+                  fontSize: 16,
+                  lineHeight: 22,
+                  weight: FontWeight.w700,
+                ),
+              ),
+            ],
             const SizedBox(height: 10),
             if (surahInfo != null) _surahInfoLink(),
             if (surahInfo != null && _surahInfoOpen)
@@ -726,14 +746,14 @@ class _TextScreenState extends State<TextScreen> {
                   title: 'Infos sur la sourate',
                 ),
               ),
-            if (intro.isNotEmpty && text.isNotEmpty)
+            if (cardIntro.isNotEmpty && text.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-                child: _InfoCard(text: intro, size: proseSize),
+                child: _InfoCard(text: cardIntro, size: proseSize),
               )
-            else if (intro.isNotEmpty) ...[
+            else if (cardIntro.isNotEmpty) ...[
               Text(
-                intro,
+                cardIntro,
                 style: siteText(
                   color: siteBlack,
                   fontSize: proseSize,
@@ -902,11 +922,7 @@ class _TextScreenState extends State<TextScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final target = _jawshanKeys[number - 1].currentContext;
       if (target == null || !mounted) return;
-      Scrollable.ensureVisible(
-        target,
-        duration: Duration.zero,
-        alignment: 0,
-      );
+      Scrollable.ensureVisible(target, duration: Duration.zero, alignment: 0);
     });
   }
 
@@ -947,51 +963,51 @@ class _TextScreenState extends State<TextScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-            SizedBox(
-              width: double.infinity,
-              child: Text(
-                item.title.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: siteText(
-                  color: siteGreenSolid,
-                  fontSize: 16,
-                  lineHeight: 22,
-                  weight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            if (hadith.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _InfoCard(text: hadith, size: headerSize),
-              ),
-            _jawshanToc(headerSize),
-            if (preamble.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 16, bottom: 4),
+              SizedBox(
+                width: double.infinity,
                 child: Text(
-                  preamble,
-                  textAlign: TextAlign.start,
+                  item.title.toUpperCase(),
+                  textAlign: TextAlign.center,
                   style: siteText(
-                    color: siteBlack,
-                    fontSize: headerSize,
-                    lineHeight: headerSize * 1.4,
+                    color: siteGreenSolid,
+                    fontSize: 16,
+                    lineHeight: 22,
+                    weight: FontWeight.w700,
                   ),
                 ),
               ),
-            for (var i = 0; i < blocks.length; i++) ...[
-              if (i > 0)
-                const Divider(
-                  height: 28,
-                  thickness: 1,
-                  color: Color(0xFFB7C7A4),
+              const SizedBox(height: 10),
+              if (hadith.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: _InfoCard(text: hadith, size: headerSize),
                 ),
-              _jawshanHeader(i + 1, headerSize),
-              ..._jawshanBody(blocks[i], headerSize),
-            ],
-            // Laisse la dernière partie atteindre le haut de l’écran.
-            SizedBox(height: MediaQuery.sizeOf(context).height * 0.55),
+              _jawshanToc(headerSize),
+              if (preamble.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, bottom: 4),
+                  child: Text(
+                    preamble,
+                    textAlign: TextAlign.start,
+                    style: siteText(
+                      color: siteBlack,
+                      fontSize: headerSize,
+                      lineHeight: headerSize * 1.4,
+                    ),
+                  ),
+                ),
+              for (var i = 0; i < blocks.length; i++) ...[
+                if (i > 0)
+                  const Divider(
+                    height: 28,
+                    thickness: 1,
+                    color: Color(0xFFB7C7A4),
+                  ),
+                _jawshanHeader(i + 1, headerSize),
+                ..._jawshanBody(blocks[i], headerSize),
+              ],
+              // Laisse la dernière partie atteindre le haut de l’écran.
+              SizedBox(height: MediaQuery.sizeOf(context).height * 0.55),
             ],
           ),
         ),
@@ -1003,14 +1019,23 @@ class _TextScreenState extends State<TextScreen> {
     final hadith = _hadith(item.introduction);
     return switch (pane) {
       TextPane.arabic => _reading(hadith, item.arabic, const [], rtl: true),
-      TextPane.translation => _reading(hadith, item.translation, item.references),
+      TextPane.translation => _reading(
+        hadith,
+        item.translation,
+        item.references,
+      ),
       TextPane.transliteration => _reading(
         hadith,
         item.transliteration,
         const [],
         verses: true,
       ),
-      TextPane.gujarati => _reading('', item.gujarati, const [], gujarati: true),
+      TextPane.gujarati => _reading(
+        '',
+        item.gujarati,
+        const [],
+        gujarati: true,
+      ),
     };
   }
 
