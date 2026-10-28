@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:perles_divines/core/store.dart';
@@ -302,7 +303,7 @@ void main() {
     },
   );
 
-  testWidgets('un numéro à trois chiffres reste entier à la fin du verset', (
+  testWidgets('un numéro à trois chiffres reste entier au début du verset', (
     tester,
   ) async {
     const item = DevotionalText(
@@ -343,10 +344,7 @@ void main() {
     expect(number, findsOneWidget);
     final numberSize = tester.getSize(number);
     expect(numberSize.height, lessThan(numberSize.width));
-    expect(
-      tester.getTopLeft(number).dx,
-      greaterThan(tester.getTopLeft(find.textContaining('Allahu laaa')).dx),
-    );
+    _expectBadgeBefore(tester, '255', 'Allahu laaa');
 
     await tester.tap(find.text('Translation'));
     await tester.pumpAndSettle();
@@ -354,10 +352,7 @@ void main() {
     expect(find.text('257'), findsOneWidget);
     expect(find.textContaining('Nulle contrainte'), findsOneWidget);
     expect(find.textContaining('255.'), findsNothing);
-    expect(
-      tester.getTopLeft(find.text('257')).dx,
-      greaterThan(tester.getTopLeft(find.textContaining('le défenseur')).dx),
-    );
+    _expectBadgeBefore(tester, '257', 'le défenseur');
   });
 
   testWidgets('chaque ligne arabe d’une rubrique a un trait noir', (
@@ -1232,6 +1227,23 @@ class _GateStore extends AppStore {
 
   @override
   Future<dynamic> readState(String key) => _gate.future;
+}
+
+void _expectBadgeBefore(WidgetTester tester, String number, String snippet) {
+  final paragraph = tester
+      .renderObjectList<RenderParagraph>(find.byType(RichText))
+      .singleWhere((item) => item.text.toPlainText().contains(snippet));
+  final plain = paragraph.text.toPlainText();
+  final at = plain.indexOf(snippet);
+  expect(at, greaterThanOrEqualTo(0));
+  final boxes = paragraph.getBoxesForSelection(
+    TextSelection(baseOffset: at, extentOffset: at + snippet.length),
+  );
+  expect(boxes, isNotEmpty);
+  final words = paragraph.localToGlobal(Offset(boxes.first.left, boxes.first.top));
+  final badge = tester.getRect(find.text(number));
+  expect(badge.right, lessThan(words.dx));
+  expect((badge.center.dy - words.dy).abs(), lessThan(badge.height));
 }
 
 Finder _verse(String value) => find.byWidgetPredicate((widget) {

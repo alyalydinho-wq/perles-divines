@@ -835,12 +835,11 @@ class _TextScreenState extends State<TextScreen> {
         TextSpan(
           style: style,
           children: [
-            TextSpan(text: line.text),
             if (number != null)
               WidgetSpan(
                 alignment: PlaceholderAlignment.middle,
                 child: Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 6),
+                  padding: const EdgeInsetsDirectional.only(end: 6),
                   child: _AyahBadge(
                     number: number,
                     diameter: _badgeSize(size, number),
@@ -848,6 +847,7 @@ class _TextScreenState extends State<TextScreen> {
                   ),
                 ),
               ),
+            TextSpan(text: line.text),
           ],
         ),
         textAlign: TextAlign.center,
