@@ -1405,7 +1405,7 @@ class _QuranArabic extends StatelessWidget {
             _ruledArabic(
               lines: body,
               scaler: scaler,
-              align: TextAlign.justify,
+              align: TextAlign.right,
               flowKey: const Key('quran-flow'),
             ),
         ],
@@ -1549,7 +1549,28 @@ double _badgeDiameter(TextStyle style, int number) {
   return ((style.fontSize ?? 28) * (digits >= 3 ? 1.4 : 0.9)).clamp(26.0, 64.0);
 }
 
-/// Trait gris d’origine, calé sous chaque ligne du flux et non sous chaque verset.
+/// Étend le trait à tous les glyphes de la ligne, y compris le médaillon.
+@visibleForTesting
+({double left, double right}) quranRuleEdges({
+  required double metricLeft,
+  required double metricWidth,
+  required double lineTop,
+  required double lineBottom,
+  required List<TextBox> boxes,
+}) {
+  var left = metricLeft;
+  var right = metricLeft + math.max(0, metricWidth);
+  for (final box in boxes) {
+    final mid = (box.top + box.bottom) / 2;
+    if (mid < lineTop - 1 || mid >= lineBottom + 1) continue;
+    if (box.right - box.left < 0.5) continue;
+    left = math.min(left, box.left);
+    right = math.max(right, box.right);
+  }
+  return (left: left, right: right);
+}
+
+/// Trait gris sous toute la ligne rendue, du premier au dernier glyphe.
 class _QuranLineRulesPainter extends CustomPainter {
   _QuranLineRulesPainter({
     required this.span,
@@ -1588,13 +1609,29 @@ class _QuranLineRulesPainter extends CustomPainter {
       ..strokeCap = StrokeCap.butt
       ..isAntiAlias = true;
     try {
+      final metrics = painter.computeLineMetrics();
+      final plain = painter.text?.toPlainText() ?? '';
+      final boxes = plain.isEmpty
+          ? const <TextBox>[]
+          : painter.getBoxesForSelection(
+              TextSelection(baseOffset: 0, extentOffset: plain.length),
+            );
       final gap = (span.style?.fontSize ?? 28) * 0.55;
-      for (final line in painter.computeLineMetrics()) {
+      for (final line in metrics) {
+        final edges = quranRuleEdges(
+          metricLeft: line.left,
+          metricWidth: line.width,
+          lineTop: line.baseline - line.ascent,
+          lineBottom: line.baseline + line.descent,
+          boxes: boxes,
+        );
         final y = line.baseline + gap;
-        if (y < 0 || y > size.height || line.width <= 0) continue;
+        if (y < 0 || y > size.height || edges.right - edges.left < 1) {
+          continue;
+        }
         canvas.drawLine(
-          Offset(line.left, y),
-          Offset(line.left + line.width, y),
+          Offset(edges.left, y),
+          Offset(edges.right, y),
           paint,
         );
       }

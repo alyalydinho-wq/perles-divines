@@ -15,6 +15,22 @@ import 'package:perles_divines/ui/heritage.dart';
 import 'package:perles_divines/ui/site.dart';
 
 void main() {
+  test('le trait arabe couvre les glyphes au-delà de la métrique', () {
+    final edges = quranRuleEdges(
+      metricLeft: 180,
+      metricWidth: 90,
+      lineTop: 0,
+      lineBottom: 40,
+      boxes: [
+        TextBox.fromLTRBD(180, 2, 270, 36, TextDirection.rtl),
+        TextBox.fromLTRBD(12, 4, 70, 38, TextDirection.rtl),
+        TextBox.fromLTRBD(0, 80, 40, 100, TextDirection.rtl),
+      ],
+    );
+    expect(edges.left, 12);
+    expect(edges.right, 270);
+  });
+
   test('le chronomètre de lecture reste lisible', () {
     expect(formatPlaybackClock(Duration.zero), '0:00');
     expect(
@@ -224,7 +240,7 @@ void main() {
       expect(plain.contains(verse2), isTrue);
       expect(plain.contains('\u2060'), isTrue);
       expect(plain.contains('﴿'), isFalse);
-      expect(flow.textAlign, TextAlign.justify);
+      expect(flow.textAlign, TextAlign.right);
       expect(flow.textDirection, TextDirection.rtl);
       expect(flow.textWidthBasis, TextWidthBasis.parent);
       expect(flow.maxLines, isNull);
@@ -445,6 +461,51 @@ void main() {
       tester.getSize(find.byKey(const Key('quran-flow'))).height,
       greaterThan(46 * 2.06 * 1.4),
     );
+  });
+
+  testWidgets('un verset court reste groupé au lieu de s’étirer', (
+    tester,
+  ) async {
+    const before = 'وَحُورٌ';
+    const last = 'عِينٌ';
+    const item = DevotionalText(
+      id: 'quran-gap',
+      kind: DevotionalKind.quran,
+      title: 'Sourate',
+      arabic: 'بِسْمِ اللّٰهِ\n\n$before $last ﴿٢٢﴾',
+      translation: 'Traduction.',
+      transliteration: 'Translit',
+      references: [],
+      audioIds: [],
+    );
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TextScreen(
+          item: item,
+          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+          favorite: false,
+          onFavorite: () async {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final word = tester.getRect(find.byKey(const ValueKey('ayah-word-22')));
+    final paragraph = tester
+        .renderObjectList<RenderParagraph>(find.byType(RichText))
+        .singleWhere((item) => item.text.toPlainText().contains(before));
+    final plain = paragraph.text.toPlainText();
+    final at = plain.indexOf(before);
+    final box = paragraph
+        .getBoxesForSelection(
+          TextSelection(baseOffset: at, extentOffset: at + before.length),
+        )
+        .first;
+    final beforeLeft = paragraph.localToGlobal(Offset(box.left, box.top)).dx;
+    expect(beforeLeft - word.right, inInclusiveRange(0, 32));
   });
 
   testWidgets('les infos d’une longue sourate s’affichent au tap', (
