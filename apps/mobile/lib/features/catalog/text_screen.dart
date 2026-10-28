@@ -746,6 +746,20 @@ class _TextScreenState extends State<TextScreen> {
                 rtl &&
                 widget.item.kind == DevotionalKind.quran)
               _QuranArabic(text: text, style: _arabicStyle())
+            else if (text.isNotEmpty &&
+                rtl &&
+                widget.item.kind == DevotionalKind.dua &&
+                _arabicScript(text))
+              _JustifiedArabic(
+                text: text,
+                style: _arabicStyle(),
+                proseStyle: siteText(
+                  color: siteBlack,
+                  fontSize: proseSize,
+                  lineHeight: proseSize * 1.4,
+                  weight: FontWeight.w700,
+                ),
+              )
             else if (text.isNotEmpty && rtl) ...[
               for (final block in text.split(RegExp(r'\n{2,}')))
                 if (block.trim().isNotEmpty)
@@ -1077,22 +1091,14 @@ class _TextScreenState extends State<TextScreen> {
     switch (pane) {
       case TextPane.arabic:
         return [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              block.trim(),
-              textDirection: _arabicScript(block)
-                  ? TextDirection.rtl
-                  : TextDirection.ltr,
-              textAlign: TextAlign.center,
-              style: _arabicScript(block)
-                  ? _ruledBlack(_arabicStyle())
-                  : siteText(
-                      color: siteBlack,
-                      fontSize: size,
-                      lineHeight: size * 1.4,
-                      weight: FontWeight.w700,
-                    ),
+          _JustifiedArabic(
+            text: block.trim(),
+            style: _arabicStyle(),
+            proseStyle: siteText(
+              color: siteBlack,
+              fontSize: size,
+              lineHeight: size * 1.4,
+              weight: FontWeight.w700,
             ),
           ),
         ];
@@ -1373,6 +1379,54 @@ String _indoDigits(int value) {
     RegExp(r'\d'),
     (match) => extended[int.parse(match[0]!)],
   );
+}
+
+/// Arabe d’un doua : mêmes lignes justifiées, de droite à gauche, que le Coran.
+class _JustifiedArabic extends StatelessWidget {
+  const _JustifiedArabic({
+    required this.text,
+    required this.style,
+    required this.proseStyle,
+  });
+
+  final String text;
+  final TextStyle style;
+  final TextStyle proseStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    final scaler = MediaQuery.textScalerOf(context);
+    final blocks = text
+        .split(RegExp(r'\n{2,}'))
+        .map((block) => block.trim())
+        .where((block) => block.isNotEmpty);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final block in blocks)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: RegExp(r'[\u0600-\u06FF]').hasMatch(block)
+                  ? _QuranFlow(
+                      lines: [
+                        _Line(block.replaceAll(RegExp(r'\s+'), ' ').trim()),
+                      ],
+                      style: style,
+                      scaler: scaler,
+                    )
+                  : Text(
+                      block,
+                      textDirection: TextDirection.ltr,
+                      textAlign: TextAlign.center,
+                      style: proseStyle,
+                    ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _QuranArabic extends StatelessWidget {

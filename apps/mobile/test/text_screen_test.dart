@@ -399,21 +399,26 @@ void main() {
     _expectBadgeBefore(tester, '257', 'le défenseur');
   });
 
-  testWidgets('chaque ligne arabe d’une rubrique a un trait noir', (
+  testWidgets('l’arabe d’un doua est justifié de droite à gauche', (
     tester,
   ) async {
     const first = 'نَادِ عَلِيًّا مَظْهَرَ الْعَجَائِبِ';
     const second = 'تَجِدْهُ عَوْنًا لَكَ فِي النَّوَائِبِ';
-    const item = DevotionalText(
+    final words = List.filled(40, 'كلمة').join(' ');
+    final item = DevotionalText(
       id: 'dua-naad',
       kind: DevotionalKind.dua,
       title: 'Naad-e-Ali',
-      arabic: '$first\n$second',
+      arabic: '$words\n$first\n$second',
       translation: 'Traduction.',
       transliteration: 'Naad',
       references: [],
       audioIds: [],
     );
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
         home: TextScreen(
@@ -425,10 +430,17 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final text = tester.widget<Text>(find.text('$first\n$second'));
-    expect(text.style!.decoration, TextDecoration.underline);
-    expect(text.style!.decorationColor, siteBlack);
-    expect(text.textAlign, TextAlign.center);
+
+    final flow = tester.getRect(find.byKey(const Key('quran-flow')));
+    final line = tester.getRect(find.byKey(const ValueKey('quran-line-0')));
+    expect(line.left, closeTo(flow.left, 1));
+    expect(line.right, closeTo(flow.right, 1));
+    final word = tester.widget<Text>(find.text('كلمة').first);
+    expect(word.textAlign, TextAlign.right);
+    expect(word.textDirection, TextDirection.rtl);
+    expect(word.style!.fontFamily, 'Indopak');
+    expect(word.style!.decoration, isNot(TextDecoration.underline));
+    expect(find.textContaining('نَادِ', skipOffstage: false), findsWidgets);
 
     await tester.tap(find.text('Translation'));
     await tester.pumpAndSettle();
@@ -436,6 +448,7 @@ void main() {
       tester.widget<Text>(find.text('Traduction.')).style!.decoration,
       isNot(TextDecoration.underline),
     );
+    expect(find.byKey(const Key('quran-flow')), findsNothing);
   });
 
   testWidgets('un long verset garde la même taille et passe à la ligne', (
@@ -956,7 +969,7 @@ void main() {
     await tester.tap(find.byKey(const Key('larger-text')));
     await tester.pump();
     expect(
-      tester.widget<Text>(find.text('بِسْمِ اللّٰهِ')).style!.fontSize,
+      tester.widget<Text>(find.textContaining('بِسْمِ').first).style!.fontSize,
       46,
     );
 
@@ -964,7 +977,7 @@ void main() {
     await tester.pump();
     expect(find.text('Très grand'), findsOneWidget);
     expect(
-      tester.widget<Text>(find.text('بِسْمِ اللّٰهِ')).style!.fontSize,
+      tester.widget<Text>(find.textContaining('بِسْمِ').first).style!.fontSize,
       40,
     );
   });
