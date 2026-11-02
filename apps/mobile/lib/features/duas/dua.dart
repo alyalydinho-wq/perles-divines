@@ -44,8 +44,13 @@ class DevotionalText {
   bool get hasOriginalPage => pagePath.isNotEmpty;
 
   /// Lecture native déjà mise à jour : le lien ne doit plus ouvrir l’ancienne page.
+  ///
+  /// Les ziyarat de la section Zyaraate suivent la même règle que les sourates :
+  /// depuis Aamal mensuel, le bouton ouvre ce texte, pas l’ancienne page HTML.
   bool get opensUpdatedReading =>
-      kind == DevotionalKind.quran && hasArabic && !hasOriginalPage;
+      (kind == DevotionalKind.quran || kind == DevotionalKind.ziyarat) &&
+      hasArabic &&
+      !hasOriginalPage;
 
   String get preview {
     for (final value in [translation, introduction, transliteration, arabic]) {

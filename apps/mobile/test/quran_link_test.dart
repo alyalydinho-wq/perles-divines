@@ -70,4 +70,51 @@ void main() {
     expect(stillOriginal.opensUpdatedReading, isFalse);
     expect(namaz.opensUpdatedReading, isFalse);
   });
+
+  test('une ziyarat déjà mise à jour quitte l’ancienne page', () {
+    const waressa = DevotionalText(
+      id: 'bbdbbae1-f4c7-5fba-abbc-76f7522b88df',
+      kind: DevotionalKind.ziyarat,
+      title: 'Zyaarat-e-Wâressa',
+      arabic: 'اَلسَّلَامُ',
+      translation: '',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+    );
+    const stillOriginal = DevotionalText(
+      id: 'b272d8c5-a3d9-541b-b260-44618c9d3dd5',
+      kind: DevotionalKind.ziyarat,
+      title: 'Zyaarate de tous les jours',
+      arabic: 'اَلسَّلَامُ',
+      translation: '',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+      pagePath: 'pages/b272d8c5-a3d9-541b-b260-44618c9d3dd5.html',
+    );
+    const safarDua = DevotionalText(
+      id: 'c97581bf-b0ab-5a0b-8c74-0c4813dce712',
+      kind: DevotionalKind.dua,
+      title: 'Doua du mois de Safar',
+      arabic: 'يَا',
+      translation: '',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+    );
+    expect(waressa.opensUpdatedReading, isTrue);
+    expect(stillOriginal.opensUpdatedReading, isFalse);
+    expect(safarDua.opensUpdatedReading, isFalse);
+    final edition = p.join(Directory.systemTemp.path, 'pd-edition');
+    expect(
+      decideReaderNavigation(
+        Uri.file(p.join(edition, 'pages', '${waressa.id}.html')),
+        editionDirectory: edition,
+        opensUpdatedText: (id) =>
+            id == waressa.id && waressa.opensUpdatedReading,
+      ),
+      ReaderNavigation.openUpdatedText,
+    );
+  });
 }
