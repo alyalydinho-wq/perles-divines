@@ -106,6 +106,26 @@ void main() {
     expect(waressa.opensUpdatedReading, isTrue);
     expect(stillOriginal.opensUpdatedReading, isFalse);
     expect(safarDua.opensUpdatedReading, isFalse);
+    for (final id in [
+      'aa86b04c-fb45-5c4a-9943-170dddb31104',
+      '9bbdc6dc-c3fc-50d3-b79a-45b63216bc69',
+      '213aa396-99b9-535f-bf8f-a862abbc66e3',
+    ]) {
+      expect(
+        DevotionalText(
+          id: id,
+          kind: DevotionalKind.dua,
+          title: 'Doua',
+          arabic: 'يَا',
+          translation: '',
+          transliteration: '',
+          references: [],
+          audioIds: [],
+        ).opensUpdatedReading,
+        isTrue,
+        reason: id,
+      );
+    }
     final edition = p.join(Directory.systemTemp.path, 'pd-edition');
     expect(
       decideReaderNavigation(

@@ -1,5 +1,12 @@
 enum DevotionalKind { dua, ziyarat, quran, namaz, aamal }
 
+/// Douas réécrites encore liées par les pages d’Aamal mensuel.
+const _updatedAamalDuaIds = {
+  'aa86b04c-fb45-5c4a-9943-170dddb31104',
+  '9bbdc6dc-c3fc-50d3-b79a-45b63216bc69',
+  '213aa396-99b9-535f-bf8f-a862abbc66e3',
+};
+
 String kindLabel(DevotionalKind kind) => switch (kind) {
   DevotionalKind.dua => 'Duʿā',
   DevotionalKind.ziyarat => 'Ziyārāt',
@@ -45,12 +52,15 @@ class DevotionalText {
 
   /// Lecture native déjà mise à jour : le lien ne doit plus ouvrir l’ancienne page.
   ///
-  /// Les ziyarat de la section Zyaraate suivent la même règle que les sourates :
-  /// depuis Aamal mensuel, le bouton ouvre ce texte, pas l’ancienne page HTML.
+  /// Les ziyarat de Zyaraate, puis Alqamah, Iftetah et le Doua d’Arafah,
+  /// suivent la même règle que les sourates : depuis Aamal mensuel, le bouton
+  /// ouvre ce texte, pas l’ancienne page HTML.
   bool get opensUpdatedReading =>
-      (kind == DevotionalKind.quran || kind == DevotionalKind.ziyarat) &&
       hasArabic &&
-      !hasOriginalPage;
+      !hasOriginalPage &&
+      (kind == DevotionalKind.quran ||
+          kind == DevotionalKind.ziyarat ||
+          (kind == DevotionalKind.dua && _updatedAamalDuaIds.contains(id)));
 
   String get preview {
     for (final value in [translation, introduction, transliteration, arabic]) {
