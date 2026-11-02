@@ -138,9 +138,11 @@ void main() {
     await tester.tap(find.text('Arabic'));
     await tester.pumpAndSettle();
     final arabic = tester.widget<Text>(find.text('بِسْمِ اللّٰهِ'));
+    expect(arabic.textAlign, TextAlign.right);
+    expect(arabic.textDirection, TextDirection.rtl);
     expect(arabic.style!.height, lessThan(2.2));
-    expect(arabic.style!.decoration, TextDecoration.underline);
-    expect(arabic.style!.decorationColor, siteBlack);
+    expect(arabic.style!.fontFamily, 'Indopak');
+    expect(find.byKey(const Key('quran-flow')), findsOneWidget);
     expect(find.byIcon(Icons.settings), findsNothing);
 
     await tester.tap(find.byTooltip('Lire'));
@@ -449,6 +451,52 @@ void main() {
       isNot(TextDecoration.underline),
     );
     expect(find.byKey(const Key('quran-flow')), findsNothing);
+  });
+
+  testWidgets('l’arabe d’une ziyarat est justifié de droite à gauche', (
+    tester,
+  ) async {
+    const instruction = 'Réciter 100 fois :';
+    final words = List.filled(40, 'كلمة').join(' ');
+    final item = DevotionalText(
+      id: 'ziyarat-ashura',
+      kind: DevotionalKind.ziyarat,
+      title: 'Zyaarat-e-Âchourâ',
+      arabic: '$words\n\n$instruction\n\nاَلسَّلاَمُ عَلَيْكَ',
+      translation: 'Traduction.',
+      transliteration: 'assalamu',
+      references: [],
+      audioIds: [],
+    );
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TextScreen(
+          item: item,
+          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+          favorite: false,
+          onFavorite: () async {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final flow = tester.getRect(find.byKey(const Key('quran-flow')).first);
+    final line = tester.getRect(find.byKey(const ValueKey('quran-line-0')).first);
+    expect(line.left, closeTo(flow.left, 1));
+    expect(line.right, closeTo(flow.right, 1));
+    final word = tester.widget<Text>(find.text('كلمة').first);
+    expect(word.textAlign, TextAlign.right);
+    expect(word.textDirection, TextDirection.rtl);
+    expect(word.style!.fontFamily, 'Indopak');
+
+    final caption = tester.widget<Text>(find.text(instruction));
+    expect(caption.textAlign, TextAlign.center);
+    expect(caption.textDirection, TextDirection.ltr);
+    expect(find.text('اَلسَّلاَمُ عَلَيْكَ'), findsOneWidget);
   });
 
   testWidgets('un long verset garde la même taille et passe à la ligne', (

@@ -768,7 +768,8 @@ class _TextScreenState extends State<TextScreen> {
               _QuranArabic(text: text, style: _arabicStyle())
             else if (text.isNotEmpty &&
                 rtl &&
-                widget.item.kind == DevotionalKind.dua &&
+                (widget.item.kind == DevotionalKind.dua ||
+                    widget.item.kind == DevotionalKind.ziyarat) &&
                 _arabicScript(text))
               _JustifiedArabic(
                 text: text,
@@ -1406,7 +1407,7 @@ String _indoDigits(int value) {
   );
 }
 
-/// Arabe d’un doua : mêmes lignes justifiées, de droite à gauche, que le Coran.
+/// Arabe d’un doua ou d’une ziyarat : mêmes lignes justifiées, de droite à gauche, que le Coran.
 class _JustifiedArabic extends StatelessWidget {
   const _JustifiedArabic({
     required this.text,
