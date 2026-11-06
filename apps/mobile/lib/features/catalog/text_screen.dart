@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../core/store.dart';
 import '../../core/track.dart';
+import '../../ui/arabic_bold.dart';
 import '../../ui/site.dart';
 import '../duas/dua.dart';
 import 'jawshan.dart';
@@ -595,7 +596,7 @@ class _TextScreenState extends State<TextScreen> {
     fontWeight: FontWeight.w400,
   );
 
-  TextStyle _arabicStyle() => const TextStyle(
+  TextStyle _arabicBaseStyle() => const TextStyle(
     fontFamily: 'Indopak',
     fontFamilyFallback: [
       'Noto Naskh Arabic',
@@ -608,6 +609,12 @@ class _TextScreenState extends State<TextScreen> {
     height: _arabicLineHeight,
     fontWeight: FontWeight.w400,
   ).copyWith(fontSize: arabicSize);
+
+  /// Style arabe unique (Coran, douas, ziyarats…), rendu plus gras par [arabicBoldStyle].
+  TextStyle _arabicStyle() => arabicBoldStyle(
+    _arabicBaseStyle(),
+    MediaQuery.textScalerOf(context),
+  );
 
   Widget _empty(String message) => Center(
     child: Padding(
