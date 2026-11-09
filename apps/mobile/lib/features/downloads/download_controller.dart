@@ -37,9 +37,6 @@ class DownloadController {
     root = await getApplicationSupportDirectory();
     await engine.configure(globalConfig: (Config.holdingQueue, (3, 3, 3)));
     await Directory(p.join(root.path, 'media')).create(recursive: true);
-    await storage.invokeMethod('excludeBackup', {
-      'path': p.join(root.path, 'media'),
-    });
     _subscription = engine.updates.listen((event) {
       _events = _events.then((_) => _handle(event)).catchError((
         Object e,
@@ -152,6 +149,17 @@ class DownloadController {
     await pump();
   }
 
+  /// Espace libre, ou null quand Android a relancé le service audio avant
+  /// l’écran principal : le canal natif n’existe pas encore. Cet état ne doit
+  /// ni bloquer le démarrage, ni être pris pour un manque de place.
+  static Future<int?> readFreeBytes(MethodChannel channel) async {
+    try {
+      return await channel.invokeMethod<int>('freeBytes');
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
   Future<void> pump() async {
     if (_pumping) return;
     _pumping = true;
@@ -173,8 +181,8 @@ class DownloadController {
       for (final row in rows.where((r) => r.state == 'queued')) {
         if (available <= 0) break;
         final track = Track.fromJson(jsonDecode(row.trackJson));
-        final free = await storage.invokeMethod<int>('freeBytes') ?? 0;
-        if (free < track.sizeBytes + 50 * 1024 * 1024) {
+        final free = await readFreeBytes(storage);
+        if (free != null && free < track.sizeBytes + 50 * 1024 * 1024) {
           await store.updateTransfer(
             row.id,
             const TransfersCompanion(

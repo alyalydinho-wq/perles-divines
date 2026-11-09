@@ -23,7 +23,6 @@ class MainActivity : AudioServiceActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "freeBytes" -> result.success(StatFs(filesDir.absolutePath).availableBytes)
-                    "excludeBackup" -> result.success(true)
                     "ensurePlaybackNotification" -> ensurePlaybackNotification(result)
                     else -> result.notImplemented()
                 }
