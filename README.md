@@ -25,3 +25,14 @@ flutter test
 ```
 
 Les assets générés doivent être contrôlés avant compilation. Une modification du catalogue nécessite une nouvelle version de l'application.
+
+`tools/prepare-mobile-content.mjs` retire de `assets/site/` les pages et images que l'application ne peut pas ouvrir (`tools/prune-mobile-site.mjs`). Si une lecture native remplace une ancienne page, relancer `node tools/prune-mobile-site.mjs` ; pour la rétablir, relancer le générateur.
+
+## Compiler pour un téléphone
+
+```sh
+cd apps/mobile
+flutter build apk --release --split-per-abi
+```
+
+Installer `app-arm64-v8a-release.apk` sur les téléphones récents et `app-armeabi-v7a-release.apk` sur les anciens. `app-x86_64-release.apk` ne sert qu'aux émulateurs.

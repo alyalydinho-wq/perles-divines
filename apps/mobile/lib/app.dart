@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/scope.dart';
@@ -20,7 +19,6 @@ import 'routing.dart';
 import 'ui/site.dart';
 import 'ui/theme.dart';
 
-const fixturesEnabled = bool.fromEnvironment('PERLES_FIXTURES');
 const mediaBase = String.fromEnvironment(
   'PERLES_MEDIA_BASE',
   defaultValue: 'https://pub-809de60784fd477e972458cf82fb463a.r2.dev',
@@ -41,7 +39,7 @@ Future<List<Track>> loadBundledTracks() async {
 
 void runPerles() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: PerlesApp()));
+  runApp(const PerlesApp());
 }
 
 class PerlesApp extends StatefulWidget {
@@ -91,11 +89,7 @@ class _PerlesAppState extends State<PerlesApp> {
       ),
     );
     await audio.initialize();
-    final tracks = fixturesEnabled
-        ? (jsonDecode(
-            await rootBundle.loadString('assets/fixtures/catalog.json'),
-          ) as List).map((j) => Track.fromJson(j)).toList()
-        : await loadBundledTracks();
+    final tracks = await loadBundledTracks();
     return Services(
       edition,
       devotionalCatalog,

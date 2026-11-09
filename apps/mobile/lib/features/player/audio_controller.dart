@@ -166,8 +166,6 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
             ? AudioSource.uri(Uri.file(local))
             : track.bundled
             ? AudioSource.asset('assets/${track.file}')
-            : _bundled && track.fixture && track.file != 'tone-3.mp3'
-            ? AudioSource.asset('assets/fixtures/${track.file}')
             : AudioSource.uri(Uri.parse('${downloads.baseUrl}/${track.file}'));
         try {
           mediaItem.add(queue.value[next]);

@@ -16,10 +16,10 @@ class LocalEdition {
       await rootBundle.loadString('assets/site/bundle.json'),
     ) as Map<String, dynamic>;
     final support = await getApplicationSupportDirectory();
-    final target = Directory(
-      p.join(support.path, 'content', manifest['version']),
-    );
+    final root = Directory(p.join(support.path, 'content'));
+    final target = Directory(p.join(root.path, manifest['version']));
     if (await File(p.join(target.path, '.complete')).exists()) {
+      await removeOtherEditions(root, manifest['version']);
       return LocalEdition(target.path, manifest);
     }
     final staging = Directory('${target.path}.staging');
@@ -45,6 +45,23 @@ class LocalEdition {
     await File(p.join(staging.path, '.complete'))
         .writeAsString(manifest['version'], flush: true);
     await staging.rename(target.path);
+    await removeOtherEditions(root, manifest['version']);
     return LocalEdition(target.path, manifest);
+  }
+
+  /// Libère la place des éditions précédentes après une mise à jour.
+  ///
+  /// Un échec ici ne doit jamais empêcher la lecture : la suppression sera
+  /// retentée au prochain lancement.
+  static Future<void> removeOtherEditions(Directory root, String keep) async {
+    try {
+      await for (final entry in root.list(followLinks: false)) {
+        if (entry is Directory && p.basename(entry.path) != keep) {
+          await entry.delete(recursive: true);
+        }
+      }
+    } on FileSystemException {
+      return;
+    }
   }
 }
