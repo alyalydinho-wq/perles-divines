@@ -34,7 +34,7 @@ test('les titres d’index gardent les retours à la ligne comme espaces', () =>
   assert.deepEqual(buttons.map(b => b.title), ["Tafsir du Qur'an en ligne"]);
 });
 
-test('le catalogue embarqué reprend les pages importées sans inventer l’arabe', async () => {
+test('le catalogue embarqué reprend les pages importées et lit l’arabe de duas.org en natif', async () => {
   const items = JSON.parse(
     await fs.readFile('apps/mobile/assets/content/catalog.json', 'utf8'),
   );
@@ -44,7 +44,8 @@ test('le catalogue embarqué reprend les pages importées sans inventer l’arab
   assert.ok(kumail);
   assert.match(kumail.introduction, /Kumayl/);
   assert.match(kumail.translation, /Miséricorde/);
-  assert.equal(kumail.arabic, '');
+  assert.match(kumail.arabic, /[؀-ۿ]/);
+  assert.equal(kumail.pagePath, '');
   assert.equal(kumail.sourceUrl, 'https://www.perlesdivines.fr/fr/kumail.html');
   assert.deepEqual(kumail.audioIds, ['758bc928-c06f-5fc2-999a-793464bb5c91']);
 });
