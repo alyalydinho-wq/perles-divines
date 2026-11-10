@@ -932,7 +932,11 @@ class _TextScreenState extends State<TextScreen> {
             TextSpan(text: line.text),
           ],
         ),
-        textAlign: TextAlign.center,
+        // Les versets du Coran se lisent de gauche à droite, comme un texte
+        // suivi ; les autres textes gardent leurs lignes centrées.
+        textAlign: widget.item.kind == DevotionalKind.quran
+            ? TextAlign.start
+            : TextAlign.center,
       ),
     );
   }

@@ -304,6 +304,11 @@ void main() {
       expect(find.text('1'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
       expect(_verse('Izaa waqa'), findsOneWidget);
+      // Les versets d’une sourate partent de la gauche, sans être centrés.
+      expect(
+        tester.widget<Text>(_verse('Izaa waqa')).textAlign,
+        TextAlign.start,
+      );
 
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 200)),
