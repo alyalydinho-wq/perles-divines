@@ -35,6 +35,8 @@ void main() {
     expect(find.text('سطر 1'), findsOneWidget);
     expect(_fontSize(tester, 'Pour surmonter les difficultés'), 18);
     expect(_fontSize(tester, 'سطر 1'), 28);
+    await tester.tap(find.byKey(const Key('text-size-toggle')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('larger-text')));
     await tester.pump();
     expect(_fontSize(tester, 'Pour surmonter les difficultés'), 22);
@@ -46,7 +48,7 @@ void main() {
     expect(_fontSize(tester, 'Pour surmonter les difficultés'), 16);
     expect(_fontSize(tester, 'سطر 1'), 24);
 
-    await tester.tap(find.text('Translation'));
+    await tester.tap(find.text('Traduction'));
     await tester.pumpAndSettle();
     expect(find.text('Préambule de test.'), findsOneWidget);
     await _jump(tester, 360);
@@ -55,7 +57,7 @@ void main() {
     expect(find.text('100 - partie 100.'), findsOneWidget);
     expect(find.text('Pour guérir la douleur de la cuisse'), findsOneWidget);
 
-    await tester.tap(find.text('Transliteration'));
+    await tester.tap(find.text('Phonétique'));
     await tester.pumpAndSettle();
     await _showPart(tester, 1);
     expect(find.text('ligne 1'), findsOneWidget);
@@ -64,7 +66,10 @@ void main() {
     await _showPart(tester, 50);
     final middle = _offset(tester);
     expect(middle, greaterThan(start + 40));
-    expect(tester.getTopLeft(find.text('Pour améliorer la vue')).dy, lessThan(180));
+    expect(
+      tester.getTopLeft(find.text('Pour améliorer la vue')).dy,
+      lessThan(180),
+    );
     await _showPart(tester, 100);
     expect(_offset(tester), greaterThan(middle));
     expect(
@@ -73,11 +78,14 @@ void main() {
     );
     expect(find.text('ligne 100'), findsOneWidget);
 
-    await tester.tap(find.text('Arabic'));
+    await tester.tap(find.text('Arabe'));
     await tester.pump();
     await _showPart(tester, 1);
     expect(find.text('سطر 1'), findsOneWidget);
-    expect(tester.getTopLeft(find.text('Pour surmonter les difficultés')).dy, lessThan(180));
+    expect(
+      tester.getTopLeft(find.text('Pour surmonter les difficultés')).dy,
+      lessThan(180),
+    );
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
   });

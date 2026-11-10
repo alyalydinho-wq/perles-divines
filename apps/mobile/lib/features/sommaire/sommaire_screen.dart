@@ -56,7 +56,7 @@ class _SommaireScreenState extends State<SommaireScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SiteLogo(onTap: () => context.go('/')),
+              const SiteLogo(),
               const SiteGap(height: 12),
               const SiteBlackText('Version $appVersion', small: true),
               const SiteGap(height: 12),

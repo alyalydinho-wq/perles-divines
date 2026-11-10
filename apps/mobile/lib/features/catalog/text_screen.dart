@@ -103,6 +103,9 @@ class _TextScreenState extends State<TextScreen> {
   double gujaratiSize = 18;
   bool _customSizes = false;
   int _levelIndex = 1;
+
+  /// Le réglage de taille n’occupe l’écran que lorsqu’on l’ouvre avec « Aa ».
+  bool _sizeOpen = false;
   late bool favorite = widget.favorite;
   late TextPane pane;
   bool _pageHistory = false;
@@ -269,35 +272,20 @@ class _TextScreenState extends State<TextScreen> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SiteReaderHeader(
-              title: item.title,
-              favorite: favorite,
-              onBack: () => Navigator.of(context).maybePop(),
-              onHome: () => GoRouter.maybeOf(context)?.go('/sommaire'),
-              onScrollToTop: _scrollToTop,
-              onPlay: _play,
-              onDownload: widget.downloads == null || widget.tracks.isEmpty
-                  ? null
-                  : _download,
-              onFavorite: () async {
-                await widget.onFavorite();
-                if (mounted) setState(() => favorite = !favorite);
-              },
-              onShare: _share,
-            ),
+            _header(item),
             Expanded(
               child: IosReadingBackEdge(
                 enabled: _pageHistory,
                 child: _pane(item),
               ),
             ),
-            _textSizeBar(),
+            if (_sizeOpen) _textSizeBar(),
             SiteTextTabs(
               selected: pane.index,
               labels: [
-                'Arabic',
-                'Translation',
-                'Transliteration',
+                'Arabe',
+                'Traduction',
+                'Phonétique',
                 if (item.hasGujarati) 'Gujarati',
               ],
               onSelected: (index) {
@@ -315,6 +303,41 @@ class _TextScreenState extends State<TextScreen> {
         ),
       ),
     );
+  }
+
+  Widget _header(DevotionalText item) {
+    Widget build(bool playing) => SiteReaderHeader(
+      title: item.title,
+      favorite: favorite,
+      playing: playing,
+      textSizeOpen: _sizeOpen,
+      onBack: () => Navigator.of(context).maybePop(),
+      onHome: () => GoRouter.maybeOf(context)?.go('/sommaire'),
+      onScrollToTop: _scrollToTop,
+      onTextSize: () => setState(() => _sizeOpen = !_sizeOpen),
+      onPlay: widget.tracks.isEmpty ? null : () => _play(playing),
+      onDownload: widget.downloads == null || widget.tracks.isEmpty
+          ? null
+          : _download,
+      onFavorite: () async {
+        await widget.onFavorite();
+        if (mounted) setState(() => favorite = !favorite);
+      },
+      onShare: _share,
+    );
+    final audio = widget.audio;
+    if (audio == null || widget.tracks.isEmpty) return build(false);
+    return StreamBuilder(
+      stream: audio.playbackState,
+      builder: (context, playback) =>
+          build(playback.data?.playing == true && _ownsCurrentTrack(audio)),
+    );
+  }
+
+  bool _ownsCurrentTrack(PerlesAudioHandler audio) {
+    final current = audio.current;
+    if (current == null) return false;
+    return widget.tracks.any((track) => track.id == current.id);
   }
 
   Widget _textSizeBar() {
@@ -470,7 +493,7 @@ class _TextScreenState extends State<TextScreen> {
     );
   }
 
-  Future<void> _play() async {
+  Future<void> _play(bool playing) async {
     final audio = widget.audio;
     if (audio == null || widget.tracks.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -478,6 +501,15 @@ class _TextScreenState extends State<TextScreen> {
           content: Text('Aucun audio n’est encore associé à ce texte.'),
         ),
       );
+      return;
+    }
+    if (playing) {
+      await audio.pause();
+      return;
+    }
+    // Reprend là où l’écoute de ce texte s’était arrêtée.
+    if (_ownsCurrentTrack(audio)) {
+      await audio.play();
       return;
     }
     await audio.playTracks(widget.tracks);
@@ -611,10 +643,8 @@ class _TextScreenState extends State<TextScreen> {
   ).copyWith(fontSize: arabicSize);
 
   /// Style arabe unique (Coran, douas, ziyarats…), rendu plus gras par [arabicBoldStyle].
-  TextStyle _arabicStyle() => arabicBoldStyle(
-    _arabicBaseStyle(),
-    MediaQuery.textScalerOf(context),
-  );
+  TextStyle _arabicStyle() =>
+      arabicBoldStyle(_arabicBaseStyle(), MediaQuery.textScalerOf(context));
 
   Widget _empty(String message) => Center(
     child: Padding(

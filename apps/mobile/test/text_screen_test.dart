@@ -34,10 +34,7 @@ void main() {
   test('deux versets courts restent sur la même ligne', () {
     const style = TextStyle(fontSize: 28, height: 2.06);
     final lines = layoutQuranLines(
-      verses: [
-        (text: 'عِينٌ', number: 22),
-        (text: 'كَأَمْثَالِ', number: 23),
-      ],
+      verses: [(text: 'عِينٌ', number: 22), (text: 'كَأَمْثَالِ', number: 23)],
       style: style,
       scaler: TextScaler.noScaling,
       maxWidth: 420,
@@ -117,25 +114,25 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Arabic'), findsOneWidget);
-    expect(find.text('Translation'), findsOneWidget);
-    expect(find.text('Transliteration'), findsOneWidget);
+    expect(find.text('Arabe'), findsOneWidget);
+    expect(find.text('Traduction'), findsOneWidget);
+    expect(find.text('Phonétique'), findsOneWidget);
     expect(find.byType(Slider), findsNothing);
     expect(find.text('بِسْمِ اللّٰهِ'), findsOneWidget);
     expect(find.text('Au nom d’Allàh, le Tout Miséricordieux.'), findsNothing);
 
-    await tester.tap(find.text('Translation'));
+    await tester.tap(find.text('Traduction'));
     await tester.pumpAndSettle();
     expect(
       find.text('Au nom d’Allàh, le Tout Miséricordieux.'),
       findsOneWidget,
     );
 
-    await tester.tap(find.text('Transliteration'));
+    await tester.tap(find.text('Phonétique'));
     await tester.pumpAndSettle();
     expect(find.text('BISMILLAHIR RAHMANIR RAHEEM'), findsOneWidget);
 
-    await tester.tap(find.text('Arabic'));
+    await tester.tap(find.text('Arabe'));
     await tester.pumpAndSettle();
     final arabic = tester.widget<Text>(find.text('بِسْمِ اللّٰهِ'));
     expect(arabic.textAlign, TextAlign.right);
@@ -145,57 +142,53 @@ void main() {
     expect(find.byKey(const Key('quran-flow')), findsOneWidget);
     expect(find.byIcon(Icons.settings), findsNothing);
 
-    await tester.tap(find.byTooltip('Lire'));
-    await tester.pumpAndSettle();
-    expect(
-      find.text('Aucun audio n’est encore associé à ce texte.'),
-      findsOneWidget,
-    );
+    // Sans audio associé, l’en-tête ne propose pas de lecture.
+    expect(find.byTooltip('Lire'), findsNothing);
+    expect(find.byKey(const Key('text-size-bar')), findsNothing);
   });
 
-  testWidgets(
-    'le cœur devient blanc quand le favori arrive après l’ouverture',
-    (tester) async {
-      const item = DevotionalText(
-        id: 'ghofaylah',
-        kind: DevotionalKind.namaz,
-        title: 'Namaz-e-Ghofaylah',
-        arabic: 'بِسْمِ اللّٰهِ',
-        translation: '',
-        transliteration: '',
-        references: [],
-        audioIds: [],
-      );
-      var favorite = false;
-      Future<void> show() {
-        return tester.pumpWidget(
-          MaterialApp(
-            home: TextScreen(
-              item: item,
-              edition: LocalEdition('/tmp', const {'home': 'index.html'}),
-              favorite: favorite,
-              onFavorite: () async {},
-            ),
+  testWidgets('l’étoile se remplit quand le favori arrive après l’ouverture', (
+    tester,
+  ) async {
+    const item = DevotionalText(
+      id: 'ghofaylah',
+      kind: DevotionalKind.namaz,
+      title: 'Namaz-e-Ghofaylah',
+      arabic: 'بِسْمِ اللّٰهِ',
+      translation: '',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+    );
+    var favorite = false;
+    Future<void> show() {
+      return tester.pumpWidget(
+        MaterialApp(
+          home: TextScreen(
+            item: item,
+            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
+            favorite: favorite,
+            onFavorite: () async {},
           ),
-        );
-      }
-
-      await show();
-      await tester.pump();
-      expect(find.byTooltip('Ajouter aux favoris'), findsOneWidget);
-
-      favorite = true;
-      await show();
-      await tester.pump();
-      expect(find.byTooltip('Retirer des favoris'), findsOneWidget);
-      expect(
-        tester
-            .widgetList<Icon>(find.byIcon(Icons.favorite))
-            .map((icon) => icon.color),
-        [const Color(0xffffffff)],
+        ),
       );
-    },
-  );
+    }
+
+    await show();
+    await tester.pump();
+    expect(find.byTooltip('Ajouter aux favoris'), findsOneWidget);
+
+    favorite = true;
+    await show();
+    await tester.pump();
+    expect(find.byTooltip('Retirer des favoris'), findsOneWidget);
+    expect(
+      tester
+          .widgetList<Icon>(find.byIcon(Icons.star_rounded))
+          .map((icon) => icon.color),
+      [siteButtonText],
+    );
+  });
 
   testWidgets(
     'les onglets ne laissent pas de bande blanche au-dessus du lecteur',
@@ -262,7 +255,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Quand l’événement arrivera.'), findsNothing);
-      final basmala = tester.widget<Text>(find.byKey(const Key('quran-basmala')));
+      final basmala = tester.widget<Text>(
+        find.byKey(const Key('quran-basmala')),
+      );
       expect(_quranPlain(basmala), 'بِسْمِ اللّٰهِ');
       expect(basmala.textAlign, TextAlign.center);
       expect(basmala.textDirection, TextDirection.rtl);
@@ -284,7 +279,10 @@ void main() {
       expect(find.text('\u06F2'), findsOneWidget);
       final word = tester.getRect(find.byKey(const ValueKey('ayah-word-1')));
       final number = tester.getRect(find.text('\u06F1'));
-      expect((word.center.dy - number.center.dy).abs(), lessThan(flow.style!.fontSize!));
+      expect(
+        (word.center.dy - number.center.dy).abs(),
+        lessThan(flow.style!.fontSize!),
+      );
       expect(number.center.dx, lessThan(word.center.dx));
       expect(find.text('Infos sur la sourate'), findsOneWidget);
       expect(find.text('La Mecque'), findsNothing);
@@ -294,14 +292,12 @@ void main() {
 
       final before = _flowText(tester).style!.fontSize;
       expect(before, 28);
+      await _openSize(tester);
       await tester.tap(find.text('Plus grand'));
       await tester.pump();
-      expect(
-        _flowText(tester).style!.fontSize,
-        34,
-      );
+      expect(_flowText(tester).style!.fontSize, 34);
 
-      await tester.tap(find.text('Translation'));
+      await tester.tap(find.text('Traduction'));
       await tester.pumpAndSettle();
       expect(
         tester
@@ -311,7 +307,7 @@ void main() {
         22,
       );
 
-      await tester.tap(find.text('Transliteration'));
+      await tester.tap(find.text('Phonétique'));
       await tester.pumpAndSettle();
       expect(find.text('1'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
@@ -342,10 +338,7 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 200)),
       );
       await tester.pumpAndSettle();
-      expect(
-        _flowText(tester).style!.fontSize,
-        34,
-      );
+      expect(_flowText(tester).style!.fontSize, 34);
     },
   );
 
@@ -384,7 +377,7 @@ void main() {
     final arabicNumber = tester.getSize(find.text('\u06F2\u06F5\u06F5'));
     expect(arabicNumber.height, lessThan(arabicNumber.width));
 
-    await tester.tap(find.text('Transliteration'));
+    await tester.tap(find.text('Phonétique'));
     await tester.pumpAndSettle();
     final number = find.text('255');
     expect(number, findsOneWidget);
@@ -392,7 +385,7 @@ void main() {
     expect(numberSize.height, lessThan(numberSize.width));
     _expectBadgeBefore(tester, '255', 'Allahu laaa');
 
-    await tester.tap(find.text('Translation'));
+    await tester.tap(find.text('Traduction'));
     await tester.pumpAndSettle();
     expect(find.text('256'), findsOneWidget);
     expect(find.text('257'), findsOneWidget);
@@ -444,7 +437,7 @@ void main() {
     expect(word.style!.decoration, isNot(TextDecoration.underline));
     expect(find.textContaining('نَادِ', skipOffstage: false), findsWidgets);
 
-    await tester.tap(find.text('Translation'));
+    await tester.tap(find.text('Traduction'));
     await tester.pumpAndSettle();
     expect(
       tester.widget<Text>(find.text('Traduction.')).style!.decoration,
@@ -485,7 +478,9 @@ void main() {
     await tester.pumpAndSettle();
 
     final flow = tester.getRect(find.byKey(const Key('quran-flow')).first);
-    final line = tester.getRect(find.byKey(const ValueKey('quran-line-0')).first);
+    final line = tester.getRect(
+      find.byKey(const ValueKey('quran-line-0')).first,
+    );
     expect(line.left, closeTo(flow.left, 1));
     expect(line.right, closeTo(flow.right, 1));
     final word = tester.widget<Text>(find.text('كلمة').first);
@@ -531,6 +526,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(_flowPlain(tester), contains(short));
+    await _openSize(tester);
     for (var i = 0; i < 4; i++) {
       await tester.tap(find.text('Plus grand'));
       await tester.pump();
@@ -542,7 +538,10 @@ void main() {
     expect(plain, contains(short));
     expect(plain, contains(long));
     expect(
-      find.ancestor(of: find.byKey(const Key('quran-flow')), matching: find.byType(FittedBox)),
+      find.ancestor(
+        of: find.byKey(const Key('quran-flow')),
+        matching: find.byType(FittedBox),
+      ),
       findsNothing,
     );
     expect(
@@ -634,7 +633,10 @@ void main() {
     final badge = tester.getRect(find.text('\u06F2\u06F2'));
     expect(word.left - badge.right, inInclusiveRange(0, 16));
     final rule = tester.getSize(find.byKey(const ValueKey('quran-rule-0')));
-    expect(rule.width, lessThan(tester.getSize(find.byKey(const Key('quran-flow'))).width - 40));
+    expect(
+      rule.width,
+      lessThan(tester.getSize(find.byKey(const Key('quran-flow'))).width - 40),
+    );
   });
 
   testWidgets('les infos d’une longue sourate s’affichent au tap', (
@@ -681,7 +683,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Infos sur la sourate').first);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Translation'));
+    await tester.tap(find.text('Traduction'));
     await tester.pumpAndSettle();
     expect(find.text('La Mecque'), findsNothing);
     expect(
@@ -727,12 +729,12 @@ void main() {
       await tester.pumpAndSettle();
       _expectInfoCard(tester, intro);
 
-      await tester.tap(find.text('Translation'));
+      await tester.tap(find.text('Traduction'));
       await tester.pumpAndSettle();
       _expectInfoCard(tester, intro);
       expect(find.text('Faites appel à Ali.'), findsOneWidget);
 
-      await tester.tap(find.text('Transliteration'));
+      await tester.tap(find.text('Phonétique'));
       await tester.pumpAndSettle();
       _expectInfoCard(tester, intro);
       expect(find.text('Naad-e-ali'), findsOneWidget);
@@ -778,6 +780,7 @@ void main() {
     expect(gujarati.style!.fontFamily, 'NotoSansGujarati');
     expect(gujarati.style!.height, greaterThan(1.6));
 
+    await _openSize(tester);
     expect(find.text('Plus grand'), findsOneWidget);
     expect(find.byIcon(Icons.settings), findsNothing);
   });
@@ -824,6 +827,7 @@ void main() {
       await tester.scrollUntilVisible(find.text(paragraphs.last), 400);
       expect(find.text(paragraphs.last), findsOneWidget);
 
+      await _openSize(tester);
       await tester.tap(find.text('Plus grand'));
       await tester.pumpAndSettle();
       final grown = tester
@@ -841,7 +845,7 @@ void main() {
       try {
         await _pumpReading(tester, _sample());
         expect(find.byIcon(Icons.settings), findsNothing);
-        expect(find.byTooltip('Taille du texte'), findsNothing);
+        expect(find.byTooltip('Fermer la taille du texte'), findsOneWidget);
         expect(find.byTooltip('Agrandir l’arabe'), findsNothing);
         expect(find.text('A−'), findsOneWidget);
         expect(find.text('Plus petit'), findsOneWidget);
@@ -851,10 +855,9 @@ void main() {
         expect(find.bySemanticsLabel('Taille du texte'), findsOneWidget);
         expect(find.bySemanticsLabel('Plus petit'), findsOneWidget);
         expect(find.bySemanticsLabel('Plus grand'), findsOneWidget);
-        expect(find.bySemanticsLabel('Sommaire'), findsOneWidget);
+        expect(find.byTooltip('Plus d’options'), findsOneWidget);
         expect(find.bySemanticsLabel('Page précédente'), findsNothing);
         expect(find.byIcon(Icons.chevron_left), findsNothing);
-        expect(find.bySemanticsLabel('Haut de la page'), findsOneWidget);
 
         final bar = tester.getRect(find.byKey(const Key('text-size-bar')));
         final tabs = tester.getRect(find.byType(SiteTextTabs));
@@ -888,27 +891,27 @@ void main() {
         expect(smallerBox.center.dx, lessThan(levelBox.center.dx));
         expect(levelBox.center.dx, lessThan(largerBox.center.dx));
 
+        // Retour, titre, puis Aa, favori et menu, alignés sur une ligne.
         final back = tester.getCenter(find.byTooltip('Retour'));
-        final home = tester.getCenter(find.byTooltip('Sommaire'));
-        final up = tester.getCenter(find.byTooltip('Haut de la page'));
-        final play = tester.getCenter(find.byTooltip('Lire'));
-        final share = tester.getCenter(find.byTooltip('Partager'));
+        final size = tester.getCenter(
+          find.byKey(const Key('text-size-toggle')),
+        );
+        final star = tester.getCenter(find.byTooltip('Ajouter aux favoris'));
+        final menu = tester.getCenter(find.byKey(const Key('reader-menu')));
         final title = tester.getRect(
           find.descendant(
             of: find.byType(SiteReaderHeader),
             matching: find.text('Texte'),
           ),
         );
-        expect(header.contains(home), isTrue);
-        expect(header.contains(up), isTrue);
-        expect(back.dx, lessThan(home.dx));
-        expect(home.dx, lessThan(title.left));
-        expect(title.right, lessThan(up.dx));
-        expect(up.dx, lessThan(play.dx));
-        expect(play.dx, lessThan(share.dx));
-        expect(home.dy, closeTo(back.dy, 1));
-        expect(up.dy, closeTo(back.dy, 1));
-        expect(play.dy, closeTo(back.dy, 1));
+        expect(header.contains(menu), isTrue);
+        expect(back.dx, lessThan(title.left));
+        expect(title.right, lessThan(size.dx));
+        expect(size.dx, lessThan(star.dx));
+        expect(star.dx, lessThan(menu.dx));
+        expect(size.dy, closeTo(back.dy, 1));
+        expect(star.dy, closeTo(back.dy, 1));
+        expect(menu.dy, closeTo(back.dy, 1));
       } finally {
         handle.dispose();
       }
@@ -941,11 +944,11 @@ void main() {
     expect(find.text('Grand'), findsOneWidget);
     expect(tester.widget<Text>(find.text(arabic)).style!.fontSize, 34);
 
-    await tester.tap(find.text('Translation'));
+    await tester.tap(find.text('Traduction'));
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(find.text(translation)).style!.fontSize, 22);
 
-    await tester.tap(find.text('Transliteration'));
+    await tester.tap(find.text('Phonétique'));
     await tester.pumpAndSettle();
     expect(_fontSize(tester, transliteration), 22);
 
@@ -958,7 +961,7 @@ void main() {
     expect(find.text('Normal'), findsOneWidget);
     expect(tester.widget<Text>(find.text(gujarati)).style!.fontSize, 18);
 
-    await tester.tap(find.text('Arabic'));
+    await tester.tap(find.text('Arabe'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Plus petit'));
     await tester.pump();
@@ -1059,6 +1062,7 @@ void main() {
       () => Future<void>.delayed(const Duration(milliseconds: 200)),
     );
     await tester.pumpAndSettle();
+    await _openSize(tester);
     expect(find.text('Grand'), findsOneWidget);
     expect(tester.widget<Text>(find.text(arabic)).style!.fontSize, 34);
     final saved = await store.readState('readingFonts');
@@ -1085,6 +1089,8 @@ void main() {
         ),
       ),
     );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('text-size-toggle')));
     await tester.pump();
     await tester.tap(find.text('Plus grand'));
     await tester.pump();
@@ -1140,7 +1146,7 @@ void main() {
     );
     expect(find.text('Taille minimale'), findsOneWidget);
     expect(tester.widget<Text>(find.text(arabic)).style!.fontSize, 20);
-    await tester.tap(find.text('Translation'));
+    await tester.tap(find.text('Traduction'));
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(find.text(translation)).style!.fontSize, 14);
     saved = await store.readState('readingFonts');
@@ -1179,8 +1185,7 @@ void main() {
     addTearDown(router.dispose);
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Sommaire'));
-    await tester.pumpAndSettle();
+    await _openMenu(tester, 'Sommaire');
     expect(find.text('Écran sommaire'), findsOneWidget);
 
     await tester.pumpWidget(
@@ -1237,8 +1242,7 @@ void main() {
     position.jumpTo(position.maxScrollExtent);
     await tester.pumpAndSettle();
     expect(position.pixels, greaterThan(80));
-    await tester.tap(find.byTooltip('Haut de la page'));
-    await tester.pumpAndSettle();
+    await _openMenu(tester, 'Haut de la page');
     expect(position.pixels, 0);
   });
 
@@ -1390,6 +1394,7 @@ Future<void> _pumpReading(
   double textScale = 1,
   bool settleStore = false,
   Key? key,
+  bool openSize = true,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -1419,6 +1424,22 @@ Future<void> _pumpReading(
       () => Future<void>.delayed(const Duration(milliseconds: 200)),
     );
   }
+  await tester.pumpAndSettle();
+  if (openSize) await _openSize(tester);
+}
+
+/// Choisit une action du menu ⋮ de l’en-tête.
+Future<void> _openMenu(WidgetTester tester, String label) async {
+  await tester.tap(find.byKey(const Key('reader-menu')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(label));
+  await tester.pumpAndSettle();
+}
+
+/// Le réglage de taille reste fermé tant qu’on n’appuie pas sur « Aa ».
+Future<void> _openSize(WidgetTester tester) async {
+  if (find.byKey(const Key('text-size-bar')).evaluate().isNotEmpty) return;
+  await tester.tap(find.byKey(const Key('text-size-toggle')));
   await tester.pumpAndSettle();
 }
 
@@ -1455,7 +1476,9 @@ void _expectBadgeBefore(WidgetTester tester, String number, String snippet) {
     TextSelection(baseOffset: at, extentOffset: at + snippet.length),
   );
   expect(boxes, isNotEmpty);
-  final words = paragraph.localToGlobal(Offset(boxes.first.left, boxes.first.top));
+  final words = paragraph.localToGlobal(
+    Offset(boxes.first.left, boxes.first.top),
+  );
   final badge = tester.getRect(find.text(number));
   expect(badge.right, lessThan(words.dx));
   expect((badge.center.dy - words.dy).abs(), lessThan(badge.height));

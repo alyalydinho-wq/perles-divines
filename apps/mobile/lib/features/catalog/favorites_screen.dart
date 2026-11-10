@@ -77,7 +77,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     return SitePage(
       header: [
-        SiteLogo(onTap: () => context.go('/')),
+        SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
         const SiteGap(height: 12),
         Text('Favoris', textAlign: TextAlign.center, style: siteHeading),
         const SiteGap(height: 12),
@@ -86,8 +86,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         if (showEmpty)
           const SiteBlackText(
             'Aucun favori pour le moment.\n'
-            'L’étoile d’un audio ou le cœur d’un texte\n'
-            'l’ajoute ici.',
+            'Touchez l’étoile d’un texte ou d’un audio\n'
+            'pour le retrouver ici.',
           )
         else
           for (final group in groups) ...[

@@ -73,7 +73,7 @@ class _SectionScreenState extends State<SectionScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SiteLogo(onTap: () => context.go('/')),
+              SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
               const SiteGap(height: 12),
               Text(
                 widget.section.label,

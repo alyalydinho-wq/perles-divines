@@ -321,8 +321,13 @@ void main() {
     expect(find.text('Aamal du mois de Safar'), findsNothing);
 
     await _openSafar(tester);
-    await tester.tap(find.byTooltip('Sommaire').hitTestable());
-    await _settle(tester);
+    // Le menu ⋮ s’ouvre et se ferme avec une animation d’environ 300 ms.
+    await tester.tap(find.byKey(const Key('reader-menu')).hitTestable());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('Sommaire').hitTestable());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('Zyaraate'), findsOneWidget);
     expect(find.byKey(const Key('reading-body')), findsNothing);
     expect(find.byTooltip('Lire'), findsNothing);

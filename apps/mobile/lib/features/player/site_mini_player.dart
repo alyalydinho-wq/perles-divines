@@ -10,7 +10,11 @@ import 'playback_notice.dart';
 import 'player_sheet.dart';
 
 class SiteMiniPlayer extends StatefulWidget {
-  const SiteMiniPlayer({super.key});
+  const SiteMiniPlayer({super.key, this.location});
+
+  /// Page affichée au-dessus du lecteur. Quand elle change, le lecteur
+  /// déplié se replie pour ne pas cacher la nouvelle page.
+  final String? location;
 
   @override
   State<SiteMiniPlayer> createState() => _SiteMiniPlayerState();
@@ -34,6 +38,14 @@ class _SiteMiniPlayerState extends State<SiteMiniPlayer> {
     _router = router;
     _router?.routerDelegate.addListener(_onRoute);
     _location = _router?.routerDelegate.currentConfiguration.uri.toString();
+  }
+
+  @override
+  void didUpdateWidget(SiteMiniPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.location != widget.location && _expanded) {
+      _expanded = false;
+    }
   }
 
   @override

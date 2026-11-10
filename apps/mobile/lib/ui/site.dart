@@ -7,11 +7,15 @@ const siteCanvas = Color(0xffffffff);
 const siteGreen = Color(0xff145014);
 const siteLink = Color(0xff124e12);
 const siteBlack = Color(0xff000000);
-const siteButtonText = Color(0xffe8f0de);
+
+/// Texte et icônes posés sur le vert. Le vert du site d’origine (#7db72f)
+/// ne laissait que 2,4:1 de contraste au blanc ; ces teintes plus profondes
+/// donnent au moins 4,8:1, le minimum conseillé pour du texte étant 4,5:1.
+const siteButtonText = Color(0xffffffff);
 const siteButtonBorder = Color(0xff606060);
-const siteGreenSolid = Color(0xff64991e);
-const siteGreenTop = Color(0xff7db72f);
-const siteGreenBottom = Color(0xff4e7d0e);
+const siteGreenSolid = Color(0xff467816);
+const siteGreenTop = Color(0xff4b7f18);
+const siteGreenBottom = Color(0xff38620e);
 const siteWhiteButtonText = Color(0xff606060);
 const siteWhiteButtonBorder = Color(0xff149214);
 const siteWhiteTop = Color(0xffffffff);
@@ -29,7 +33,7 @@ const perlesSiteUrl = 'https://www.perlesdivines.fr';
 const perlesContactEmail = 'contact@perlesdivines.fr';
 
 /// Aligné sur `version:` de `apps/mobile/pubspec.yaml`.
-const appVersion = '0.2.10';
+const appVersion = '0.2.11';
 
 const siteLogoAsset = 'assets/branding/logo-m.png';
 const siteBismillahAsset = 'assets/branding/bismillah.gif';
@@ -155,28 +159,36 @@ class SitePage extends StatelessWidget {
 }
 
 class SiteLogo extends StatelessWidget {
-  const SiteLogo({super.key, this.onTap});
+  const SiteLogo({super.key, this.onTap, this.compact = false});
   final VoidCallback? onTap;
+
+  /// Bandeau réduit des pages intérieures : le grand logo prenait près d’un
+  /// cinquième de la hauteur de chaque écran.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = constraints.maxWidth * 0.92;
+        final width = constraints.maxWidth * (compact ? 0.6 : 0.92);
+        final radius = compact ? 8.0 : 12.0;
         // Même présentation que le site d’origine : image nette dans un
         // cadre blanc arrondi, avec l’ombre `.cadre`.
         final image = Container(
           width: width,
-          margin: const EdgeInsets.symmetric(vertical: 6),
+          margin: EdgeInsets.symmetric(vertical: compact ? 2 : 6),
           decoration: BoxDecoration(
             color: siteCanvas,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: const [
-              BoxShadow(color: Color(0x80000000), blurRadius: 14),
+            borderRadius: BorderRadius.circular(radius),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0x80000000),
+                blurRadius: compact ? 6 : 14,
+              ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(radius),
             child: Image.asset(
               siteLogoAsset,
               width: width,
@@ -516,6 +528,9 @@ class SiteGap extends StatelessWidget {
 /// Hauteur des deux barres du bas du lecteur : réglage de police et langues.
 const siteReaderBarHeight = 44.0;
 
+/// Actions rangées dans le menu ⋮ de l’en-tête de lecture.
+enum ReaderMenuAction { sommaire, top, download, share }
+
 class SiteReaderHeader extends StatelessWidget {
   const SiteReaderHeader({
     super.key,
@@ -527,7 +542,10 @@ class SiteReaderHeader extends StatelessWidget {
     this.onFavorite,
     this.onPlay,
     this.onDownload,
+    this.onTextSize,
     this.favorite = false,
+    this.playing = false,
+    this.textSizeOpen = false,
   });
 
   final String title;
@@ -538,12 +556,25 @@ class SiteReaderHeader extends StatelessWidget {
   final VoidCallback? onFavorite;
   final VoidCallback? onPlay;
   final VoidCallback? onDownload;
+
+  /// Ouvre ou ferme le réglage de taille du texte.
+  final VoidCallback? onTextSize;
   final bool favorite;
+
+  /// L’audio de ce texte est en cours : le bouton devient Pause.
+  final bool playing;
+  final bool textSizeOpen;
 
   static const _barHeight = 56.0;
   static const _iconSlot = 48.0;
   static const _iconMin = 40.0;
-  static const _titleMin = 150.0;
+  static const _titleMin = 120.0;
+
+  bool get _hasMenu =>
+      onHome != null ||
+      onScrollToTop != null ||
+      onDownload != null ||
+      onShare != null;
 
   @override
   Widget build(BuildContext context) => Material(
@@ -564,72 +595,62 @@ class SiteReaderHeader extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final leading = <Widget>[
-                  _headerButton(
-                    tooltip: 'Retour',
-                    icon: Icons.arrow_back,
-                    onPressed: onBack,
-                    slot: _slotFor(constraints.maxWidth),
-                  ),
-                  if (onHome != null)
-                    _headerButton(
-                      tooltip: 'Sommaire',
-                      icon: Icons.home,
-                      onPressed: onHome!,
-                      slot: _slotFor(constraints.maxWidth),
-                    ),
-                ];
+                final slot = _slotFor(constraints.maxWidth);
                 final trailing = <Widget>[
-                  if (onScrollToTop != null)
+                  if (onTextSize != null)
                     _headerButton(
-                      tooltip: 'Haut de la page',
-                      icon: Icons.keyboard_arrow_up,
-                      onPressed: onScrollToTop!,
-                      slot: _slotFor(constraints.maxWidth),
+                      key: const Key('text-size-toggle'),
+                      tooltip: textSizeOpen
+                          ? 'Fermer la taille du texte'
+                          : 'Taille du texte',
+                      onPressed: onTextSize!,
+                      slot: slot,
+                      selected: textSizeOpen,
+                      iconWidget: Text(
+                        'Aa',
+                        style: siteText(
+                          color: siteButtonText,
+                          fontSize: 19,
+                          lineHeight: 22,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   if (onPlay != null)
                     _headerButton(
-                      tooltip: 'Lire',
-                      icon: Icons.play_arrow,
+                      tooltip: playing ? 'Pause' : 'Lire',
+                      icon: playing ? Icons.pause : Icons.play_arrow,
                       onPressed: onPlay!,
-                      slot: _slotFor(constraints.maxWidth),
-                    ),
-                  if (onDownload != null)
-                    _headerButton(
-                      tooltip: 'Télécharger',
-                      icon: Icons.download,
-                      onPressed: onDownload!,
-                      slot: _slotFor(constraints.maxWidth),
+                      slot: slot,
                     ),
                   if (onFavorite != null)
                     _headerButton(
                       tooltip: favorite
                           ? 'Retirer des favoris'
                           : 'Ajouter aux favoris',
+                      icon: favorite
+                          ? Icons.star_rounded
+                          : Icons.star_border_rounded,
                       onPressed: onFavorite!,
-                      slot: _slotFor(constraints.maxWidth),
-                      iconWidget: ExcludeSemantics(
-                        child: _FavoriteHeart(selected: favorite),
-                      ),
+                      slot: slot,
                     ),
-                  if (onShare != null)
-                    _headerButton(
-                      tooltip: 'Partager',
-                      icon: Icons.share,
-                      onPressed: onShare!,
-                      slot: _slotFor(constraints.maxWidth),
-                    ),
+                  if (_hasMenu) _menu(slot),
                 ];
                 return Row(
                   children: [
-                    ...leading,
+                    _headerButton(
+                      tooltip: 'Retour',
+                      icon: Icons.arrow_back,
+                      onPressed: onBack,
+                      slot: slot,
+                    ),
                     Expanded(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
                           title,
-                          maxLines: 1,
-                          softWrap: false,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: siteText(
                             color: siteButtonText,
@@ -651,15 +672,78 @@ class SiteReaderHeader extends StatelessWidget {
     ),
   );
 
+  Widget _menu(double slot) {
+    return SizedBox(
+      width: slot,
+      height: _iconSlot,
+      child: PopupMenuButton<ReaderMenuAction>(
+        key: const Key('reader-menu'),
+        tooltip: 'Plus d’options',
+        padding: EdgeInsets.zero,
+        icon: Icon(
+          Icons.more_vert,
+          color: siteButtonText,
+          size: _glyphSize(slot),
+        ),
+        color: siteCanvas,
+        onSelected: (action) {
+          switch (action) {
+            case ReaderMenuAction.sommaire:
+              onHome?.call();
+            case ReaderMenuAction.top:
+              onScrollToTop?.call();
+            case ReaderMenuAction.download:
+              onDownload?.call();
+            case ReaderMenuAction.share:
+              onShare?.call();
+          }
+        },
+        itemBuilder: (context) => [
+          if (onHome != null)
+            _menuItem(ReaderMenuAction.sommaire, Icons.home, 'Sommaire'),
+          if (onScrollToTop != null)
+            _menuItem(
+              ReaderMenuAction.top,
+              Icons.vertical_align_top,
+              'Haut de la page',
+            ),
+          if (onDownload != null)
+            _menuItem(
+              ReaderMenuAction.download,
+              Icons.download,
+              'Télécharger l’audio',
+            ),
+          if (onShare != null)
+            _menuItem(ReaderMenuAction.share, Icons.share, 'Partager'),
+        ],
+      ),
+    );
+  }
+
+  PopupMenuItem<ReaderMenuAction> _menuItem(
+    ReaderMenuAction value,
+    IconData icon,
+    String label,
+  ) => PopupMenuItem(
+    value: value,
+    child: Row(
+      children: [
+        Icon(icon, color: siteGreenSolid, size: 22),
+        const SizedBox(width: 12),
+        Flexible(
+          child: Text(label, style: siteText(fontSize: 16, lineHeight: 20)),
+        ),
+      ],
+    ),
+  );
+
   double _slotFor(double width) {
     final count =
         1 +
-        (onHome != null ? 1 : 0) +
-        (onScrollToTop != null ? 1 : 0) +
+        (onTextSize != null ? 1 : 0) +
         (onPlay != null ? 1 : 0) +
-        (onDownload != null ? 1 : 0) +
         (onFavorite != null ? 1 : 0) +
-        (onShare != null ? 1 : 0);
+        (_hasMenu ? 1 : 0);
     if (count <= 0 || !width.isFinite || width <= 0) return _iconSlot;
     if (count * _iconSlot + _titleMin <= width) return _iconSlot;
     final fitted = (width - _titleMin) / count;
@@ -672,8 +756,10 @@ class SiteReaderHeader extends StatelessWidget {
     required String tooltip,
     required VoidCallback onPressed,
     required double slot,
+    Key? key,
     IconData? icon,
     Widget? iconWidget,
+    bool selected = false,
   }) {
     final glyph =
         iconWidget ??
@@ -686,8 +772,9 @@ class SiteReaderHeader extends StatelessWidget {
           width: slot,
           height: _iconSlot,
           child: IconButton(
+            key: key,
             tooltip: tooltip,
-            color: iconWidget == null ? siteButtonText : null,
+            color: siteButtonText,
             padding: EdgeInsets.zero,
             constraints: BoxConstraints.tightFor(
               width: slot,
@@ -698,6 +785,9 @@ class SiteReaderHeader extends StatelessWidget {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               fixedSize: Size(slot, _iconSlot),
+              backgroundColor: selected
+                  ? const Color(0x33ffffff)
+                  : Colors.transparent,
             ),
             onPressed: onPressed,
             icon: glyph,
@@ -711,37 +801,12 @@ class SiteReaderHeader extends StatelessWidget {
       slot >= _iconMin ? 24 : (24 * slot / _iconMin).clamp(20.0, 24.0);
 }
 
-/// Cœur blanc quand le texte est en favori. Sinon, cœur vert cerclé de blanc.
-class _FavoriteHeart extends StatelessWidget {
-  const _FavoriteHeart({required this.selected});
-
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    if (selected) {
-      return const Icon(Icons.favorite, color: Color(0xffffffff));
-    }
-    return const SizedBox(
-      width: 24,
-      height: 24,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Icon(Icons.favorite, color: Color(0xffffffff), size: 24),
-          Icon(Icons.favorite, color: siteGreen, size: 18),
-        ],
-      ),
-    );
-  }
-}
-
 class SiteTextTabs extends StatelessWidget {
   const SiteTextTabs({
     super.key,
     required this.selected,
     required this.onSelected,
-    this.labels = const ['Arabic', 'Translation', 'Transliteration'],
+    this.labels = const ['Arabe', 'Traduction', 'Phonétique'],
   });
 
   final int selected;

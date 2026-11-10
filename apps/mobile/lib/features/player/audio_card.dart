@@ -79,6 +79,11 @@ class AudioFace extends StatelessWidget {
         _CollapsedPlaybackBar(
           title: title,
           playing: playing,
+          progress: duration.inMilliseconds <= 0
+              ? 0
+              : (position.inMilliseconds / duration.inMilliseconds)
+                    .clamp(0.0, 1.0)
+                    .toDouble(),
           onPlay: onPlay,
           onTitle: onExpanded == null ? onTitle : () => onExpanded!(true),
           onExpanded: onExpanded,
@@ -437,6 +442,7 @@ class _CollapsedPlaybackBar extends StatelessWidget {
     required this.title,
     required this.playing,
     required this.bottomInset,
+    this.progress = 0,
     this.onPlay,
     this.onTitle,
     this.onExpanded,
@@ -446,6 +452,9 @@ class _CollapsedPlaybackBar extends StatelessWidget {
 
   final String title;
   final bool playing;
+
+  /// Part déjà écoutée, de 0 à 1, montrée par un trait au-dessus de la barre.
+  final double progress;
   final double bottomInset;
   final VoidCallback? onPlay;
   final VoidCallback? onTitle;
@@ -458,62 +467,70 @@ class _CollapsedPlaybackBar extends StatelessWidget {
     return Material(
       color: siteCanvas,
       elevation: 0,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: siteCanvas,
-          border: Border(top: BorderSide(color: siteWhiteButtonBorder)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(8, 0, 14, 2 + bottomInset),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (onExpanded != null)
-                _PeekHandle(
-                  collapsed: true,
-                  onPressed: () => onExpanded!(true),
-                ),
-              Row(
-                children: [
-                  _RoundButton(
-                    buttonKey: playKey,
-                    tooltip: playing ? 'Pause' : 'Lire',
-                    onPressed: onPlay,
-                    icon: Icon(
-                      playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                      color: siteButtonText,
-                      size: 26,
-                    ),
-                    diameter: 42,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LinearProgressIndicator(
+            key: const Key('player-progress'),
+            value: progress,
+            minHeight: 3,
+            color: siteGreenSolid,
+            backgroundColor: siteGreenBottom.withValues(alpha: 0.18),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(8, 0, 14, 2 + bottomInset),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (onExpanded != null)
+                  _PeekHandle(
+                    collapsed: true,
+                    onPressed: () => onExpanded!(true),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: onTitle,
-                      behavior: HitTestBehavior.opaque,
-                      child: Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.end,
-                        style: siteText(
-                          color: siteBlack,
-                          fontSize: 16,
-                          lineHeight: 20,
-                          weight: FontWeight.w700,
+                Row(
+                  children: [
+                    _RoundButton(
+                      buttonKey: playKey,
+                      tooltip: playing ? 'Pause' : 'Lire',
+                      onPressed: onPlay,
+                      icon: Icon(
+                        playing
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        color: siteButtonText,
+                        size: 26,
+                      ),
+                      diameter: 42,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: onTitle,
+                        behavior: HitTestBehavior.opaque,
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.start,
+                          style: siteText(
+                            color: siteBlack,
+                            fontSize: 16,
+                            lineHeight: 20,
+                            weight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  if (onDismiss != null && !playing) ...[
-                    const SizedBox(width: 4),
-                    _DismissButton(onPressed: onDismiss!),
+                    if (onDismiss != null && !playing) ...[
+                      const SizedBox(width: 4),
+                      _DismissButton(onPressed: onDismiss!),
+                    ],
                   ],
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

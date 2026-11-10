@@ -10,10 +10,10 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SitePage(
       children: [
-        SiteLogo(onTap: () => context.go('/')),
+        SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
         const SiteGap(),
         const _GreenBoldText(
-          '"Perles Divines" est un receuil\n'
+          '"Perles Divines" est un recueil\n'
           'de prières et d\'invocations\n'
           'pour les musulmans Chiites (Ja\'ffari)',
         ),
@@ -67,9 +67,7 @@ class AboutScreen extends StatelessWidget {
           'www.ziaraat.com',
         ),
         const SiteGap(),
-        const SiteBlackText(
-          'Le gujarati est repris du livre',
-        ),
+        const SiteBlackText('Le gujarati est repris du livre'),
         Text(
           '« જન્નતની ચાવીઓ »',
           textAlign: TextAlign.center,
@@ -81,9 +79,7 @@ class AboutScreen extends StatelessWidget {
             height: 1.8,
           ),
         ),
-        const SiteBlackText(
-          'compilation de Maulana Rizwanali Palsaniya.',
-        ),
+        const SiteBlackText('compilation de Maulana Rizwanali Palsaniya.'),
         const SiteGap(height: 16),
         const SiteBlackText(
           'Que leurs auteurs\n'

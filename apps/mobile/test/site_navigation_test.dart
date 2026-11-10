@@ -8,9 +8,9 @@ import 'package:perles_divines/features/catalog/section_screen.dart';
 import 'package:perles_divines/features/catalog/sections.dart';
 import 'package:perles_divines/features/duas/catalog.dart';
 import 'package:perles_divines/features/duas/dua.dart';
-import 'package:perles_divines/features/home/home_screen.dart';
 import 'package:perles_divines/features/player/site_mini_player.dart';
 import 'package:perles_divines/features/sommaire/sommaire_screen.dart';
+import 'package:perles_divines/routing.dart';
 import 'package:perles_divines/ui/site.dart';
 
 const _kumayl = DevotionalText(
@@ -50,7 +50,9 @@ const _catalog = LocalDevotionalCatalog([_kumayl, _monthly, _specific]);
 
 Widget _app() {
   final router = GoRouter(
+    initialLocation: startLocation,
     routes: [
+      GoRoute(path: '/', redirect: (context, state) => startLocation),
       ShellRoute(
         builder: (context, state, child) => Column(
           children: [
@@ -59,7 +61,6 @@ Widget _app() {
           ],
         ),
         routes: [
-          GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
           GoRoute(
             path: '/sommaire',
             builder: (context, state) =>
@@ -109,14 +110,24 @@ void main() {
     expect(siteGreen, const Color(0xff145014));
     expect(siteLink, const Color(0xff124e12));
     expect(siteBlack, const Color(0xff000000));
-    expect(siteButtonText, const Color(0xffe8f0de));
     expect(siteButtonBorder, const Color(0xff606060));
-    expect(siteGreenSolid, const Color(0xff64991e));
-    expect(siteGreenTop, const Color(0xff7db72f));
-    expect(siteGreenBottom, const Color(0xff4e7d0e));
     expect(siteWhiteButtonText, const Color(0xff606060));
     expect(siteWhiteButtonBorder, const Color(0xff149214));
     expect(siteGlow, const Color(0xffffffd0));
+  });
+
+  test('le texte blanc sur le vert atteint 4,5:1 de contraste', () {
+    double ratio(Color a, Color b) {
+      final x = a.computeLuminance(), y = b.computeLuminance();
+      final hi = x > y ? x : y, lo = x > y ? y : x;
+      return (hi + 0.05) / (lo + 0.05);
+    }
+
+    for (final green in [siteGreenTop, siteGreenBottom, siteGreenSolid]) {
+      expect(ratio(siteButtonText, green), greaterThanOrEqualTo(4.5));
+    }
+    // Le vert sert aussi de couleur de titre sur fond blanc.
+    expect(ratio(siteGreenSolid, siteCanvas), greaterThanOrEqualTo(4.5));
   });
 
   test('les aamal mensuels et spécifiques restent séparés', () {
@@ -127,19 +138,41 @@ void main() {
     expect(CatalogSection.douas.matches(_kumayl), isTrue);
   });
 
-  testWidgets('l’accueil reprend les textes du site mobile', (tester) async {
+  testWidgets('l’app s’ouvre directement sur le sommaire', (tester) async {
     await tester.pumpWidget(_app());
     await _settle(tester);
-    expect(find.textContaining('receuil'), findsOneWidget);
-    expect(find.text('Sommaire'), findsOneWidget);
-    expect(find.textContaining('disponibles hors connexion'), findsOneWidget);
-    expect(find.textContaining('application web'), findsNothing);
-    expect(find.textContaining('connexion Internet'), findsNothing);
+    expect(find.text('Doua'), findsOneWidget);
+    expect(find.byKey(const Key('site-search')), findsOneWidget);
+    expect(find.byKey(const Key('sommaire-button')), findsNothing);
+    expect(find.byKey(const Key('site-player')), findsNothing);
+    expect(find.text('Aucun audio en cours'), findsNothing);
+  });
+
+  testWidgets('l’ancienne adresse d’accueil mène au sommaire', (tester) async {
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(path: '/', redirect: (context, state) => startLocation),
+        GoRoute(
+          path: '/sommaire',
+          builder: (context, state) => const SommaireScreen(catalog: _catalog),
+        ),
+      ],
+    );
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await _settle(tester);
+    expect(find.text('Version $appVersion'), findsOneWidget);
+  });
+
+  testWidgets('À propos garde la présentation, le site et le contact', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MaterialApp(home: AboutScreen()));
+    await _settle(tester);
+    expect(find.textContaining('est un recueil'), findsOneWidget);
     expect(find.textContaining('InchAllah'), findsOneWidget);
     expect(find.text('www.perlesdivines.fr'), findsOneWidget);
     expect(find.text('contact@perlesdivines.fr'), findsOneWidget);
-    expect(find.byKey(const Key('site-player')), findsNothing);
-    expect(find.text('Aucun audio en cours'), findsNothing);
   });
 
   testWidgets('sans lecture, seul l’inset système est réservé en bas', (
@@ -161,8 +194,6 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(_app());
-    await _settle(tester);
-    await tester.tap(find.byKey(const Key('sommaire-button')));
     await _settle(tester);
     expect(find.text('Doua'), findsOneWidget);
     expect(find.text('Zyaraate'), findsOneWidget);
@@ -264,8 +295,6 @@ void main() {
   testWidgets('une rubrique affiche ses prières', (tester) async {
     await tester.pumpWidget(_app());
     await _settle(tester);
-    await tester.tap(find.byKey(const Key('sommaire-button')));
-    await _settle(tester);
     await tester.tap(find.text('Doua'));
     await _settle(tester);
     expect(find.text('Doua-e-Kumayl'), findsOneWidget);
@@ -273,41 +302,46 @@ void main() {
     expect(find.byKey(const Key('section-home')), findsOneWidget);
   });
 
-  testWidgets(
-    'un favori montre un cœur blanc, sinon un cœur vert cerclé de blanc',
-    (tester) async {
-      Future<void> show(bool favorite) {
-        return tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: SiteReaderHeader(
-                title: 'Namaz',
-                favorite: favorite,
-                onBack: () {},
-                onFavorite: () {},
-              ),
+  testWidgets('un favori montre une étoile pleine, sinon une étoile vide', (
+    tester,
+  ) async {
+    Future<void> show(bool favorite) {
+      return tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SiteReaderHeader(
+              title: 'Namaz',
+              favorite: favorite,
+              onBack: () {},
+              onFavorite: () {},
             ),
           ),
-        );
-      }
-
-      await show(true);
-      final saved = tester.widgetList<Icon>(find.byIcon(Icons.favorite));
-      expect(saved.map((icon) => icon.color), [const Color(0xffffffff)]);
-
-      await show(false);
-      final cleared = tester.widgetList<Icon>(find.byIcon(Icons.favorite));
-      expect(
-        cleared.map((icon) => (icon.color, icon.size)).toList(),
-        containsAll([(const Color(0xffffffff), 24.0), (siteGreen, 18.0)]),
+        ),
       );
-    },
-  );
+    }
+
+    await show(true);
+    expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.star_border_rounded), findsNothing);
+    expect(find.byIcon(Icons.favorite), findsNothing);
+
+    await show(false);
+    expect(find.byIcon(Icons.star_border_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.star_rounded), findsNothing);
+  });
+
+  testWidgets('les pages intérieures gardent un logo réduit', (tester) async {
+    await tester.pumpWidget(_app());
+    await _settle(tester);
+    final full = tester.getSize(find.byType(SiteLogo)).height;
+    await tester.tap(find.text('Doua'));
+    await _settle(tester);
+    final compact = tester.getSize(find.byType(SiteLogo)).height;
+    expect(compact, lessThan(full * 0.75));
+  });
 
   testWidgets('la maison d’une rubrique ramène au sommaire', (tester) async {
     await tester.pumpWidget(_app());
-    await _settle(tester);
-    await tester.tap(find.byKey(const Key('sommaire-button')));
     await _settle(tester);
 
     for (final section in ['Qur\'an', 'Namaz', 'Doua', 'Zyaraate']) {

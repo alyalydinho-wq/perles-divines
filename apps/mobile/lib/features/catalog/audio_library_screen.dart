@@ -36,7 +36,7 @@ class AudioLibraryScreen extends StatelessWidget {
 
     return SitePage(
       header: [
-        SiteLogo(onTap: () => context.go('/')),
+        SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
         const SiteGap(height: 12),
         Text('Audios', textAlign: TextAlign.center, style: siteHeading),
         const SiteGap(height: 12),
@@ -90,7 +90,7 @@ class AudioShelfScreen extends StatelessWidget {
 
     return SitePage(
       header: [
-        SiteLogo(onTap: () => context.go('/')),
+        SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
         const SiteGap(height: 12),
         Text(shelf.label, textAlign: TextAlign.center, style: siteHeading),
         const SiteGap(height: 12),

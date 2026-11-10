@@ -7,28 +7,31 @@ import 'features/catalog/audio_shelves.dart';
 import 'features/catalog/favorites_screen.dart';
 import 'features/catalog/section_screen.dart';
 import 'features/catalog/sections.dart';
-import 'features/home/home_screen.dart';
 import 'features/player/playback_notice.dart';
 import 'features/player/player_screen.dart';
 import 'features/player/site_mini_player.dart';
 import 'features/sommaire/sommaire_screen.dart';
 import 'ui/site.dart';
 
+/// L’app s’ouvre directement sur le sommaire : l’ancien accueil n’avait
+/// qu’un bouton qui y menait. Sa présentation est dans « À propos ».
+const startLocation = '/sommaire';
+
 GoRouter createRouter() => GoRouter(
-  initialLocation: '/',
+  initialLocation: startLocation,
   routes: [
+    GoRoute(path: '/', redirect: (context, state) => startLocation),
     ShellRoute(
       builder: (context, state, child) => ColoredBox(
         color: siteCanvas,
         child: Column(
           children: [
             Expanded(child: child),
-            const SiteMiniPlayer(),
+            SiteMiniPlayer(location: state.uri.toString()),
           ],
         ),
       ),
       routes: [
-        GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
         GoRoute(
           path: '/sommaire',
           builder: (context, state) => const SommaireScreen(),
