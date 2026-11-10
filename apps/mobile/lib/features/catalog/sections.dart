@@ -4,12 +4,8 @@ enum CatalogSection {
   quran('quran', "Qur'an", DevotionalKind.quran),
   namaz('namaz', 'Namaz', DevotionalKind.namaz),
   douas('douas', 'Doua', DevotionalKind.dua),
-  zyaraate('zyaraate', 'Zyaraate', DevotionalKind.ziyarat),
-  aamalSpecifique(
-    'aamal-specifique',
-    'Aamal Specifique',
-    DevotionalKind.aamal,
-  ),
+  zyaraate('zyaraate', 'Zyaarate', DevotionalKind.ziyarat),
+  aamalSpecifique('aamal-specifique', 'Aamal Spécifique', DevotionalKind.aamal),
   aamalMensuel('aamal-mensuel', 'Aamal Mensuel', DevotionalKind.aamal);
 
   const CatalogSection(this.id, this.label, this.kind);

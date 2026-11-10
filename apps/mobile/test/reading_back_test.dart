@@ -328,7 +328,7 @@ void main() {
     await tester.tap(find.text('Sommaire').hitTestable());
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
-    expect(find.text('Zyaraate'), findsOneWidget);
+    expect(find.text('Zyaarate'), findsOneWidget);
     expect(find.byKey(const Key('reading-body')), findsNothing);
     expect(find.byTooltip('Lire'), findsNothing);
   });

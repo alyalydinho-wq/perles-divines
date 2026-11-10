@@ -11,7 +11,7 @@ import 'package:perles_divines/core/store.dart';
 import 'package:perles_divines/features/catalog/text_screen.dart';
 import 'package:perles_divines/features/duas/dua.dart';
 import 'package:perles_divines/features/reader/content_install.dart';
-import 'package:perles_divines/ui/heritage.dart';
+import 'package:perles_divines/features/player/audio_card.dart';
 import 'package:perles_divines/ui/site.dart';
 
 void main() {
@@ -67,26 +67,6 @@ void main() {
       '9:16',
     );
     expect(formatPlaybackClock(const Duration(seconds: -3)), '0:00');
-  });
-
-  testWidgets('la recherche est au-dessus des catégories', (tester) async {
-    final controller = TextEditingController();
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Column(
-            children: [
-              HeritageSearchField(controller: controller),
-              HeritageCategoryTile(title: 'Duas', onTap: () {}),
-            ],
-          ),
-        ),
-      ),
-    );
-    expect(
-      tester.getTopLeft(find.byType(HeritageSearchField)).dy,
-      lessThan(tester.getTopLeft(find.byType(HeritageCategoryTile)).dy),
-    );
   });
 
   testWidgets('l’écran de texte a les trois onglets sans second lecteur', (

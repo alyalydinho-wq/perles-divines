@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:perles_divines/features/duas/catalog.dart';
 import 'package:perles_divines/features/duas/dua.dart';
-import 'package:perles_divines/features/ziyarat/catalog.dart';
+import 'package:perles_divines/features/catalog/sections.dart';
 
 void main() {
   const dua = DevotionalText(
@@ -28,7 +28,7 @@ void main() {
 
   test('le catalogue sépare les duʿā et ziyārāt', () {
     expect(catalog.duas, [dua]);
-    expect(catalog.ziyarat, [ziyarat]);
+    expect(CatalogSection.zyaraate.itemsOf(catalog.items), [ziyarat]);
   });
 
   test('la recherche couvre arabe, traduction et références', () {

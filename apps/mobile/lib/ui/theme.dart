@@ -35,5 +35,3 @@ ThemeData lightTheme() {
     ),
   );
 }
-
-ThemeData darkTheme() => lightTheme();

@@ -21,7 +21,7 @@ Track _track(String title) => Track(
 );
 
 void main() {
-  test('chaque audio va dans Doua, Zyaraate, Aamal ou Hadith', () {
+  test('chaque audio va dans Doua, Zyaarate, Aamal ou Hadith', () {
     expect(shelfOf(_track('Doua-e-Ahad')), AudioShelf.doua);
     expect(shelfOf(_track('Douà é Tawassoul')), AudioShelf.doua);
     expect(shelfOf(_track('Ziarat Imam Hassan as')), AudioShelf.zyaraate);
@@ -147,7 +147,7 @@ void main() {
     await tester.pump();
     expect(find.text('Doua (1)'), findsOneWidget);
     expect(find.text('Favoris'), findsNothing);
-    expect(find.text('Zyaraate (0)'), findsNothing);
+    expect(find.text('Zyaarate (0)'), findsNothing);
     expect(find.text('Écouter'), findsNothing);
 
     await tester.pumpWidget(

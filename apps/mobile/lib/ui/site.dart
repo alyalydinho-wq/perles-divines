@@ -20,7 +20,6 @@ const siteWhiteButtonText = Color(0xff606060);
 const siteWhiteButtonBorder = Color(0xff149214);
 const siteWhiteTop = Color(0xffffffff);
 const siteWhiteBottom = Color(0xffededed);
-const siteGlow = Color(0xffffffd0);
 
 const siteSansFallbacks = <String>[
   'Lucida Sans Unicode',
@@ -33,7 +32,7 @@ const perlesSiteUrl = 'https://www.perlesdivines.fr';
 const perlesContactEmail = 'contact@perlesdivines.fr';
 
 /// Aligné sur `version:` de `apps/mobile/pubspec.yaml`.
-const appVersion = '0.2.11';
+const appVersion = '0.2.12';
 
 const siteLogoAsset = 'assets/branding/logo-m.png';
 const siteBismillahAsset = 'assets/branding/bismillah.gif';
@@ -52,9 +51,7 @@ TextStyle siteText({
   fontWeight: weight,
 );
 
-TextStyle get siteBodyGreen => siteText();
 TextStyle get siteBodyBlack => siteText(color: siteBlack);
-TextStyle get siteSmallGreen => siteText(fontSize: 13.33, lineHeight: 16);
 TextStyle get siteSmallBlack =>
     siteText(color: siteBlack, fontSize: 13.33, lineHeight: 16);
 
@@ -224,19 +221,6 @@ class SiteBismillah extends StatelessWidget {
           const SizedBox(width: 290, height: 52),
     );
   }
-}
-
-class SiteGreenText extends StatelessWidget {
-  const SiteGreenText(this.text, {super.key, this.small = false});
-  final String text;
-  final bool small;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text,
-    textAlign: TextAlign.center,
-    style: small ? siteSmallGreen : siteBodyGreen,
-  );
 }
 
 class SiteBlackText extends StatelessWidget {

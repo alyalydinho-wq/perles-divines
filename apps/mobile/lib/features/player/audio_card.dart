@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../core/store.dart';
 import '../../core/track.dart';
-import '../../ui/heritage.dart';
 import '../../ui/site.dart';
 import '../downloads/download_controller.dart';
 import '../duas/favorites.dart';
 import 'audio_controller.dart';
+
+/// Durée de lecture au format m:ss, jamais négative.
+String formatPlaybackClock(Duration duration) {
+  final clamped = duration.isNegative ? Duration.zero : duration;
+  final minutes = clamped.inMinutes;
+  final seconds = clamped.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return '$minutes:$seconds';
+}
 
 const audioBusyStates = {
   'queued',

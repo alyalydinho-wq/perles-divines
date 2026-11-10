@@ -60,11 +60,11 @@ test("le catalogue embarqué relie chaque texte à son audio déjà publié", ()
       audioTitles.map(audioId),
     );
   };
-  linked("Hadith-e-Kissa", "Hadiçe é Kissà");
-  linked("Doua-e-Tawassoul", "Douà é Tawassoul");
-  linked("Doua-e-Baha", "Douà é Bahà");
-  linked("Doua-e-Mashlool", "Douà é Mashlou");
-  linked("Doua-e-Mujir", "Douà é Moudjir");
+  linked("Hadith-e-Kissa", "Hadith-e-Kissà");
+  linked("Doua-e-Tawassoul", "Doua-e-Tawassoul");
+  linked("Doua-e-Baha", "Doua-e-Bahà");
+  linked("Doua-e-Mashlool", "Doua-e-Mashlou");
+  linked("Doua-e-Mujir", "Doua-e-Moudjir");
   linked("Doua-e-Kumayl", "Doua-e-Kumayl");
   linked("Doua-e-Ahad", "Doua-e-Ahad");
   linked("Doua-e-Makarimoul-Akhlak", "Doua-e-Makarimoul-Akhlak");
@@ -74,9 +74,9 @@ test("le catalogue embarqué relie chaque texte à son audio déjà publié", ()
     ["Doua-e-Iftetah", "Doua-e-Iftetah"],
   );
   linked("Zyaarat-e-Amin-Allàh", "Zyaarat-e-Amin-Allàh");
-  linked("Zyaarat du Vendredi (Jum'a) Imam al Mahdi (aj)", "Ziarat é Imamé Zaman atfs du vendredi");
-  linked("Zyaarat du Samedi Prophète Mohammad (saw)", "Ziarat H Mouhammad Moustapha saw");
-  linked("Zyaarat du Jeudi Imam Hassan al Askari (as)", "Ziarat Imam Hassan Askari as");
+  linked("Zyaarat du Vendredi (Jum'a) Imam al Mahdi (aj)", "Zyaarat-e-Imamé Zaman atfs du vendredi");
+  linked("Zyaarat du Samedi Prophète Mohammad (saw)", "Zyaarat H Mouhammad Moustapha saw");
+  linked("Zyaarat du Jeudi Imam Hassan al Askari (as)", "Zyaarat Imam Hassan Askari as");
   assert.deepEqual(byTitle.get("Doua-e-Nudba").audioIds, []);
   assert.deepEqual(
     byTitle.get("Zyaarat du Dimanche Imam Ali (as) Sayyada Fatema Zehra (sa)").audioIds,

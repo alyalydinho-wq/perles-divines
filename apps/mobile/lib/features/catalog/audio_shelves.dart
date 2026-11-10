@@ -5,7 +5,7 @@ import 'sections.dart';
 
 enum AudioShelf {
   doua('doua', 'Doua'),
-  zyaraate('zyaraate', 'Zyaraate'),
+  zyaraate('zyaraate', 'Zyaarate'),
   aamal('aamal', 'Aamal'),
   hadith('hadith', 'Hadith'),
   autres('autres', 'Autres');

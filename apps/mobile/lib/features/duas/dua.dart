@@ -52,7 +52,7 @@ class DevotionalText {
 
   /// Lecture native déjà mise à jour : le lien ne doit plus ouvrir l’ancienne page.
   ///
-  /// Les ziyarat de Zyaraate, puis Alqamah, Iftetah et le Doua d’Arafah,
+  /// Les ziyarat de Zyaarate, puis Alqamah, Iftetah et le Doua d’Arafah,
   /// suivent la même règle que les sourates : depuis Aamal mensuel, le bouton
   /// ouvre ce texte, pas l’ancienne page HTML.
   bool get opensUpdatedReading =>
@@ -70,19 +70,18 @@ class DevotionalText {
     return '';
   }
 
-  factory DevotionalText.fromJson(Map<String, dynamic> json) =>
-      DevotionalText(
-        id: json['id'] as String,
-        kind: DevotionalKind.values.byName(json['kind'] as String),
-        title: json['title'] as String,
-        arabic: json['arabic'] as String? ?? '',
-        translation: json['translation'] as String? ?? '',
-        transliteration: json['transliteration'] as String? ?? '',
-        gujarati: json['gujarati'] as String? ?? '',
-        introduction: json['introduction'] as String? ?? '',
-        references: List<String>.from(json['references'] as List? ?? const []),
-        audioIds: List<String>.from(json['audioIds'] as List? ?? const []),
-        sourceUrl: json['sourceUrl'] as String? ?? '',
-        pagePath: json['pagePath'] as String? ?? '',
-      );
+  factory DevotionalText.fromJson(Map<String, dynamic> json) => DevotionalText(
+    id: json['id'] as String,
+    kind: DevotionalKind.values.byName(json['kind'] as String),
+    title: json['title'] as String,
+    arabic: json['arabic'] as String? ?? '',
+    translation: json['translation'] as String? ?? '',
+    transliteration: json['transliteration'] as String? ?? '',
+    gujarati: json['gujarati'] as String? ?? '',
+    introduction: json['introduction'] as String? ?? '',
+    references: List<String>.from(json['references'] as List? ?? const []),
+    audioIds: List<String>.from(json['audioIds'] as List? ?? const []),
+    sourceUrl: json['sourceUrl'] as String? ?? '',
+    pagePath: json['pagePath'] as String? ?? '',
+  );
 }

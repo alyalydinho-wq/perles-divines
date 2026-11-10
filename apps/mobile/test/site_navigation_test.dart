@@ -113,7 +113,6 @@ void main() {
     expect(siteButtonBorder, const Color(0xff606060));
     expect(siteWhiteButtonText, const Color(0xff606060));
     expect(siteWhiteButtonBorder, const Color(0xff149214));
-    expect(siteGlow, const Color(0xffffffd0));
   });
 
   test('le texte blanc sur le vert atteint 4,5:1 de contraste', () {
@@ -196,15 +195,15 @@ void main() {
     await tester.pumpWidget(_app());
     await _settle(tester);
     expect(find.text('Doua'), findsOneWidget);
-    expect(find.text('Zyaraate'), findsOneWidget);
-    expect(find.text('Aamal Specifique'), findsOneWidget);
+    expect(find.text('Zyaarate'), findsOneWidget);
+    expect(find.text('Aamal Spécifique'), findsOneWidget);
     expect(find.text('Audios'), findsOneWidget);
     expect(find.text('Favoris'), findsOneWidget);
-    expect(find.text('A Propos ...'), findsOneWidget);
+    expect(find.text('À propos'), findsOneWidget);
     expect(find.text('Version $appVersion'), findsOneWidget);
     final betweenSections =
         tester.getTopLeft(find.text('Aamal Mensuel')).dy -
-        tester.getBottomLeft(find.text('Aamal Specifique')).dy;
+        tester.getBottomLeft(find.text('Aamal Spécifique')).dy;
     final beforeAudios =
         tester.getTopLeft(find.text('Audios')).dy -
         tester.getBottomLeft(find.text('Aamal Mensuel')).dy;
@@ -344,13 +343,13 @@ void main() {
     await tester.pumpWidget(_app());
     await _settle(tester);
 
-    for (final section in ['Qur\'an', 'Namaz', 'Doua', 'Zyaraate']) {
+    for (final section in ['Qur\'an', 'Namaz', 'Doua', 'Zyaarate']) {
       await tester.tap(find.text(section));
       await _settle(tester);
       expect(find.byKey(const Key('section-home')), findsOneWidget);
       await tester.tap(find.byKey(const Key('section-home')));
       await _settle(tester);
-      expect(find.text('A Propos ...'), findsOneWidget);
+      expect(find.text('À propos'), findsOneWidget);
       expect(find.byKey(const Key('section-home')), findsNothing);
     }
   });

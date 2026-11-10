@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { inventoryAudios } from "./audio-inventory/library.mjs";
 import { matchAudioToCatalog } from "./audio-match.mjs";
+import { harmonizeAudioTitle } from "./audio-titles.mjs";
 
 const DEFAULT_SOURCE =
   "C:\\Users\\alyas\\OneDrive\\Bureau\\Perlesdivines\\audio";
@@ -53,7 +54,7 @@ export async function prepareEmbeddedAudio({ source } = {}) {
     const matched = matchAudioToCatalog(row.relativePath, texts);
     const track = {
       id: row.id,
-      title: matched?.title ?? row.suggestions.titleFromFilename,
+      title: matched?.title ?? harmonizeAudioTitle(row.suggestions.titleFromFilename),
       author: null,
       version: 1,
       durationMs: row.durationMs,
