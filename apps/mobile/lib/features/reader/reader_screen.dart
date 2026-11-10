@@ -125,10 +125,17 @@ class ReaderScreen extends StatefulWidget {
     this.onOpenUpdatedText,
     this.onOpenAppSommaire,
     this.onPageHistory,
+    this.textZoom = 100,
   });
   final LocalEdition edition;
   final String? initialPage;
   final bool compact;
+
+  /// Taille du texte de la page, en pourcentage (100 = taille d’origine).
+  ///
+  /// Le texte grossit et revient à la ligne : la page reste dans la largeur
+  /// de l’écran. Les images, déjà en pleine largeur, ne changent pas.
+  final int textZoom;
 
   /// Vrai quand cette page a une lecture native mise à jour.
   final bool Function(String id)? opensUpdatedText;
@@ -165,13 +172,37 @@ class ReaderScreenState extends State<ReaderScreen> {
     _initialize();
   }
 
+  @override
+  void didUpdateWidget(ReaderScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.textZoom != widget.textZoom) {
+      unawaited(_applyTextZoom());
+    }
+  }
+
+  AndroidWebViewController? get _android =>
+      controller.platform is AndroidWebViewController
+      ? controller.platform as AndroidWebViewController
+      : null;
+
+  Future<void> _applyTextZoom() async {
+    final android = _android;
+    if (android == null) return;
+    try {
+      await android.setTextZoom(widget.textZoom);
+    } catch (_) {}
+  }
+
   Future<void> _initialize() async {
     await controller.setJavaScriptMode(JavaScriptMode.disabled);
-    // Pincement natif. enableZoom(true) ne réactive pas JavaScript.
-    await controller.enableZoom(true);
-    if (controller.platform is AndroidWebViewController) {
-      await (controller.platform as AndroidWebViewController)
-          .setAllowContentAccess(false);
+    final android = _android;
+    // Sur Android, la taille se règle avec « Aa » : le pincement grossissait
+    // la page comme une photo et obligeait à glisser sur les côtés.
+    // iOS n’a pas de réglage du texte : il garde le pincement natif.
+    await controller.enableZoom(android == null);
+    if (android != null) {
+      await android.setAllowContentAccess(false);
+      await _applyTextZoom();
     }
     await controller.setNavigationDelegate(
       NavigationDelegate(

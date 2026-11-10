@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
@@ -39,6 +40,10 @@ const _textSizeLevels = <_TextSizeLevel>[
   _TextSizeLevel('Très grand', 40, 26),
   _TextSizeLevel('Énorme', 46, 30),
 ];
+
+/// Taille du texte des pages d’origine, en pourcentage, pour une taille de
+/// traduction donnée : la taille « Normal » (18) vaut 100 %.
+int pageTextZoom(double proseSize) => (proseSize / 18 * 100).round();
 
 class _TextSizeLevel {
   const _TextSizeLevel(this.name, this.arabic, this.prose);
@@ -340,8 +345,12 @@ class _TextScreenState extends State<TextScreen> {
     return widget.tracks.any((track) => track.id == current.id);
   }
 
+  int get _pageTextZoom => pageTextZoom(translationSize);
+
   Widget _textSizeBar() {
-    if (pane == TextPane.arabic && widget.item.hasOriginalPage) {
+    // iOS n’a pas de réglage du texte des pages d’origine : il garde le
+    // pincement. Android règle ces pages avec A− et A+ comme les autres.
+    if (_showsOriginal(pane) && defaultTargetPlatform == TargetPlatform.iOS) {
       return const _OriginalPageHint();
     }
     final atMin = _levelIndex <= 0;
@@ -539,6 +548,7 @@ class _TextScreenState extends State<TextScreen> {
               edition: widget.edition,
               initialPage: item.pagePath,
               compact: true,
+              textZoom: _pageTextZoom,
               opensUpdatedText: widget.opensUpdatedText,
               onOpenUpdatedText: _openUpdatedText,
               onOpenAppSommaire: () =>

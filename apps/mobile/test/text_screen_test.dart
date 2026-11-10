@@ -60,6 +60,18 @@ void main() {
     expect(edges.right, 270);
   });
 
+  test('les pages d’origine suivent les cinq tailles de texte', () {
+    // Petit, Normal, Grand, Très grand, Énorme : le texte de la page grossit
+    // avec A+ comme la traduction, sans pincement.
+    expect([16.0, 18.0, 22.0, 26.0, 30.0].map(pageTextZoom).toList(), [
+      89,
+      100,
+      122,
+      144,
+      167,
+    ]);
+  });
+
   test('le chronomètre de lecture reste lisible', () {
     expect(formatPlaybackClock(Duration.zero), '0:00');
     expect(
