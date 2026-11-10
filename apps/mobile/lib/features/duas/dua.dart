@@ -5,6 +5,10 @@ const _updatedAamalDuaIds = {
   'aa86b04c-fb45-5c4a-9943-170dddb31104',
   '9bbdc6dc-c3fc-50d3-b79a-45b63216bc69',
   '213aa396-99b9-535f-bf8f-a862abbc66e3',
+  // Jawshan-e-Kabir, lié depuis les nuits de Qadr (Aamal de Ramadhan).
+  'a6a50d78-0076-5d00-95f2-c3a732c97077',
+  // Kumayl, lié depuis l’Aamal du 15 Shabaan.
+  'fda4b6e3-5c57-5c03-a292-1981a9768248',
 };
 
 String kindLabel(DevotionalKind kind) => switch (kind) {
@@ -49,6 +53,11 @@ class DevotionalText {
   bool get hasGujarati => gujarati.trim().isNotEmpty;
   bool get hasArabic => arabic.trim().isNotEmpty;
   bool get hasOriginalPage => pagePath.isNotEmpty;
+
+  /// Seule la page d’origine existe : rien à montrer en traduction,
+  /// phonétique ou gujarati.
+  bool get onlyOriginalPage =>
+      hasOriginalPage && !hasTranslation && !hasTransliteration && !hasGujarati;
 
   /// Lecture native déjà mise à jour : le lien ne doit plus ouvrir l’ancienne page.
   ///

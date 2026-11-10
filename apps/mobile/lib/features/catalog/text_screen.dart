@@ -285,25 +285,28 @@ class _TextScreenState extends State<TextScreen> {
               ),
             ),
             if (_sizeOpen) _textSizeBar(),
-            SiteTextTabs(
-              selected: pane.index,
-              labels: [
-                'Arabe',
-                'Traduction',
-                'Phonétique',
-                if (item.hasGujarati) 'Gujarati',
-              ],
-              onSelected: (index) {
-                setState(() {
-                  pane = TextPane.values[index];
-                  if (!_showsOriginal(pane)) _pageHistory = false;
-                });
-                final part = _jawshanPart;
-                if (isJawshanKabirId(item.id) && part != null) {
-                  _revealJawshanPart(part);
-                }
-              },
-            ),
+            // Une page d’origine sans traduction ni phonétique séparées n’a
+            // qu’une version : des onglets n’y mèneraient qu’à des pages vides.
+            if (!item.onlyOriginalPage)
+              SiteTextTabs(
+                selected: pane.index,
+                labels: [
+                  'Arabe',
+                  'Traduction',
+                  'Phonétique',
+                  if (item.hasGujarati) 'Gujarati',
+                ],
+                onSelected: (index) {
+                  setState(() {
+                    pane = TextPane.values[index];
+                    if (!_showsOriginal(pane)) _pageHistory = false;
+                  });
+                  final part = _jawshanPart;
+                  if (isJawshanKabirId(item.id) && part != null) {
+                    _revealJawshanPart(part);
+                  }
+                },
+              ),
           ],
         ),
       ),

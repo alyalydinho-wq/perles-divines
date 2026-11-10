@@ -110,6 +110,9 @@ void main() {
       'aa86b04c-fb45-5c4a-9943-170dddb31104',
       '9bbdc6dc-c3fc-50d3-b79a-45b63216bc69',
       '213aa396-99b9-535f-bf8f-a862abbc66e3',
+      // Jawshan-e-Kabir depuis les nuits de Qadr, Kumayl depuis le 15 Shabaan.
+      'a6a50d78-0076-5d00-95f2-c3a732c97077',
+      'fda4b6e3-5c57-5c03-a292-1981a9768248',
     ]) {
       expect(
         DevotionalText(
@@ -136,5 +139,32 @@ void main() {
       ),
       ReaderNavigation.openUpdatedText,
     );
+  });
+
+  test('une page d’origine seule n’a pas d’onglets de traduction', () {
+    const aamal = DevotionalText(
+      id: 'moharram',
+      kind: DevotionalKind.aamal,
+      title: 'Aamal du mois de Moharram',
+      arabic: '',
+      translation: '',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+      pagePath: 'pages/moharram.html',
+    );
+    const translated = DevotionalText(
+      id: 'zyaarate',
+      kind: DevotionalKind.ziyarat,
+      title: 'Zyaarate de tous les jours',
+      arabic: '',
+      translation: 'Que la paix soit sur toi.',
+      transliteration: '',
+      references: [],
+      audioIds: [],
+      pagePath: 'pages/zyaarate.html',
+    );
+    expect(aamal.onlyOriginalPage, isTrue);
+    expect(translated.onlyOriginalPage, isFalse);
   });
 }
