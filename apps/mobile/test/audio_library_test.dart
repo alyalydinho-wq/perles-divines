@@ -250,6 +250,9 @@ void main() {
       );
       await tester.pump();
       expect(expanded, isTrue);
+      // Le parent garde la barre réduite : le tiroir y revient.
+      await show(collapsed: true);
+      await tester.pumpAndSettle();
 
       expanded = null;
       await tester.tap(find.byKey(const Key('player-peek')));
@@ -257,7 +260,7 @@ void main() {
       expect(expanded, isTrue);
 
       await show(collapsed: false);
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(
         tester.getSize(find.byType(AudioFace)).height,
         greaterThan(collapsedHeight),
@@ -282,6 +285,42 @@ void main() {
       expect(expanded, isFalse);
     },
   );
+
+  testWidgets('le lecteur suit le doigt et revient s’il est lâché sans élan', (
+    tester,
+  ) async {
+    bool? expanded;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: AudioFace(
+              title: 'Doua-e-Kumayl',
+              duration: const Duration(minutes: 20),
+              dense: true,
+              collapsed: true,
+              onExpanded: (value) => expanded = value,
+            ),
+          ),
+        ),
+      ),
+    );
+    final rest = tester.getSize(find.byType(AudioFace)).height;
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('Doua-e-Kumayl')),
+    );
+    await gesture.moveBy(const Offset(0, -20));
+    await gesture.moveBy(const Offset(0, -10));
+    await tester.pump();
+    // Pendant le geste, la barre grandit déjà avec le doigt.
+    expect(tester.getSize(find.byType(AudioFace)).height, greaterThan(rest));
+    await tester.pump(const Duration(milliseconds: 400));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(expanded, isNull);
+    expect(tester.getSize(find.byType(AudioFace)).height, rest);
+  });
 
   testWidgets('la barre arrêtée se masque d’un appui, pas pendant la lecture', (
     tester,

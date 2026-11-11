@@ -14,7 +14,7 @@ class PlayerScreen extends StatelessWidget {
     final audio = ServicesScope.of(context).audio;
     return Scaffold(
       key: const Key('player-screen'),
-      backgroundColor: siteCanvas,
+      backgroundColor: context.site.canvas,
       appBar: AppBar(
         title: const Text('Lecteur'),
         leading: BackButton(
@@ -27,17 +27,19 @@ class PlayerScreen extends StatelessWidget {
           },
         ),
       ),
-      body: StreamBuilder<MediaItem?>(
-        stream: audio.mediaItem,
-        builder: (context, _) {
-          if (audio.current == null) {
-            return Center(
-              child: Text('Aucun audio en cours.', style: siteText()),
-            );
-          }
-          return PlayerSheet(audio: audio, handle: false);
-        },
-      ),
+      body: audio == null
+          ? const Center(child: CircularProgressIndicator())
+          : StreamBuilder<MediaItem?>(
+              stream: audio.mediaItem,
+              builder: (context, _) {
+                if (audio.current == null) {
+                  return Center(
+                    child: Text('Aucun audio en cours.', style: siteText()),
+                  );
+                }
+                return PlayerSheet(audio: audio, handle: false);
+              },
+            ),
     );
   }
 }

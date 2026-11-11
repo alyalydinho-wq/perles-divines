@@ -71,10 +71,10 @@ class AboutScreen extends StatelessWidget {
         Text(
           '« જન્નતની ચાવીઓ »',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'NotoSansGujarati',
             fontFamilyFallback: ['Noto Sans Gujarati', 'Noto Sans'],
-            color: siteBlack,
+            color: context.site.ink,
             fontSize: 18,
             height: 1.8,
           ),
@@ -109,6 +109,8 @@ class AboutScreen extends StatelessWidget {
           'Saint André - Réunion\n'
           '© Tous droits réservés.',
         ),
+        const SiteGap(),
+        const SiteBlackText('Version $appVersion', small: true),
         const SiteGap(),
         SiteButton(
           label: 'Retour au sommaire',
@@ -159,7 +161,7 @@ class _GreenBoldText extends StatelessWidget {
   Widget build(BuildContext context) => Text(
     text,
     textAlign: TextAlign.center,
-    style: siteText(color: siteGreen, weight: FontWeight.w700),
+    style: siteText(color: context.site.green, weight: FontWeight.w700),
   );
 }
 
@@ -174,11 +176,13 @@ class _SawabBox extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
-      decoration: BoxDecoration(border: Border.all(color: siteBlack, width: 2)),
+      decoration: BoxDecoration(
+        border: Border.all(color: context.site.ink, width: 2),
+      ),
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: siteText(color: siteGreen, weight: FontWeight.w700),
+        style: siteText(color: context.site.green, weight: FontWeight.w700),
       ),
     );
   }

@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/store.dart';
 import '../../core/track.dart';
 import '../../ui/arabic_bold.dart';
+import '../../ui/motion.dart';
 import '../../ui/site.dart';
 import '../duas/dua.dart';
 import 'jawshan.dart';
@@ -100,7 +101,6 @@ class TextScreen extends StatefulWidget {
 class _TextScreenState extends State<TextScreen> {
   final _scroll = ScrollController();
   final _readerKey = GlobalKey<ReaderScreenState>();
-  final _surahInfoKey = GlobalKey();
   bool _surahInfoOpen = false;
   double arabicSize = 28;
   double translationSize = 18;
@@ -273,7 +273,7 @@ class _TextScreenState extends State<TextScreen> {
         unawaited(reader.goBack());
       },
       child: Scaffold(
-        backgroundColor: siteCanvas,
+        backgroundColor: context.site.canvas,
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -369,10 +369,10 @@ class _TextScreenState extends State<TextScreen> {
       label: 'Taille du texte',
       child: Material(
         key: const Key('text-size-bar'),
-        color: const Color(0xFFF7F8F4),
+        color: context.site.panel,
         child: DecoratedBox(
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: Color(0xFFD9E3C8))),
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: context.site.panelBorder)),
           ),
           child: SizedBox(
             height: siteReaderBarHeight,
@@ -405,7 +405,7 @@ class _TextScreenState extends State<TextScreen> {
                             label,
                             textAlign: TextAlign.center,
                             style: siteText(
-                              color: siteBlack,
+                              color: context.site.ink,
                               fontSize: 13,
                               lineHeight: 16,
                               weight: FontWeight.w700,
@@ -446,7 +446,7 @@ class _TextScreenState extends State<TextScreen> {
     required VoidCallback onPressed,
   }) {
     final style = siteText(
-      color: enabled ? Colors.white : const Color(0xFF616161),
+      color: enabled ? Colors.white : context.site.muted,
       fontSize: 14,
       lineHeight: 16,
       weight: FontWeight.w700,
@@ -461,7 +461,7 @@ class _TextScreenState extends State<TextScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2),
             child: Material(
-              color: enabled ? siteGreenSolid : const Color(0xFFD0D0D0),
+              color: enabled ? context.site.fill : context.site.disabledFill,
               borderRadius: BorderRadius.circular(8),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
@@ -545,7 +545,7 @@ class _TextScreenState extends State<TextScreen> {
       case TextPane.arabic:
         if (item.hasOriginalPage) {
           return ColoredBox(
-            color: siteCanvas,
+            color: context.site.canvas,
             child: ReaderScreen(
               key: _readerKey,
               edition: widget.edition,
@@ -635,13 +635,13 @@ class _TextScreenState extends State<TextScreen> {
       'Noto Sans',
       ...siteSansFallbacks,
     ],
-    color: siteBlack,
+    color: context.site.ink,
     fontSize: size,
     height: 1.85,
     fontWeight: FontWeight.w400,
   );
 
-  TextStyle _arabicBaseStyle() => const TextStyle(
+  TextStyle _arabicBaseStyle() => TextStyle(
     fontFamily: 'Indopak',
     fontFamilyFallback: [
       'Noto Naskh Arabic',
@@ -650,7 +650,7 @@ class _TextScreenState extends State<TextScreen> {
       'Arial',
       ...siteSansFallbacks,
     ],
-    color: siteBlack,
+    color: context.site.ink,
     height: _arabicLineHeight,
     fontWeight: FontWeight.w400,
   ).copyWith(fontSize: arabicSize);
@@ -665,56 +665,15 @@ class _TextScreenState extends State<TextScreen> {
       child: Text(
         message,
         textAlign: TextAlign.center,
-        style: siteText(color: siteBlack, fontSize: 16, lineHeight: 22),
+        style: siteText(color: context.site.ink, fontSize: 16, lineHeight: 22),
       ),
     ),
   );
 
-  void _revealSurahInfo() {
-    final opening = !_surahInfoOpen;
-    setState(() => _surahInfoOpen = opening);
-    if (!opening) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final target = _surahInfoKey.currentContext;
-      if (target == null || !mounted) return;
-      Scrollable.ensureVisible(
-        target,
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeOutCubic,
-        alignment: 0.02,
-      );
-    });
-  }
-
-  Widget _surahInfoLink() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Center(
-        child: TextButton(
-          onPressed: _revealSurahInfo,
-          style: TextButton.styleFrom(
-            foregroundColor: siteLink,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: Text(
-            'Infos sur la sourate',
-            textAlign: TextAlign.center,
-            style:
-                siteText(
-                  color: siteLink,
-                  fontSize: 16,
-                  lineHeight: 22,
-                  weight: FontWeight.w600,
-                ).copyWith(
-                  decoration: TextDecoration.underline,
-                  decorationColor: siteLink,
-                ),
-          ),
-        ),
-      ),
-    );
+  void _toggleSurahInfo() {
+    // Les infos s’ouvrent sur place, sous le bouton : rien ne défile, le
+    // bouton reste là où le doigt l’a touché.
+    setState(() => _surahInfoOpen = !_surahInfoOpen);
   }
 
   Widget _reading(
@@ -752,7 +711,7 @@ class _TextScreenState extends State<TextScreen> {
         : text.substring(0, infoCut).trim();
     final translated = translationVerses ? _numberedTranslation(text) : null;
     return ColoredBox(
-      color: siteCanvas,
+      color: context.site.canvas,
       child: SelectionArea(
         child: ListView(
           controller: _scroll,
@@ -764,7 +723,7 @@ class _TextScreenState extends State<TextScreen> {
                 widget.item.title.toUpperCase(),
                 textAlign: TextAlign.center,
                 style: siteText(
-                  color: siteGreenSolid,
+                  color: context.site.accent,
                   fontSize: 16,
                   lineHeight: 22,
                   weight: FontWeight.w700,
@@ -777,7 +736,7 @@ class _TextScreenState extends State<TextScreen> {
                 greenCaption,
                 textAlign: TextAlign.center,
                 style: siteText(
-                  color: siteGreenSolid,
+                  color: context.site.accent,
                   fontSize: 16,
                   lineHeight: 22,
                   weight: FontWeight.w700,
@@ -785,15 +744,14 @@ class _TextScreenState extends State<TextScreen> {
               ),
             ],
             const SizedBox(height: 10),
-            if (surahInfo != null) _surahInfoLink(),
-            if (surahInfo != null && _surahInfoOpen)
+            if (surahInfo != null)
               Padding(
-                key: _surahInfoKey,
                 padding: const EdgeInsets.only(bottom: 16),
-                child: _InfoCard(
+                child: _SurahInfo(
+                  open: _surahInfoOpen,
+                  onToggle: _toggleSurahInfo,
                   text: surahInfo,
                   size: proseSize,
-                  title: 'Infos sur la sourate',
                 ),
               ),
             if (cardIntro.isNotEmpty && text.isNotEmpty)
@@ -805,7 +763,7 @@ class _TextScreenState extends State<TextScreen> {
               Text(
                 cardIntro,
                 style: siteText(
-                  color: siteBlack,
+                  color: context.site.ink,
                   fontSize: proseSize,
                   lineHeight: proseSize * 1.35,
                 ).copyWith(fontStyle: FontStyle.italic),
@@ -825,7 +783,7 @@ class _TextScreenState extends State<TextScreen> {
                 text: text,
                 style: _arabicStyle(),
                 proseStyle: siteText(
-                  color: siteBlack,
+                  color: context.site.ink,
                   fontSize: proseSize,
                   lineHeight: proseSize * 1.4,
                   weight: FontWeight.w700,
@@ -843,9 +801,9 @@ class _TextScreenState extends State<TextScreen> {
                           : TextDirection.ltr,
                       textAlign: TextAlign.center,
                       style: _arabicScript(block)
-                          ? _ruledBlack(_arabicStyle())
+                          ? _ruled(_arabicStyle(), context.site.ink)
                           : siteText(
-                              color: siteBlack,
+                              color: context.site.ink,
                               fontSize: proseSize,
                               lineHeight: proseSize * 1.4,
                               weight: FontWeight.w700,
@@ -883,7 +841,7 @@ class _TextScreenState extends State<TextScreen> {
                     paragraph,
                     textAlign: TextAlign.start,
                     style: siteText(
-                      color: siteBlack,
+                      color: context.site.ink,
                       fontSize: proseSize,
                       lineHeight: proseSize * 1.4,
                     ),
@@ -895,7 +853,7 @@ class _TextScreenState extends State<TextScreen> {
               Text(
                 reference,
                 style: siteText(
-                  color: siteBlack,
+                  color: context.site.ink,
                   fontSize: proseSize,
                   lineHeight: proseSize * 1.4,
                 ),
@@ -909,7 +867,7 @@ class _TextScreenState extends State<TextScreen> {
 
   Widget _verseLine(_Line line, double size, {required bool italic}) {
     final style = siteText(
-      color: siteBlack,
+      color: context.site.ink,
       fontSize: size,
       lineHeight: size * 1.35,
     ).copyWith(fontStyle: italic ? FontStyle.italic : FontStyle.normal);
@@ -1009,7 +967,7 @@ class _TextScreenState extends State<TextScreen> {
       return _fallbackJawshan(item);
     }
     return ColoredBox(
-      color: siteCanvas,
+      color: context.site.canvas,
       child: SelectionArea(
         child: SingleChildScrollView(
           key: const Key('jawshan-reading'),
@@ -1024,7 +982,7 @@ class _TextScreenState extends State<TextScreen> {
                   item.title.toUpperCase(),
                   textAlign: TextAlign.center,
                   style: siteText(
-                    color: siteGreenSolid,
+                    color: context.site.accent,
                     fontSize: 16,
                     lineHeight: 22,
                     weight: FontWeight.w700,
@@ -1045,7 +1003,7 @@ class _TextScreenState extends State<TextScreen> {
                     preamble,
                     textAlign: TextAlign.start,
                     style: siteText(
-                      color: siteBlack,
+                      color: context.site.ink,
                       fontSize: headerSize,
                       lineHeight: headerSize * 1.4,
                     ),
@@ -1053,10 +1011,10 @@ class _TextScreenState extends State<TextScreen> {
                 ),
               for (var i = 0; i < blocks.length; i++) ...[
                 if (i > 0)
-                  const Divider(
+                  Divider(
                     height: 28,
                     thickness: 1,
-                    color: Color(0xFFB7C7A4),
+                    color: context.site.softRule,
                   ),
                 _jawshanHeader(i + 1, headerSize),
                 ..._jawshanBody(blocks[i], headerSize),
@@ -1096,15 +1054,15 @@ class _TextScreenState extends State<TextScreen> {
 
   Widget _jawshanToc(double size) {
     final style = siteText(
-      color: siteBlack,
+      color: context.site.ink,
       fontSize: size,
       lineHeight: size * 1.35,
     );
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F8F4),
+        color: context.site.panel,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD9E3C8)),
+        border: Border.all(color: context.site.panelBorder),
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 220),
@@ -1144,7 +1102,7 @@ class _TextScreenState extends State<TextScreen> {
             'Doua - $number',
             textAlign: TextAlign.center,
             style: siteText(
-              color: siteGreenSolid,
+              color: context.site.accent,
               fontSize: size,
               lineHeight: size * 1.3,
               weight: FontWeight.w700,
@@ -1156,7 +1114,7 @@ class _TextScreenState extends State<TextScreen> {
               french,
               textAlign: TextAlign.center,
               style: siteText(
-                color: siteBlack,
+                color: context.site.ink,
                 fontSize: size,
                 lineHeight: size * 1.35,
               ),
@@ -1175,7 +1133,7 @@ class _TextScreenState extends State<TextScreen> {
             text: block.trim(),
             style: _arabicStyle(),
             proseStyle: siteText(
-              color: siteBlack,
+              color: context.site.ink,
               fontSize: size,
               lineHeight: size * 1.4,
               weight: FontWeight.w700,
@@ -1197,7 +1155,7 @@ class _TextScreenState extends State<TextScreen> {
                 paragraph,
                 textAlign: TextAlign.start,
                 style: siteText(
-                  color: siteBlack,
+                  color: context.site.ink,
                   fontSize: size,
                   lineHeight: size * 1.4,
                 ),
@@ -1217,12 +1175,12 @@ class _OriginalPageHint extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       key: const Key('text-size-bar'),
-      color: const Color(0xFFF7F8F4),
+      color: context.site.panel,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 56),
         child: DecoratedBox(
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: Color(0xFFD9E3C8))),
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: context.site.panelBorder)),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1231,7 +1189,7 @@ class _OriginalPageHint extends StatelessWidget {
                 'Pour agrandir cette page, écartez deux doigts',
                 textAlign: TextAlign.center,
                 style: siteText(
-                  color: siteBlack,
+                  color: context.site.ink,
                   fontSize: 16,
                   lineHeight: 22,
                   weight: FontWeight.w600,
@@ -1314,12 +1272,159 @@ _ParsedTranslation? _numberedTranslation(String body) {
   return lines.isEmpty ? null : _ParsedTranslation(lines, tail);
 }
 
+/// « Infos sur la sourate » : un bouton encadré qui se déplie sur place.
+/// Les infos glissent vers le bas en apparaissant et repartent de même ; un
+/// appui pendant le mouvement le renverse depuis là où il en est.
+class _SurahInfo extends StatefulWidget {
+  const _SurahInfo({
+    required this.open,
+    required this.onToggle,
+    required this.text,
+    required this.size,
+  });
+
+  static const duration = Duration(milliseconds: 320);
+
+  final bool open;
+  final VoidCallback onToggle;
+  final String text;
+  final double size;
+
+  @override
+  State<_SurahInfo> createState() => _SurahInfoState();
+}
+
+class _SurahInfoState extends State<_SurahInfo>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _reveal = AnimationController(
+    vsync: this,
+    duration: _SurahInfo.duration,
+    value: widget.open ? 1 : 0,
+  )..addListener(() => setState(() {}));
+  late final _curve = CurvedAnimation(
+    parent: _reveal,
+    curve: Curves.easeOutCubic,
+    reverseCurve: Curves.easeInCubic,
+  );
+
+  @override
+  void didUpdateWidget(_SurahInfo oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.open == widget.open) return;
+    if (reduceMotion(context)) {
+      _reveal.value = widget.open ? 1 : 0;
+    } else if (widget.open) {
+      _reveal.forward();
+    } else {
+      _reveal.reverse();
+    }
+  }
+
+  @override
+  void dispose() {
+    _curve.dispose();
+    _reveal.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.site;
+    final shown = _reveal.value > 0;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: palette.panel,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: palette.neutralBorder),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1F000000),
+            blurRadius: 3,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            container: true,
+            button: true,
+            expanded: widget.open,
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                key: const Key('surah-info'),
+                onTap: widget.onToggle,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          color: palette.accent,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Infos sur la sourate',
+                            style: siteText(
+                              color: palette.green,
+                              fontSize: 16,
+                              lineHeight: 22,
+                              weight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        RotationTransition(
+                          turns: Tween(begin: 0.0, end: 0.5).animate(_curve),
+                          child: Icon(
+                            Icons.expand_more_rounded,
+                            color: palette.accent,
+                            size: 26,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (shown)
+            ClipRect(
+              child: SizeTransition(
+                sizeFactor: _curve,
+                alignment: Alignment.topCenter,
+                child: FadeTransition(
+                  opacity: _curve,
+                  child: _InfoCard(
+                    text: widget.text,
+                    size: widget.size,
+                    framed: false,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.text, required this.size, this.title});
+  const _InfoCard({required this.text, required this.size, this.framed = true});
 
   final String text;
   final double size;
-  final String? title;
+
+  /// Sans cadre, le texte se pose dans celui de [_SurahInfo].
+  final bool framed;
 
   @override
   Widget build(BuildContext context) {
@@ -1327,45 +1432,39 @@ class _InfoCard extends StatelessWidget {
         .split(RegExp(r'\n{2,}'))
         .map((block) => block.trim())
         .where((block) => block.isNotEmpty);
-    final heading = title?.trim() ?? '';
+    if (!framed) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 2, 14, 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [for (final block in blocks) _block(context, block)],
+        ),
+      );
+    }
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F8F4),
+        color: context.site.panel,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD9E3C8)),
+        border: Border.all(color: context.site.panelBorder),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (heading.isNotEmpty) ...[
-              Text(
-                heading,
-                style: siteText(
-                  color: siteGreen,
-                  fontSize: size + 1,
-                  lineHeight: (size + 1) * 1.3,
-                  weight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-            ],
-            for (final block in blocks) _block(block),
-          ],
+          children: [for (final block in blocks) _block(context, block)],
         ),
       ),
     );
   }
 
-  Widget _block(String block) {
+  Widget _block(BuildContext context, String block) {
     final body = siteText(
-      color: siteBlack,
+      color: context.site.ink,
       fontSize: size,
       lineHeight: size * 1.4,
     );
     final heading = siteText(
-      color: siteGreen,
+      color: context.site.green,
       fontSize: size,
       lineHeight: size * 1.35,
       weight: FontWeight.w700,
@@ -1392,9 +1491,9 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-TextStyle _ruledBlack(TextStyle style) => style.copyWith(
+TextStyle _ruled(TextStyle style, Color color) => style.copyWith(
   decoration: TextDecoration.underline,
-  decorationColor: siteBlack,
+  decorationColor: color,
   decorationThickness: 1.15,
 );
 
@@ -1577,7 +1676,7 @@ class _BasmalaLine extends StatelessWidget {
                 child: SizedBox(
                   width: width,
                   height: 1,
-                  child: const ColoredBox(color: Color(0xFF8A8A8A)),
+                  child: ColoredBox(color: context.site.rule),
                 ),
               ),
             ],
@@ -1684,7 +1783,7 @@ class _QuranVisualLine extends StatelessWidget {
               key: ValueKey('quran-rule-$index'),
               width: fill ? maxWidth : content,
               height: 1,
-              child: const ColoredBox(color: Color(0xFF8A8A8A)),
+              child: ColoredBox(color: context.site.rule),
             ),
           ),
         ],

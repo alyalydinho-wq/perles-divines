@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/store.dart';
 import '../../core/track.dart';
+import '../../ui/motion.dart';
 import '../../ui/site.dart';
 import '../downloads/download_controller.dart';
 import '../duas/favorites.dart';
@@ -79,162 +80,170 @@ class AudioFace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final expand = onExpanded;
+    if (expand == null) {
+      return collapsed ? _collapsedFace(context) : _expandedFace(context);
+    }
+    return PlaybackDrawer(
+      expanded: !collapsed,
+      onExpanded: expand,
+      collapsed: _collapsedFace(context),
+      expandedFace: _expandedFace(context),
+    );
+  }
+
+  Widget _collapsedFace(BuildContext context) => _CollapsedPlaybackBar(
+    title: title,
+    playing: playing,
+    progress: duration.inMilliseconds <= 0
+        ? 0
+        : (position.inMilliseconds / duration.inMilliseconds)
+              .clamp(0.0, 1.0)
+              .toDouble(),
+    onPlay: onPlay,
+    onTitle: onExpanded == null ? onTitle : () => onExpanded!(true),
+    onExpanded: onExpanded,
+    onDismiss: onDismiss,
+    playKey: playKey,
+    bottomInset: _bottomInset(context),
+  );
+
+  Widget _expandedFace(BuildContext context) {
     final busy = audioBusyStates.contains(downloadState);
     final saved = downloadState == 'downloaded';
-    if (collapsed) {
-      return _reveal(
-        _CollapsedPlaybackBar(
-          title: title,
-          playing: playing,
-          progress: duration.inMilliseconds <= 0
-              ? 0
-              : (position.inMilliseconds / duration.inMilliseconds)
-                    .clamp(0.0, 1.0)
-                    .toDouble(),
-          onPlay: onPlay,
-          onTitle: onExpanded == null ? onTitle : () => onExpanded!(true),
-          onExpanded: onExpanded,
-          onDismiss: onDismiss,
-          playKey: playKey,
-          bottomInset: _bottomInset(context),
-        ),
-      );
-    }
     final caption = _caption(busy, saved);
-    return _reveal(
-      Material(
-        color: siteCanvas,
-        elevation: 0,
-        child: SizedBox(
-          width: double.infinity,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: siteCanvas,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(dense ? 0 : 8),
-                bottom: Radius.circular(dense ? 0 : 8),
-              ),
-              border: dense
-                  ? const Border(top: BorderSide(color: siteWhiteButtonBorder))
-                  : Border.all(color: siteWhiteButtonBorder),
-              boxShadow: dense
-                  ? null
-                  : const [
-                      BoxShadow(
-                        color: Color(0x33000000),
-                        blurRadius: 2,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
+    return Material(
+      color: context.site.canvas,
+      elevation: 0,
+      child: SizedBox(
+        width: double.infinity,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: context.site.canvas,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(dense ? 0 : 8),
+              bottom: Radius.circular(dense ? 0 : 8),
             ),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                dense ? 12 : 16,
-                onExpanded == null ? (dense ? 8 : 14) : (dense ? 2 : 8),
-                dense ? 4 : 6,
-                (dense ? 4 : 8) + _bottomInset(context),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (onExpanded != null)
-                    _PeekHandle(
-                      collapsed: false,
-                      onPressed: () => onExpanded!(false),
+            border: dense
+                ? Border(top: BorderSide(color: context.site.neutralBorder))
+                : Border.all(color: context.site.neutralBorder),
+            boxShadow: dense
+                ? null
+                : const [
+                    BoxShadow(
+                      color: Color(0x33000000),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
                     ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: onTitle,
-                          behavior: HitTestBehavior.opaque,
-                          child: Padding(
-                            padding: EdgeInsets.only(top: dense ? 4 : 6),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  title,
-                                  maxLines: dense ? 1 : 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: siteText(
-                                    color: siteBlack,
-                                    fontSize: dense ? 16 : 18,
-                                    lineHeight: dense ? 20 : 22,
-                                    weight: FontWeight.w700,
-                                  ),
+                  ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              dense ? 12 : 16,
+              onExpanded == null ? (dense ? 8 : 14) : (dense ? 2 : 8),
+              dense ? 4 : 6,
+              (dense ? 4 : 8) + _bottomInset(context),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (onExpanded != null)
+                  _PeekHandle(
+                    collapsed: false,
+                    onPressed: () => onExpanded!(false),
+                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: onTitle,
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: EdgeInsets.only(top: dense ? 4 : 6),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                title,
+                                maxLines: dense ? 1 : 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: siteText(
+                                  color: context.site.ink,
+                                  fontSize: dense ? 16 : 18,
+                                  lineHeight: dense ? 20 : 22,
+                                  weight: FontWeight.w700,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  caption,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: siteSmallBlack,
-                                ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                caption,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: siteSmallBlack,
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      if (onDismiss != null && !playing)
-                        _DismissButton(onPressed: onDismiss!),
-                      _StarButton(
-                        key: favoriteKey,
-                        favorite: favorite,
-                        onPressed: onFavorite,
+                    ),
+                    if (onDismiss != null && !playing)
+                      _DismissButton(onPressed: onDismiss!),
+                    _StarButton(
+                      key: favoriteKey,
+                      favorite: favorite,
+                      onPressed: onFavorite,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    _RoundButton(
+                      buttonKey: playKey,
+                      tooltip: playing ? 'Pause' : 'Lire',
+                      onPressed: onPlay,
+                      icon: Icon(
+                        playing
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        color: context.site.onGreen,
+                        size: dense ? 26 : 30,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      _RoundButton(
-                        buttonKey: playKey,
-                        tooltip: playing ? 'Pause' : 'Lire',
-                        onPressed: onPlay,
-                        icon: Icon(
-                          playing
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          color: siteButtonText,
-                          size: dense ? 26 : 30,
-                        ),
-                        diameter: dense ? 42 : 48,
-                      ),
-                      Expanded(child: _bar()),
-                      _RoundButton(
-                        buttonKey: downloadKey,
-                        tooltip: busy
-                            ? 'Téléchargement'
-                            : saved
-                            ? 'Téléchargé'
-                            : 'Télécharger',
-                        filled: !saved,
-                        onPressed: busy ? null : onDownload,
-                        icon: _downloadIcon(busy, saved),
-                        diameter: dense ? 42 : 48,
-                      ),
-                    ],
-                  ),
-                  if (error != null && error!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 0, 12, 6),
-                      child: Text(
-                        error!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: siteText(
-                          color: const Color(0xFF9B1C1C),
-                          fontSize: 12,
-                          lineHeight: 16,
-                        ),
+                      diameter: dense ? 42 : 48,
+                    ),
+                    Expanded(child: _bar(context)),
+                    _RoundButton(
+                      buttonKey: downloadKey,
+                      tooltip: busy
+                          ? 'Téléchargement'
+                          : saved
+                          ? 'Téléchargé'
+                          : 'Télécharger',
+                      filled: !saved,
+                      onPressed: busy ? null : onDownload,
+                      icon: _downloadIcon(context, busy, saved),
+                      diameter: dense ? 42 : 48,
+                    ),
+                  ],
+                ),
+                if (error != null && error!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 0, 12, 6),
+                    child: Text(
+                      error!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: siteText(
+                        color: context.site.error,
+                        fontSize: 12,
+                        lineHeight: 16,
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
         ),
@@ -244,12 +253,6 @@ class AudioFace extends StatelessWidget {
 
   double _bottomInset(BuildContext context) =>
       dense ? MediaQuery.paddingOf(context).bottom : 0;
-
-  Widget _reveal(Widget child) {
-    final expand = onExpanded;
-    if (expand == null) return child;
-    return _PlaybackReveal(onExpanded: expand, child: child);
-  }
 
   String _caption(bool busy, bool saved) {
     final total = formatPlaybackClock(duration);
@@ -264,7 +267,7 @@ class AudioFace extends StatelessWidget {
     return clock;
   }
 
-  Widget _bar() {
+  Widget _bar(BuildContext context) {
     final max = duration.inMilliseconds <= 0
         ? 1.0
         : duration.inMilliseconds.toDouble();
@@ -276,19 +279,19 @@ class AudioFace extends StatelessWidget {
           trackHeight: 3,
           thumbShape: RoundSliderThumbShape(enabledThumbRadius: dense ? 5 : 6),
           overlayShape: RoundSliderOverlayShape(overlayRadius: dense ? 12 : 14),
-          activeTrackColor: siteGreenSolid,
-          inactiveTrackColor: siteGreenBottom.withValues(alpha: 0.28),
-          thumbColor: siteGreenSolid,
-          disabledActiveTrackColor: siteGreenSolid,
-          disabledInactiveTrackColor: siteGreenBottom.withValues(alpha: 0.28),
-          disabledThumbColor: siteGreenSolid,
+          activeTrackColor: context.site.accent,
+          inactiveTrackColor: context.site.track,
+          thumbColor: context.site.accent,
+          disabledActiveTrackColor: context.site.accent,
+          disabledInactiveTrackColor: context.site.track,
+          disabledThumbColor: context.site.accent,
         ),
-        child: Slider(value: value, max: max, onChanged: onSeek),
+        child: SeekSlider(value: value, max: max, onSeek: onSeek),
       ),
     );
   }
 
-  Widget _downloadIcon(bool busy, bool saved) {
+  Widget _downloadIcon(BuildContext context, bool busy, bool saved) {
     if (busy) {
       final known = downloadProgress > 0 && downloadProgress < 1;
       return SizedBox(
@@ -296,14 +299,14 @@ class AudioFace extends StatelessWidget {
         height: 22,
         child: CircularProgressIndicator(
           strokeWidth: 2.2,
-          color: saved ? siteGreenSolid : siteButtonText,
+          color: saved ? context.site.accent : context.site.onGreen,
           value: known ? downloadProgress : null,
         ),
       );
     }
     return Icon(
       saved ? Icons.download_done_rounded : Icons.download_rounded,
-      color: saved ? siteGreenSolid : siteButtonText,
+      color: saved ? context.site.accent : context.site.onGreen,
       size: 26,
     );
   }
@@ -328,7 +331,7 @@ class _StarButton extends StatelessWidget {
       constraints: const BoxConstraints.tightFor(width: 42, height: 42),
       icon: Icon(
         favorite ? Icons.star_rounded : Icons.star_border_rounded,
-        color: favorite ? siteGreenSolid : siteGreen,
+        color: favorite ? context.site.accent : context.site.green,
         size: 28,
       ),
     );
@@ -369,21 +372,23 @@ class _RoundButton extends StatelessWidget {
             height: diameter,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: filled ? null : siteCanvas,
+              color: filled ? null : context.site.canvas,
               gradient: filled
                   ? LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: enabled
-                          ? const [siteGreenTop, siteGreenBottom]
+                          ? [context.site.greenTop, context.site.greenBottom]
                           : [
-                              siteGreenTop.withValues(alpha: 0.45),
-                              siteGreenBottom.withValues(alpha: 0.45),
+                              context.site.greenTop.withValues(alpha: 0.45),
+                              context.site.greenBottom.withValues(alpha: 0.45),
                             ],
                     )
                   : null,
               border: Border.all(
-                color: filled ? siteButtonBorder : siteWhiteButtonBorder,
+                color: filled
+                    ? context.site.greenBorder
+                    : context.site.neutralBorder,
               ),
             ),
             child: Center(child: icon),
@@ -408,7 +413,7 @@ class _DismissButton extends StatelessWidget {
       padding: EdgeInsets.zero,
       visualDensity: VisualDensity.compact,
       constraints: const BoxConstraints.tightFor(width: 42, height: 42),
-      icon: const Icon(Icons.close_rounded, color: siteGreen, size: 24),
+      icon: Icon(Icons.close_rounded, color: context.site.green, size: 24),
     );
   }
 }
@@ -435,7 +440,7 @@ class _PeekHandle extends StatelessWidget {
             collapsed
                 ? Icons.keyboard_arrow_up_rounded
                 : Icons.keyboard_arrow_down_rounded,
-            color: siteGreen,
+            color: context.site.green,
             size: 20,
           ),
         ),
@@ -472,7 +477,7 @@ class _CollapsedPlaybackBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: siteCanvas,
+      color: context.site.canvas,
       elevation: 0,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -481,8 +486,8 @@ class _CollapsedPlaybackBar extends StatelessWidget {
             key: const Key('player-progress'),
             value: progress,
             minHeight: 3,
-            color: siteGreenSolid,
-            backgroundColor: siteGreenBottom.withValues(alpha: 0.18),
+            color: context.site.accent,
+            backgroundColor: context.site.greenBottom.withValues(alpha: 0.18),
           ),
           Padding(
             padding: EdgeInsets.fromLTRB(8, 0, 14, 2 + bottomInset),
@@ -504,7 +509,7 @@ class _CollapsedPlaybackBar extends StatelessWidget {
                         playing
                             ? Icons.pause_rounded
                             : Icons.play_arrow_rounded,
-                        color: siteButtonText,
+                        color: context.site.onGreen,
                         size: 26,
                       ),
                       diameter: 42,
@@ -520,7 +525,7 @@ class _CollapsedPlaybackBar extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.start,
                           style: siteText(
-                            color: siteBlack,
+                            color: context.site.ink,
                             fontSize: 16,
                             lineHeight: 20,
                             weight: FontWeight.w700,
@@ -539,40 +544,6 @@ class _CollapsedPlaybackBar extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Glissement vers le haut pour déplier, vers le bas pour réduire.
-class _PlaybackReveal extends StatefulWidget {
-  const _PlaybackReveal({required this.onExpanded, required this.child});
-
-  final ValueChanged<bool> onExpanded;
-  final Widget child;
-
-  @override
-  State<_PlaybackReveal> createState() => _PlaybackRevealState();
-}
-
-class _PlaybackRevealState extends State<_PlaybackReveal> {
-  double _dy = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onVerticalDragStart: (_) => _dy = 0,
-      onVerticalDragUpdate: (details) => _dy += details.delta.dy,
-      onVerticalDragEnd: (details) {
-        final velocity = details.primaryVelocity ?? 0;
-        if (velocity < -180 || _dy < -28) {
-          widget.onExpanded(true);
-        } else if (velocity > 180 || _dy > 28) {
-          widget.onExpanded(false);
-        }
-        _dy = 0;
-      },
-      child: widget.child,
     );
   }
 }

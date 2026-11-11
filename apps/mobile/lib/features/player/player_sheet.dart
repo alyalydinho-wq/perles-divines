@@ -24,7 +24,7 @@ class PlayerSheet extends StatelessWidget {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: siteWhiteButtonBorder,
+                  color: context.site.neutralBorder,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -36,7 +36,7 @@ class PlayerSheet extends StatelessWidget {
                   return Text(
                     item.data?.title ?? 'Lecteur',
                     style: siteText(
-                      color: siteBlack,
+                      color: context.site.ink,
                       fontSize: 18,
                       lineHeight: 22,
                       weight: FontWeight.w700,
@@ -59,27 +59,27 @@ class PlayerSheet extends StatelessWidget {
               children: [
                 IconButton(
                   tooltip: 'Précédent',
-                  color: siteGreenSolid,
+                  color: context.site.accent,
                   onPressed: audio.skipToPrevious,
                   icon: const Icon(Icons.skip_previous),
                 ),
                 TextButton(
                   onPressed: audio.rewind,
-                  child: const Text(
+                  child: Text(
                     '−15 s',
-                    style: TextStyle(color: siteGreenSolid),
+                    style: TextStyle(color: context.site.accent),
                   ),
                 ),
                 TextButton(
                   onPressed: audio.fastForward,
-                  child: const Text(
+                  child: Text(
                     '+15 s',
-                    style: TextStyle(color: siteGreenSolid),
+                    style: TextStyle(color: context.site.accent),
                   ),
                 ),
                 IconButton(
                   tooltip: 'Suivant',
-                  color: siteGreenSolid,
+                  color: context.site.accent,
                   onPressed: audio.skipToNext,
                   icon: const Icon(Icons.skip_next),
                 ),
@@ -90,9 +90,9 @@ class PlayerSheet extends StatelessWidget {
               initialData: audio.player.speed,
               builder: (context, snapshot) => DropdownButton<double>(
                 value: snapshot.data,
-                dropdownColor: siteCanvas,
-                style: const TextStyle(color: siteBlack),
-                iconEnabledColor: siteGreenSolid,
+                dropdownColor: context.site.canvas,
+                style: TextStyle(color: context.site.ink),
+                iconEnabledColor: context.site.accent,
                 items: [.75, 1.0, 1.25, 1.5, 1.75, 2.0]
                     .map(
                       (speed) => DropdownMenuItem(
@@ -128,7 +128,7 @@ class PlayerSheet extends StatelessWidget {
             Text(
               'File de lecture',
               style: siteText(
-                color: siteBlack,
+                color: context.site.ink,
                 fontSize: 16,
                 lineHeight: 20,
                 weight: FontWeight.w700,
@@ -143,7 +143,7 @@ class PlayerSheet extends StatelessWidget {
                       title: Text(
                         item.title,
                         style: siteText(
-                          color: siteBlack,
+                          color: context.site.ink,
                           fontSize: 16,
                           lineHeight: 20,
                         ),

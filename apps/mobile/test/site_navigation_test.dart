@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:perles_divines/core/track.dart';
@@ -12,6 +13,7 @@ import 'package:perles_divines/features/player/site_mini_player.dart';
 import 'package:perles_divines/features/sommaire/sommaire_screen.dart';
 import 'package:perles_divines/routing.dart';
 import 'package:perles_divines/ui/site.dart';
+import 'package:perles_divines/ui/theme.dart';
 
 const _kumayl = DevotionalText(
   id: 'kumayl',
@@ -160,7 +162,7 @@ void main() {
     );
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await _settle(tester);
-    expect(find.text('Version $appVersion'), findsOneWidget);
+    expect(find.text('Doua'), findsOneWidget);
   });
 
   testWidgets('À propos garde la présentation, le site et le contact', (
@@ -172,6 +174,7 @@ void main() {
     expect(find.textContaining('InchAllah'), findsOneWidget);
     expect(find.text('www.perlesdivines.fr'), findsOneWidget);
     expect(find.text('contact@perlesdivines.fr'), findsOneWidget);
+    expect(find.text('Version $appVersion'), findsOneWidget);
   });
 
   testWidgets('sans lecture, seul l’inset système est réservé en bas', (
@@ -200,7 +203,7 @@ void main() {
     expect(find.text('Audios'), findsOneWidget);
     expect(find.text('Favoris'), findsOneWidget);
     expect(find.text('À propos'), findsOneWidget);
-    expect(find.text('Version $appVersion'), findsOneWidget);
+    expect(find.text('Version $appVersion'), findsNothing);
     final betweenSections =
         tester.getTopLeft(find.text('Aamal Mensuel')).dy -
         tester.getBottomLeft(find.text('Aamal Spécifique')).dy;
@@ -352,5 +355,22 @@ void main() {
       expect(find.text('À propos'), findsOneWidget);
       expect(find.byKey(const Key('section-home')), findsNothing);
     }
+  });
+
+  testWidgets('l’app reste claire quand le téléphone est en mode sombre', (
+    tester,
+  ) async {
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: lightTheme(),
+        home: const SitePage(children: [SiteBlackText('Bismillah')]),
+      ),
+    );
+    final page = tester.widget<Scaffold>(find.byType(Scaffold));
+    expect(page.backgroundColor, siteCanvas);
+    final text = tester.renderObject<RenderParagraph>(find.text('Bismillah'));
+    expect(text.text.style?.color, siteBlack);
   });
 }

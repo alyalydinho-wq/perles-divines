@@ -131,7 +131,21 @@ class CatalogTextPage extends StatelessWidget {
         children: [SiteBlackText('Catalogue indisponible.')],
       );
     }
-    final matches = services.devotionalCatalog.items.where(
+    final catalog = services.devotionalCatalog;
+    final edition = services.edition;
+    // Juste après l’ouverture, le catalogue ou les pages d’origine peuvent
+    // être encore en préparation : la page s’affiche dès qu’ils arrivent.
+    if (catalog == null || edition == null) {
+      return const SitePage(
+        children: [
+          SiteGap(height: 44),
+          CircularProgressIndicator(color: siteGreenSolid),
+          SiteGap(),
+          SiteBlackText('Préparation des textes…'),
+        ],
+      );
+    }
+    final matches = catalog.items.where(
       (item) => item.id == id,
     );
     if (matches.isEmpty) {
@@ -156,7 +170,7 @@ class CatalogTextPage extends StatelessWidget {
       builder: (context, snapshot) {
         return TextScreen(
           item: item,
-          edition: services.edition,
+          edition: edition,
           favorite: snapshot.data?.contains(item.id) ?? false,
           audio: services.audio,
           downloads: services.downloads,
@@ -164,7 +178,7 @@ class CatalogTextPage extends StatelessWidget {
           store: services.store,
           onFavorite: () => DevotionalFavorites(services.store).toggle(item.id),
           opensUpdatedText: (id) {
-            for (final candidate in services.devotionalCatalog.items) {
+            for (final candidate in catalog.items) {
               if (candidate.id == id) return candidate.opensUpdatedReading;
             }
             return false;

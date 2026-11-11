@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../core/scope.dart';
+import '../../ui/motion.dart';
 import '../../ui/site.dart';
 import 'audio_card.dart';
 import 'playback_notice.dart';
@@ -99,10 +100,19 @@ class _SiteMiniPlayerState extends State<SiteMiniPlayer> {
                 );
                 if (dismissed != _dismissedId) _dismissedId = dismissed;
                 if (!visible) return _systemInset(context);
-                return AnimatedSize(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOutCubic,
-                  alignment: Alignment.bottomCenter,
+                // Seul le masquage passe par ici : le dépliage suit le doigt
+                // dans le tiroir, une animation de taille le ferait traîner.
+                return AnimatedSwitcher(
+                  duration: reduceMotion(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 220),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) => SizeTransition(
+                    sizeFactor: animation,
+                    alignment: Alignment.bottomCenter,
+                    child: child,
+                  ),
                   child: dismissed != null
                       ? _systemInset(context)
                       : AudioSessionCard(
@@ -130,7 +140,7 @@ class _SiteMiniPlayerState extends State<SiteMiniPlayer> {
                           onTitle: () => showModalBottomSheet<void>(
                             context: context,
                             isScrollControlled: true,
-                            backgroundColor: siteCanvas,
+                            backgroundColor: context.site.canvas,
                             builder: (context) => PlayerSheet(audio: audio),
                           ),
                         ),

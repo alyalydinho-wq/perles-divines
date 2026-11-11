@@ -95,7 +95,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               group.label,
               textAlign: TextAlign.center,
               style: siteText(
-                color: siteGreen,
+                color: context.site.green,
                 fontSize: 22,
                 lineHeight: 26,
                 weight: FontWeight.w700,

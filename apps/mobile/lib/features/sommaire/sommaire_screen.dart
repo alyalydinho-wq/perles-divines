@@ -50,19 +50,11 @@ class _SommaireScreenState extends State<SommaireScreen> {
         : const <Track>[];
 
     return SitePage(
+      // Le logo et la recherche ne bougent jamais, même pendant la saisie :
+      // seuls les rubriques ou les résultats défilent dessous.
       header: [
-        Visibility(
-          visible: !searching,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SiteLogo(),
-              const SiteGap(height: 12),
-              const SiteBlackText('Version $appVersion', small: true),
-              const SiteGap(height: 12),
-            ],
-          ),
-        ),
+        const SiteLogo(),
+        const SiteGap(height: 12),
         SiteSearchField(
           controller: search,
           hint: 'Rechercher une prière, une invocation ou un audio',

@@ -49,15 +49,19 @@ class PerlesApp extends StatefulWidget {
 }
 
 class _PerlesAppState extends State<PerlesApp> {
-  late Future<Services> preparation;
-  GoRouter? router;
+  /// Le sommaire s’affiche dès la première image ; les services arrivent
+  /// ensuite, chacun dès qu’il est prêt, et en parallèle.
+  late Services _services;
+  late final GoRouter router = createRouter();
+  Object? _failure;
+  int _attempt = 0;
   StreamSubscription<bool>? _notificationClicks;
-  bool _notificationHooked = false;
 
   @override
   void initState() {
     super.initState();
-    preparation = prepare();
+    _services = Services(store: AppStore());
+    unawaited(prepare());
   }
 
   @override
@@ -66,12 +70,44 @@ class _PerlesAppState extends State<PerlesApp> {
     super.dispose();
   }
 
-  Future<Services> prepare() async {
-    final edition = await LocalEdition.install();
-    final devotionalCatalog = await LocalDevotionalCatalog.load();
-    final store = AppStore();
+  void _arrive(int attempt, Services Function(Services current) update) {
+    if (!mounted || attempt != _attempt) return;
+    setState(() => _services = update(_services));
+  }
+
+  Future<void> prepare() async {
+    final attempt = ++_attempt;
+    final store = _services.store;
+    try {
+      await Future.wait([
+        LocalDevotionalCatalog.load().then(
+          (catalog) => _arrive(
+            attempt,
+            (s) => s.copyWith(devotionalCatalog: catalog),
+          ),
+        ),
+        loadBundledTracks().then(
+          (tracks) => _arrive(attempt, (s) => s.copyWith(tracks: tracks)),
+        ),
+        LocalEdition.install().then(
+          (edition) => _arrive(attempt, (s) => s.copyWith(edition: edition)),
+        ),
+        _prepareAudio(attempt, store),
+      ]);
+    } catch (error) {
+      if (mounted && attempt == _attempt) setState(() => _failure = error);
+    }
+  }
+
+  /// Téléchargements et lecteur : rien à l’écran n’en dépend pour s’ouvrir,
+  /// on les démarre après la première image.
+  Future<void> _prepareAudio(int attempt, AppStore store) async {
+    await WidgetsBinding.instance.endOfFrame;
+    // Reprise après un échec : le lecteur du premier essai reste en place.
+    if (_services.audio != null) return;
     final downloads = DownloadController(store, baseUrl: mediaBase);
     await downloads.initialize();
+    _arrive(attempt, (s) => s.copyWith(downloads: downloads));
     final audio = await AudioService.init<PerlesAudioHandler>(
       builder: () => PerlesAudioHandler(store, downloads),
       config: const AudioServiceConfig(
@@ -89,50 +125,21 @@ class _PerlesAppState extends State<PerlesApp> {
       ),
     );
     await audio.initialize();
-    final tracks = await loadBundledTracks();
-    return Services(
-      edition,
-      devotionalCatalog,
-      store,
-      downloads,
-      audio,
-      tracks,
-    );
+    _arrive(attempt, (s) => s.copyWith(audio: audio));
+    _notificationClicks ??= AudioService.notificationClicked.listen((clicked) {
+      final current = router.state.uri.path;
+      final destination = routeAfterNotificationClick(
+        clicked: clicked,
+        currentPath: current,
+      );
+      if (destination != null) router.push(destination);
+    });
   }
 
   @override
-  Widget build(BuildContext context) => FutureBuilder<Services>(
-    future: preparation,
-    builder: (context, snapshot) {
-      if (snapshot.hasData) {
-        router ??= createRouter();
-        if (!_notificationHooked) {
-          _notificationHooked = true;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            _notificationClicks ??= AudioService.notificationClicked.listen((
-              clicked,
-            ) {
-              final current = router?.state.uri.path;
-              if (current == null) return;
-              final destination = routeAfterNotificationClick(
-                clicked: clicked,
-                currentPath: current,
-              );
-              if (destination != null) router!.push(destination);
-            });
-          });
-        }
-        return ServicesScope(
-          services: snapshot.data!,
-          child: MaterialApp.router(
-            title: 'Perles Divines',
-            debugShowCheckedModeBanner: false,
-            theme: lightTheme(),
-            routerConfig: router!,
-          ),
-        );
-      }
+  Widget build(BuildContext context) {
+    final failure = _failure;
+    if (failure != null) {
       return MaterialApp(
         title: 'Perles Divines',
         debugShowCheckedModeBanner: false,
@@ -141,23 +148,29 @@ class _PerlesAppState extends State<PerlesApp> {
           children: [
             const SiteLogo(),
             const SiteGap(height: 44),
-            if (!snapshot.hasError)
-              const CircularProgressIndicator(color: siteGreenSolid),
-            const SiteGap(),
             SiteBlackText(
-              snapshot.hasError
-                  ? 'La préparation a échoué. Les contenus ne sont pas déclarés prêts.\n${snapshot.error}'
-                  : 'Préparation et vérification des textes pour la lecture hors connexion…',
+              'La préparation a échoué. Les contenus ne sont pas déclarés prêts.\n$failure',
             ),
-            if (snapshot.hasError)
-              SiteButton(
-                label: 'Réessayer',
-                green: true,
-                onTap: () => setState(() => preparation = prepare()),
-              ),
+            SiteButton(
+              label: 'Réessayer',
+              green: true,
+              onTap: () {
+                setState(() => _failure = null);
+                unawaited(prepare());
+              },
+            ),
           ],
         ),
       );
-    },
-  );
+    }
+    return ServicesScope(
+      services: _services,
+      child: MaterialApp.router(
+        title: 'Perles Divines',
+        debugShowCheckedModeBanner: false,
+        theme: lightTheme(),
+        routerConfig: router,
+      ),
+    );
+  }
 }

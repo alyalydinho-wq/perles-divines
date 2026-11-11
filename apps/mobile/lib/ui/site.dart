@@ -21,6 +21,137 @@ const siteWhiteButtonBorder = Color(0xff149214);
 const siteWhiteTop = Color(0xffffffff);
 const siteWhiteBottom = Color(0xffededed);
 
+/// Couleurs de l’interface, lues dans le thème. L’app reste claire, même
+/// quand le téléphone est en mode sombre.
+@immutable
+class SitePalette extends ThemeExtension<SitePalette> {
+  const SitePalette({
+    required this.canvas,
+    required this.ink,
+    required this.green,
+    required this.link,
+    required this.accent,
+    required this.fill,
+    required this.greenTop,
+    required this.greenBottom,
+    required this.onGreen,
+    required this.greenBorder,
+    required this.neutralTop,
+    required this.neutralBottom,
+    required this.neutralText,
+    required this.neutralBorder,
+    required this.panel,
+    required this.panelBorder,
+    required this.muted,
+    required this.disabledFill,
+    required this.error,
+    required this.rule,
+    required this.softRule,
+  });
+
+  /// Fond des pages.
+  final Color canvas;
+
+  /// Texte courant.
+  final Color ink;
+
+  /// Vert des titres et des textes en vert.
+  final Color green;
+  final Color link;
+
+  /// Vert des icônes et des titres posés sur le fond.
+  final Color accent;
+
+  /// Vert plein sous un texte blanc.
+  final Color fill;
+  final Color greenTop;
+  final Color greenBottom;
+
+  /// Texte et icônes posés sur le vert.
+  final Color onGreen;
+  final Color greenBorder;
+
+  /// Boutons neutres (blancs en clair).
+  final Color neutralTop;
+  final Color neutralBottom;
+  final Color neutralText;
+  final Color neutralBorder;
+
+  /// Encadrés d’information et barres secondaires.
+  final Color panel;
+  final Color panelBorder;
+  final Color muted;
+  final Color disabledFill;
+  final Color error;
+  final Color rule;
+  final Color softRule;
+
+  /// Partie non lue des barres de lecture.
+  Color get track => greenBottom.withValues(alpha: 0.28);
+
+  static const light = SitePalette(
+    canvas: siteCanvas,
+    ink: siteBlack,
+    green: siteGreen,
+    link: siteLink,
+    accent: siteGreenSolid,
+    fill: siteGreenSolid,
+    greenTop: siteGreenTop,
+    greenBottom: siteGreenBottom,
+    onGreen: siteButtonText,
+    greenBorder: siteButtonBorder,
+    neutralTop: siteWhiteTop,
+    neutralBottom: siteWhiteBottom,
+    neutralText: siteWhiteButtonText,
+    neutralBorder: siteWhiteButtonBorder,
+    panel: Color(0xFFF7F8F4),
+    panelBorder: Color(0xFFD9E3C8),
+    muted: Color(0xFF616161),
+    disabledFill: Color(0xFFD0D0D0),
+    error: Color(0xFF9B1C1C),
+    rule: Color(0xFF8A8A8A),
+    softRule: Color(0xFFB7C7A4),
+  );
+
+  @override
+  SitePalette copyWith() => this;
+
+  @override
+  SitePalette lerp(SitePalette? other, double t) {
+    if (other == null) return this;
+    Color mix(Color a, Color b) => Color.lerp(a, b, t)!;
+    return SitePalette(
+      canvas: mix(canvas, other.canvas),
+      ink: mix(ink, other.ink),
+      green: mix(green, other.green),
+      link: mix(link, other.link),
+      accent: mix(accent, other.accent),
+      fill: mix(fill, other.fill),
+      greenTop: mix(greenTop, other.greenTop),
+      greenBottom: mix(greenBottom, other.greenBottom),
+      onGreen: mix(onGreen, other.onGreen),
+      greenBorder: mix(greenBorder, other.greenBorder),
+      neutralTop: mix(neutralTop, other.neutralTop),
+      neutralBottom: mix(neutralBottom, other.neutralBottom),
+      neutralText: mix(neutralText, other.neutralText),
+      neutralBorder: mix(neutralBorder, other.neutralBorder),
+      panel: mix(panel, other.panel),
+      panelBorder: mix(panelBorder, other.panelBorder),
+      muted: mix(muted, other.muted),
+      disabledFill: mix(disabledFill, other.disabledFill),
+      error: mix(error, other.error),
+      rule: mix(rule, other.rule),
+      softRule: mix(softRule, other.softRule),
+    );
+  }
+}
+
+extension SiteColors on BuildContext {
+  /// Couleurs du thème en cours ; les claires hors d’un thème Perles.
+  SitePalette get site =>
+      Theme.of(this).extension<SitePalette>() ?? SitePalette.light;
+}
+
 const siteSansFallbacks = <String>[
   'Lucida Sans Unicode',
   'Arial',
@@ -32,13 +163,15 @@ const perlesSiteUrl = 'https://www.perlesdivines.fr';
 const perlesContactEmail = 'contact@perlesdivines.fr';
 
 /// Aligné sur `version:` de `apps/mobile/pubspec.yaml`.
-const appVersion = '0.2.15';
+const appVersion = '0.2.16';
 
 const siteLogoAsset = 'assets/branding/logo-m.png';
 const siteBismillahAsset = 'assets/branding/bismillah.gif';
 
+/// Style de texte du site. Sans [color], le texte prend la couleur du
+/// thème (noir).
 TextStyle siteText({
-  Color color = siteBlack,
+  Color? color,
   double fontSize = 18.67,
   double lineHeight = 22,
   FontWeight weight = FontWeight.w400,
@@ -51,26 +184,27 @@ TextStyle siteText({
   fontWeight: weight,
 );
 
-TextStyle get siteBodyBlack => siteText(color: siteBlack);
-TextStyle get siteSmallBlack =>
-    siteText(color: siteBlack, fontSize: 13.33, lineHeight: 16);
+TextStyle get siteBodyBlack => siteText();
+TextStyle get siteSmallBlack => siteText(fontSize: 13.33, lineHeight: 16);
 
 TextStyle get siteHeading => const TextStyle(
   fontFamily: 'Times New Roman',
   fontFamilyFallback: ['Times', 'serif'],
-  color: siteBlack,
   fontSize: 37.33,
   fontStyle: FontStyle.italic,
   fontWeight: FontWeight.w700,
 );
 
-SystemUiOverlayStyle get siteOverlay => const SystemUiOverlayStyle(
-  statusBarColor: siteCanvas,
-  statusBarIconBrightness: Brightness.dark,
-  statusBarBrightness: Brightness.light,
-  systemNavigationBarColor: siteCanvas,
-  systemNavigationBarIconBrightness: Brightness.dark,
-);
+/// Barres système accordées au fond de page.
+SystemUiOverlayStyle siteOverlayFor(SitePalette palette) =>
+    SystemUiOverlayStyle(
+      statusBarColor: palette.canvas,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: palette.canvas,
+      systemNavigationBarContrastEnforced: false,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    );
 
 Future<void> openExternal(String url) async {
   final uri = Uri.parse(url);
@@ -91,9 +225,9 @@ class SitePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: siteOverlay,
+      value: siteOverlayFor(context.site),
       child: Scaffold(
-        backgroundColor: siteCanvas,
+        backgroundColor: context.site.canvas,
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -175,7 +309,7 @@ class SiteLogo extends StatelessWidget {
           width: width,
           margin: EdgeInsets.symmetric(vertical: compact ? 2 : 6),
           decoration: BoxDecoration(
-            color: siteCanvas,
+            color: context.site.canvas,
             borderRadius: BorderRadius.circular(radius),
             boxShadow: [
               BoxShadow(
@@ -195,7 +329,7 @@ class SiteLogo extends StatelessWidget {
               errorBuilder: (context, error, stack) => SizedBox(
                 width: width,
                 height: width * 100 / 480,
-                child: const ColoredBox(color: siteCanvas),
+                child: ColoredBox(color: context.site.canvas),
               ),
             ),
           ),
@@ -256,7 +390,7 @@ class SiteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = green ? siteButtonText : siteWhiteButtonText;
+    final textColor = green ? context.site.onGreen : context.site.neutralText;
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth * 0.92;
@@ -272,15 +406,17 @@ class SiteButton extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: green ? siteButtonBorder : siteWhiteButtonBorder,
+                    color: green
+                        ? context.site.greenBorder
+                        : context.site.neutralBorder,
                     width: 1,
                   ),
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: green
-                        ? const [siteGreenTop, siteGreenBottom]
-                        : const [siteWhiteTop, siteWhiteBottom],
+                        ? [context.site.greenTop, context.site.greenBottom]
+                        : [context.site.neutralTop, context.site.neutralBottom],
                   ),
                   boxShadow: const [
                     BoxShadow(
@@ -365,7 +501,7 @@ class _SiteButtonLabel extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 20, color: siteGreenSolid),
+              Icon(icon, size: 20, color: context.site.accent),
               const SizedBox(width: 6),
             ],
             Flexible(child: title),
@@ -379,7 +515,7 @@ class _SiteButtonLabel extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: siteText(
-              color: siteGreen,
+              color: context.site.green,
               fontSize: 12,
               lineHeight: 14,
               weight: FontWeight.w700,
@@ -414,16 +550,20 @@ class SiteSearchField extends StatelessWidget {
           key: const Key('site-search'),
           controller: controller,
           onChanged: onChanged,
-          cursorColor: siteGreen,
-          style: siteText(color: siteBlack, fontSize: 16, lineHeight: 20),
+          cursorColor: context.site.green,
+          style: siteText(
+            color: context.site.ink,
+            fontSize: 16,
+            lineHeight: 20,
+          ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: siteText(
-              color: siteWhiteButtonText,
+              color: context.site.neutralText,
               fontSize: 14,
               lineHeight: 18,
             ),
-            prefixIcon: const Icon(Icons.search, color: siteGreenSolid),
+            prefixIcon: Icon(Icons.search, color: context.site.accent),
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
@@ -431,11 +571,11 @@ class SiteSearchField extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: siteWhiteButtonBorder),
+              borderSide: BorderSide(color: context.site.neutralBorder),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: siteGreen, width: 1.4),
+              borderSide: BorderSide(color: context.site.green, width: 1.4),
             ),
           ),
         );
@@ -479,18 +619,18 @@ class _SiteHomeButton extends StatelessWidget {
             child: Ink(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: siteWhiteButtonBorder),
-                gradient: const LinearGradient(
+                border: Border.all(color: context.site.neutralBorder),
+                gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [siteWhiteTop, siteWhiteBottom],
+                  colors: [context.site.neutralTop, context.site.neutralBottom],
                 ),
               ),
-              child: const SizedBox(
+              child: SizedBox(
                 width: 46,
                 height: 46,
                 child: Center(
-                  child: Icon(Icons.home, color: siteGreenSolid, size: 26),
+                  child: Icon(Icons.home, color: context.site.accent, size: 26),
                 ),
               ),
             ),
@@ -564,11 +704,11 @@ class SiteReaderHeader extends StatelessWidget {
   Widget build(BuildContext context) => Material(
     color: Colors.transparent,
     child: Ink(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [siteGreenTop, siteGreenBottom],
+          colors: [context.site.greenTop, context.site.greenBottom],
         ),
       ),
       child: SafeArea(
@@ -593,7 +733,7 @@ class SiteReaderHeader extends StatelessWidget {
                       iconWidget: Text(
                         'Aa',
                         style: siteText(
-                          color: siteButtonText,
+                          color: context.site.onGreen,
                           fontSize: 19,
                           lineHeight: 22,
                           weight: FontWeight.w700,
@@ -637,7 +777,7 @@ class SiteReaderHeader extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: siteText(
-                            color: siteButtonText,
+                            color: context.site.onGreen,
                             fontSize: 15,
                             lineHeight: 18,
                             weight: FontWeight.w700,
@@ -669,7 +809,6 @@ class SiteReaderHeader extends StatelessWidget {
           color: siteButtonText,
           size: _glyphSize(slot),
         ),
-        color: siteCanvas,
         onSelected: (action) {
           switch (action) {
             case ReaderMenuAction.sommaire:
@@ -684,27 +823,35 @@ class SiteReaderHeader extends StatelessWidget {
         },
         itemBuilder: (context) => [
           if (onHome != null)
-            _menuItem(ReaderMenuAction.sommaire, Icons.home, 'Sommaire'),
+            _menuItem(
+              context,
+              ReaderMenuAction.sommaire,
+              Icons.home,
+              'Sommaire',
+            ),
           if (onScrollToTop != null)
             _menuItem(
+              context,
               ReaderMenuAction.top,
               Icons.vertical_align_top,
               'Haut de la page',
             ),
           if (onDownload != null)
             _menuItem(
+              context,
               ReaderMenuAction.download,
               Icons.download,
               'Télécharger l’audio',
             ),
           if (onShare != null)
-            _menuItem(ReaderMenuAction.share, Icons.share, 'Partager'),
+            _menuItem(context, ReaderMenuAction.share, Icons.share, 'Partager'),
         ],
       ),
     );
   }
 
   PopupMenuItem<ReaderMenuAction> _menuItem(
+    BuildContext context,
     ReaderMenuAction value,
     IconData icon,
     String label,
@@ -712,7 +859,7 @@ class SiteReaderHeader extends StatelessWidget {
     value: value,
     child: Row(
       children: [
-        Icon(icon, color: siteGreenSolid, size: 22),
+        Icon(icon, color: context.site.accent, size: 22),
         const SizedBox(width: 12),
         Flexible(
           child: Text(label, style: siteText(fontSize: 16, lineHeight: 20)),
@@ -799,10 +946,10 @@ class SiteTextTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-    color: siteCanvas,
+    color: context.site.canvas,
     child: DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: siteWhiteButtonBorder)),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: context.site.neutralBorder)),
       ),
       // L’inset bas appartient au lecteur du shell. Le réserver ici laissait
       // une bande blanche entre ces onglets et la barre audio.
@@ -817,13 +964,16 @@ class SiteTextTabs extends StatelessWidget {
                   child: Ink(
                     decoration: BoxDecoration(
                       gradient: i == selected
-                          ? const LinearGradient(
+                          ? LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
-                              colors: [siteGreenTop, siteGreenBottom],
+                              colors: [
+                                context.site.greenTop,
+                                context.site.greenBottom,
+                              ],
                             )
                           : null,
-                      color: i == selected ? null : siteCanvas,
+                      color: i == selected ? null : context.site.canvas,
                     ),
                     child: Center(
                       child: Padding(
@@ -834,7 +984,9 @@ class SiteTextTabs extends StatelessWidget {
                             labels[i],
                             maxLines: 1,
                             style: siteText(
-                              color: i == selected ? siteButtonText : siteBlack,
+                              color: i == selected
+                                  ? context.site.onGreen
+                                  : context.site.ink,
                               fontSize: labels.length > 3 ? 12 : 13,
                               lineHeight: 16,
                               weight: i == selected

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import 'features/about/about_screen.dart';
@@ -22,13 +23,18 @@ GoRouter createRouter() => GoRouter(
   routes: [
     GoRoute(path: '/', redirect: (context, state) => startLocation),
     ShellRoute(
-      builder: (context, state, child) => ColoredBox(
-        color: siteCanvas,
-        child: Column(
-          children: [
-            Expanded(child: child),
-            SiteMiniPlayer(location: state.uri.toString()),
-          ],
+      // Le lecteur est sous la barre de navigation Android : elle prend
+      // la couleur du fond, claire ou sombre.
+      builder: (context, state, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        value: siteOverlayFor(context.site),
+        child: ColoredBox(
+          color: context.site.canvas,
+          child: Column(
+            children: [
+              Expanded(child: child),
+              SiteMiniPlayer(location: state.uri.toString()),
+            ],
+          ),
         ),
       ),
       routes: [

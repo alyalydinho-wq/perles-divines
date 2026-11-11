@@ -694,7 +694,35 @@ void main() {
       tester.getBottomLeft(find.text('40 versets')).dy,
       lessThan(tester.getTopLeft(find.text('Traduction du verset.')).dy),
     );
-    _expectInfoCard(tester, 'La Mecque');
+    // Le cadre vert et la flèche montrent que c’est un bouton.
+    final frame = tester.widget<DecoratedBox>(
+      find
+          .ancestor(
+            of: find.text('La Mecque'),
+            matching: find.byType(DecoratedBox),
+          )
+          .first,
+    );
+    final decoration = frame.decoration as BoxDecoration;
+    expect(decoration.color, const Color(0xFFF7F8F4));
+    expect(decoration.border, Border.all(color: siteWhiteButtonBorder));
+    expect(find.byIcon(Icons.expand_more_rounded), findsOneWidget);
+    expect(
+      tester.getSemantics(find.byKey(const Key('surah-info'))),
+      isSemantics(
+        isButton: true,
+        isExpanded: true,
+        hasTapAction: true,
+        label: 'Infos sur la sourate',
+      ),
+    );
+
+    // Refermé : les infos repartent en glissant, puis disparaissent.
+    await tester.tap(find.text('Infos sur la sourate'));
+    await tester.pump(const Duration(milliseconds: 120));
+    expect(find.text('La Mecque'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('La Mecque'), findsNothing);
   });
 
   testWidgets(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:flutter/services.dart';
 
@@ -42,16 +43,24 @@ class LocalDevotionalCatalog {
   const LocalDevotionalCatalog(this.items);
   final List<DevotionalText> items;
 
+  /// Lit le catalogue et prépare la recherche dans un isolate à part :
+  /// 1,6 Mo de JSON ne bloque pas l’affichage pendant l’ouverture.
   static Future<LocalDevotionalCatalog> load() async {
-    final rows = jsonDecode(
-      await rootBundle.loadString('assets/content/catalog.json'),
-    ) as List<dynamic>;
-    final catalog = LocalDevotionalCatalog([
+    final raw = await rootBundle.loadString('assets/content/catalog.json');
+    final (catalog, docs) = await Isolate.run(() {
+      final catalog = parse(raw);
+      return (catalog, _docsOf(catalog));
+    });
+    _searchDocs[catalog] = docs;
+    return catalog;
+  }
+
+  static LocalDevotionalCatalog parse(String raw) {
+    final rows = jsonDecode(raw) as List<dynamic>;
+    return LocalDevotionalCatalog([
       for (final row in rows)
         DevotionalText.fromJson(row as Map<String, dynamic>),
     ]);
-    _docsOf(catalog);
-    return catalog;
   }
 
   List<DevotionalText> get duas => ofKind(DevotionalKind.dua);
