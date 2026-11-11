@@ -373,4 +373,48 @@ void main() {
     final text = tester.renderObject<RenderParagraph>(find.text('Bismillah'));
     expect(text.text.style?.color, siteBlack);
   });
+
+  testWidgets(
+    'logo, recherche et boutons défilent ensemble, sans rouvrir le clavier',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_app());
+      await _settle(tester);
+      final search = find.byKey(const Key('site-search'));
+      final searchTop = tester.getTopLeft(search).dy;
+      final logoTop = tester.getTopLeft(find.byType(SiteLogo)).dy;
+      final namazTop = tester.getTopLeft(find.text('Namaz')).dy;
+
+      await tester.drag(find.text('Namaz'), const Offset(0, -150));
+      await tester.pumpAndSettle();
+      // Tout monte du même pas : la recherche part avec les boutons.
+      final moved = namazTop - tester.getTopLeft(find.text('Namaz')).dy;
+      expect(moved, greaterThan(50));
+      expect(searchTop - tester.getTopLeft(search).dy, closeTo(moved, 0.5));
+      expect(
+        logoTop - tester.getTopLeft(find.byType(SiteLogo)).dy,
+        closeTo(moved, 0.5),
+      );
+
+      await tester.drag(find.text('Namaz'), const Offset(0, 400));
+      await tester.pumpAndSettle();
+      await tester.tap(search);
+      await tester.pump();
+      bool focused() => tester
+          .widget<EditableText>(find.byType(EditableText))
+          .focusNode
+          .hasFocus;
+      expect(focused(), isTrue);
+      await tester.tap(find.text('Doua'));
+      await _settle(tester);
+      await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      // De retour au sommaire, la recherche n’a plus la main : pas de clavier.
+      expect(find.byKey(const Key('favoris-section')), findsOneWidget);
+      expect(focused(), isFalse);
+    },
+  );
 }

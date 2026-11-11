@@ -163,7 +163,7 @@ const perlesSiteUrl = 'https://www.perlesdivines.fr';
 const perlesContactEmail = 'contact@perlesdivines.fr';
 
 /// Aligné sur `version:` de `apps/mobile/pubspec.yaml`.
-const appVersion = '0.2.16';
+const appVersion = '0.2.17';
 
 const siteLogoAsset = 'assets/branding/logo-m.png';
 const siteBismillahAsset = 'assets/branding/bismillah.gif';
@@ -215,6 +215,10 @@ Future<void> openMailto(String email) async {
   await launchUrl(Uri(scheme: 'mailto', path: email));
 }
 
+/// Page du site : une seule colonne qui défile, comme le site d’origine.
+///
+/// L’en-tête (logo, titre, recherche) est en tête de cette colonne et part
+/// vers le haut avec les boutons quand on descend.
 class SitePage extends StatelessWidget {
   const SitePage({super.key, required this.children, this.header, this.footer});
 
@@ -224,6 +228,7 @@ class SitePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final header = this.header;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: siteOverlayFor(context.site),
       child: Scaffold(
@@ -242,40 +247,32 @@ class SitePage extends StatelessWidget {
                         ? constraints.maxWidth
                         : 480.0;
                     final bodyWidth = frame * 0.92;
-                    Widget wrap(Widget child) => Center(
-                      child: SizedBox(width: bodyWidth, child: child),
-                    );
-                    return Column(
-                      children: [
-                        if (header != null)
-                          wrap(
-                            Padding(
-                              padding: const EdgeInsets.only(top: 16),
-                              child: Column(
-                                children: [
-                                  for (final child in header!)
-                                    Center(child: child),
-                                ],
-                              ),
-                            ),
+                    // En haut, pas au milieu : quelques résultats de recherche
+                    // s’affichent juste sous la barre, sans vide au-dessus.
+                    return Align(
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: bodyWidth,
+                        child: SingleChildScrollView(
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          padding: EdgeInsets.only(
+                            top: header == null ? 22 : 16,
+                            bottom: 28,
                           ),
-                        Expanded(
-                          child: wrap(
-                            SingleChildScrollView(
-                              padding: EdgeInsets.only(
-                                top: header == null ? 22 : 12,
-                                bottom: 28,
-                              ),
-                              child: Column(
-                                children: [
-                                  for (final child in children)
-                                    Center(child: child),
-                                ],
-                              ),
-                            ),
+                          child: Column(
+                            children: [
+                              if (header != null) ...[
+                                for (final child in header)
+                                  Center(child: child),
+                                const SizedBox(height: 12),
+                              ],
+                              for (final child in children)
+                                Center(child: child),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     );
                   },
                 ),
@@ -550,6 +547,9 @@ class SiteSearchField extends StatelessWidget {
           key: const Key('site-search'),
           controller: controller,
           onChanged: onChanged,
+          // Toucher ailleurs ferme le clavier : la recherche ne garde pas
+          // la main, et le clavier ne revient pas au retour sur la page.
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           cursorColor: context.site.green,
           style: siteText(
             color: context.site.ink,

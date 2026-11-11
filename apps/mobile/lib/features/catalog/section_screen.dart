@@ -67,23 +67,16 @@ class _SectionScreenState extends State<SectionScreen> {
         : const <Track>[];
 
     return SitePage(
+      // Logo, titre et recherche ne bougent pas, même pendant la saisie.
       header: [
-        Visibility(
-          visible: !searching,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
-              const SiteGap(height: 12),
-              Text(
-                widget.section.label,
-                textAlign: TextAlign.center,
-                style: siteHeading,
-              ),
-              const SiteGap(height: 12),
-            ],
-          ),
+        SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
+        const SiteGap(height: 12),
+        Text(
+          widget.section.label,
+          textAlign: TextAlign.center,
+          style: siteHeading,
         ),
+        const SiteGap(height: 12),
         SiteSearchField(
           controller: search,
           hint: 'Rechercher dans ${widget.section.label}',
@@ -145,9 +138,7 @@ class CatalogTextPage extends StatelessWidget {
         ],
       );
     }
-    final matches = catalog.items.where(
-      (item) => item.id == id,
-    );
+    final matches = catalog.items.where((item) => item.id == id);
     if (matches.isEmpty) {
       return SitePage(
         children: [
