@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/navigation.dart';
 import 'features/about/about_screen.dart';
 import 'features/catalog/audio_library_screen.dart';
 import 'features/catalog/audio_shelves.dart';
@@ -56,7 +57,7 @@ GoRouter createRouter() => GoRouter(
                   SiteButton(
                     label: 'Retour au sommaire',
                     green: true,
-                    onTap: () => context.go('/sommaire'),
+                    onTap: () => goToSommaire(context),
                   ),
                 ],
               );

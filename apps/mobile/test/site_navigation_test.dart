@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:perles_divines/core/navigation.dart';
 import 'package:perles_divines/core/track.dart';
 import 'package:perles_divines/features/about/about_screen.dart';
 import 'package:perles_divines/features/catalog/favorites_screen.dart';
@@ -417,4 +418,35 @@ void main() {
       expect(focused(), isFalse);
     },
   );
+
+  testWidgets('« Sommaire » efface la recherche, le bouton retour la garde', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await _settle(tester);
+    String typed() => tester
+        .widget<TextField>(find.byKey(const Key('site-search')))
+        .controller!
+        .text;
+
+    // Le retour ramène aux résultats laissés.
+    await tester.enterText(find.byKey(const Key('site-search')), 'kumayl');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('search-text-kumayl')));
+    await tester.pumpAndSettle();
+    expect(find.text('texte ouvert'), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(typed(), 'kumayl');
+    expect(find.byKey(const Key('search-text-kumayl')), findsOneWidget);
+
+    // « Sommaire » ouvre un sommaire vierge.
+    await tester.tap(find.byKey(const Key('search-text-kumayl')));
+    await tester.pumpAndSettle();
+    goToSommaire(tester.element(find.text('texte ouvert')));
+    await tester.pumpAndSettle();
+    expect(typed(), isEmpty);
+    expect(find.byKey(const Key('search-text-kumayl')), findsNothing);
+    expect(find.text('Doua'), findsOneWidget);
+  });
 }

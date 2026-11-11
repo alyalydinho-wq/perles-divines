@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/navigation.dart';
 import '../../core/scope.dart';
 import '../../core/store.dart';
 import '../../core/track.dart';
@@ -36,7 +37,7 @@ class AudioLibraryScreen extends StatelessWidget {
 
     return SitePage(
       header: [
-        SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
+        SiteLogo(compact: true, onTap: () => goToSommaire(context)),
         const SiteGap(height: 12),
         Text('Audios', textAlign: TextAlign.center, style: siteHeading),
         const SiteGap(height: 12),
@@ -57,7 +58,7 @@ class AudioLibraryScreen extends StatelessWidget {
         SiteButton(
           label: 'Retour au sommaire',
           green: true,
-          onTap: () => context.go('/sommaire'),
+          onTap: () => goToSommaire(context),
         ),
       ],
     );
@@ -90,7 +91,7 @@ class AudioShelfScreen extends StatelessWidget {
 
     return SitePage(
       header: [
-        SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
+        SiteLogo(compact: true, onTap: () => goToSommaire(context)),
         const SiteGap(height: 12),
         Text(shelf.label, textAlign: TextAlign.center, style: siteHeading),
         const SiteGap(height: 12),

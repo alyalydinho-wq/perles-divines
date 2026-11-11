@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/navigation.dart';
 import '../../core/scope.dart';
 import '../../core/track.dart';
 import '../../ui/site.dart';
@@ -27,9 +28,24 @@ class _SommaireScreenState extends State<SommaireScreen> {
   String query = '';
 
   @override
+  void initState() {
+    super.initState();
+    sommaireResets.addListener(_reset);
+  }
+
+  @override
   void dispose() {
+    sommaireResets.removeListener(_reset);
     search.dispose();
     super.dispose();
+  }
+
+  /// « Sommaire » choisi ailleurs dans l’app : recherche effacée et page
+  /// reprise en haut, comme à l’ouverture.
+  void _reset() {
+    if (!mounted) return;
+    search.clear();
+    setState(() => query = '');
   }
 
   LocalDevotionalCatalog? _catalog(BuildContext context) =>
@@ -50,8 +66,9 @@ class _SommaireScreenState extends State<SommaireScreen> {
         : const <Track>[];
 
     return SitePage(
-      // Le logo et la recherche ne bougent jamais, même pendant la saisie :
-      // seuls les rubriques ou les résultats défilent dessous.
+      // Une nouvelle page à chaque retour par « Sommaire » : elle repart en
+      // haut au lieu de garder le défilement de la recherche.
+      key: ValueKey(sommaireResets.value),
       header: [
         const SiteLogo(),
         const SiteGap(height: 12),

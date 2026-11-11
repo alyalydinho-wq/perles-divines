@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/navigation.dart';
 import '../../core/scope.dart';
 import '../../core/track.dart';
 import '../../ui/site.dart';
@@ -69,7 +70,7 @@ class _SectionScreenState extends State<SectionScreen> {
     return SitePage(
       // Logo, titre et recherche ne bougent pas, même pendant la saisie.
       header: [
-        SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
+        SiteLogo(compact: true, onTap: () => goToSommaire(context)),
         const SiteGap(height: 12),
         Text(
           widget.section.label,
@@ -81,7 +82,7 @@ class _SectionScreenState extends State<SectionScreen> {
           controller: search,
           hint: 'Rechercher dans ${widget.section.label}',
           onChanged: (value) => setState(() => query = value),
-          onHome: () => context.go('/sommaire'),
+          onHome: () => goToSommaire(context),
         ),
       ],
       children: [
@@ -105,7 +106,7 @@ class _SectionScreenState extends State<SectionScreen> {
         SiteButton(
           label: 'Retour au sommaire',
           green: true,
-          onTap: () => context.go('/sommaire'),
+          onTap: () => goToSommaire(context),
         ),
       ],
     );
@@ -147,7 +148,7 @@ class CatalogTextPage extends StatelessWidget {
           SiteButton(
             label: 'Retour au sommaire',
             green: true,
-            onTap: () => context.go('/sommaire'),
+            onTap: () => goToSommaire(context),
           ),
         ],
       );

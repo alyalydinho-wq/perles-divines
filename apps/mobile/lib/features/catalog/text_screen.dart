@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/navigation.dart';
 import '../../core/store.dart';
 import '../../core/track.dart';
 import '../../ui/arabic_bold.dart';
@@ -320,7 +321,7 @@ class _TextScreenState extends State<TextScreen> {
       playing: playing,
       textSizeOpen: _sizeOpen,
       onBack: () => Navigator.of(context).maybePop(),
-      onHome: () => GoRouter.maybeOf(context)?.go('/sommaire'),
+      onHome: () => goToSommaire(context),
       onScrollToTop: _scrollToTop,
       onTextSize: () => setState(() => _sizeOpen = !_sizeOpen),
       onPlay: widget.tracks.isEmpty ? null : () => _play(playing),
@@ -554,8 +555,7 @@ class _TextScreenState extends State<TextScreen> {
               textZoom: _pageTextZoom,
               opensUpdatedText: widget.opensUpdatedText,
               onOpenUpdatedText: _openUpdatedText,
-              onOpenAppSommaire: () =>
-                  GoRouter.maybeOf(context)?.go('/sommaire'),
+              onOpenAppSommaire: () => goToSommaire(context),
               onPageHistory: _setPageHistory,
             ),
           );

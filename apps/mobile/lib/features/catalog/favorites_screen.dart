@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/navigation.dart';
 import '../../core/scope.dart';
 import '../../core/store.dart';
 import '../../core/track.dart';
@@ -77,7 +78,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     return SitePage(
       header: [
-        SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
+        SiteLogo(compact: true, onTap: () => goToSommaire(context)),
         const SiteGap(height: 12),
         Text('Favoris', textAlign: TextAlign.center, style: siteHeading),
         const SiteGap(height: 12),
@@ -123,7 +124,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         SiteButton(
           label: 'Retour au sommaire',
           green: true,
-          onTap: () => context.go('/sommaire'),
+          onTap: () => goToSommaire(context),
         ),
       ],
     );

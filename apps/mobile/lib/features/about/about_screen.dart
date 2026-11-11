@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../core/navigation.dart';
 import '../../ui/site.dart';
 
 class AboutScreen extends StatelessWidget {
@@ -10,7 +10,7 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SitePage(
       children: [
-        SiteLogo(compact: true, onTap: () => context.go('/sommaire')),
+        SiteLogo(compact: true, onTap: () => goToSommaire(context)),
         const SiteGap(),
         const _GreenBoldText(
           '"Perles Divines" est un recueil\n'
@@ -115,7 +115,7 @@ class AboutScreen extends StatelessWidget {
         SiteButton(
           label: 'Retour au sommaire',
           green: true,
-          onTap: () => context.go('/sommaire'),
+          onTap: () => goToSommaire(context),
         ),
       ],
     );
