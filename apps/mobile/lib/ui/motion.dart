@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -369,4 +370,206 @@ class _SeekSliderState extends State<SeekSlider> {
             },
     );
   }
+}
+
+/// Déplacement minimal, en px, pour qu’un glissement entre lectures compte.
+const swipeMinTravel = 48.0;
+
+/// Sens d’un glissement horizontal entre lectures voisines : -1 vers la
+/// gauche (lecture suivante), 1 vers la droite (précédente), 0 si le geste ne
+/// change rien.
+///
+/// Pour compter, le geste doit avoir parcouru [swipeMinTravel], rester
+/// nettement plus horizontal que vertical, et son élan doit le porter au-delà
+/// de la moitié de la largeur : un doigt qui hésite ou revient en arrière
+/// laisse la lecture en place.
+int swipeDirection({
+  required double dx,
+  required double dyMax,
+  required double velocity,
+  required double width,
+}) {
+  if (dx.abs() < swipeMinTravel) return 0;
+  if (dx.abs() < dyMax * 1.5) return 0;
+  final projected = dx + projectMomentum(velocity);
+  if (projected.sign != dx.sign) return 0;
+  if (projected.abs() < width / 2) return 0;
+  return dx.sign.toInt();
+}
+
+/// Glissement du doigt entre les lectures (Arabe, Traduction, Phonétique…) :
+/// la page suit le doigt, puis part d’un ressort si le geste était voulu, et
+/// la lecture voisine entre par l’autre bord. Sinon elle revient en place.
+///
+/// Le geste est lu sur les événements bruts du pointeur, sans arène : la zone
+/// de sélection du texte s’empare des glissements horizontaux sur Android et
+/// n’en fait rien, et la page d’origine (WebView) garde ses propres touches.
+/// Un geste d’abord vertical est laissé au défilement.
+class PaneSwipe extends StatefulWidget {
+  const PaneSwipe({
+    super.key,
+    required this.index,
+    required this.count,
+    required this.onSwipe,
+    this.ignoreLeftEdge = 0,
+    required this.child,
+  });
+
+  final int index;
+  final int count;
+  final ValueChanged<int> onSwipe;
+
+  /// Largeur, à gauche, laissée à un autre geste (retour iOS).
+  final double ignoreLeftEdge;
+  final Widget child;
+
+  @override
+  State<PaneSwipe> createState() => _PaneSwipeState();
+}
+
+class _PaneSwipeState extends State<PaneSwipe>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _dx = AnimationController.unbounded(
+    vsync: this,
+  )..addListener(_redraw);
+  double _width = 1;
+  int? _pointer;
+  Offset _origin = Offset.zero;
+  bool _horizontal = false;
+  double _grab = 0;
+  double _base = 0;
+  double _travel = 0;
+  double _dyMax = 0;
+  VelocityTracker? _velocity;
+  bool _leaving = false;
+
+  void _redraw() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _dx.dispose();
+    super.dispose();
+  }
+
+  void _down(PointerDownEvent event) {
+    if (_pointer != null || _leaving || widget.count < 2) return;
+    if (event.localPosition.dx < widget.ignoreLeftEdge) return;
+    _pointer = event.pointer;
+    _origin = event.position;
+    _horizontal = false;
+    _dyMax = 0;
+    _travel = 0;
+    _velocity = VelocityTracker.withKind(event.kind)
+      ..addPosition(event.timeStamp, event.position);
+  }
+
+  void _move(PointerMoveEvent event) {
+    if (event.pointer != _pointer) return;
+    final delta = event.position - _origin;
+    _velocity?.addPosition(event.timeStamp, event.position);
+    if (!_horizontal) {
+      if (delta.distance < kTouchSlop) return;
+      if (delta.dx.abs() <= delta.dy.abs()) {
+        _release();
+        return;
+      }
+      _horizontal = true;
+      _dx.stop();
+      _grab = delta.dx;
+      _base = _dx.value;
+    }
+    _dyMax = math.max(_dyMax, delta.dy.abs());
+    _travel = delta.dx - _grab;
+    final offset = _base + _travel;
+    final blocked =
+        (offset < 0 && widget.index >= widget.count - 1) ||
+        (offset > 0 && widget.index <= 0);
+    _dx.value = blocked ? rubberband(offset, _width) : offset;
+  }
+
+  void _up(PointerUpEvent event) {
+    if (event.pointer != _pointer) return;
+    final velocity = _velocity?.getVelocity().pixelsPerSecond.dx ?? 0;
+    _finish(velocity);
+  }
+
+  void _cancel(PointerCancelEvent event) {
+    if (event.pointer != _pointer) return;
+    _finish(0, cancelled: true);
+  }
+
+  void _release() {
+    _pointer = null;
+    _velocity = null;
+  }
+
+  void _finish(double velocity, {bool cancelled = false}) {
+    final horizontal = _horizontal;
+    _release();
+    if (!horizontal) return;
+    var direction = cancelled
+        ? 0
+        : swipeDirection(
+            dx: _travel,
+            dyMax: _dyMax,
+            velocity: velocity,
+            width: _width,
+          );
+    final next = widget.index - direction;
+    if (next < 0 || next >= widget.count) direction = 0;
+    if (direction == 0) {
+      _settle(0, velocity);
+      return;
+    }
+    HapticFeedback.selectionClick();
+    if (reduceMotion(context)) {
+      _dx.value = 0;
+      widget.onSwipe(next);
+      return;
+    }
+    _leaving = true;
+    final edge = direction * _width;
+    _dx
+        .animateWith(
+          SpringSimulation(uiSpring(response: 0.3), _dx.value, edge, velocity),
+        )
+        .then((_) {
+          if (!mounted) return;
+          _leaving = false;
+          widget.onSwipe(next);
+          // La lecture voisine entre par le bord opposé.
+          _dx.value = -edge;
+          _settle(0, velocity);
+        });
+  }
+
+  void _settle(double target, double velocity) {
+    if (reduceMotion(context)) {
+      _dx.value = target;
+      return;
+    }
+    _dx.animateWith(
+      SpringSimulation(uiSpring(response: 0.3), _dx.value, target, velocity),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      _width = box.maxWidth.isFinite && box.maxWidth > 0 ? box.maxWidth : 1;
+      return Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: _down,
+        onPointerMove: _move,
+        onPointerUp: _up,
+        onPointerCancel: _cancel,
+        child: Transform.translate(
+          offset: Offset(_dx.value, 0),
+          child: widget.child,
+        ),
+      );
+    },
+  );
 }

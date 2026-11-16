@@ -263,9 +263,44 @@ class _TextScreenState extends State<TextScreen> {
   bool _showsOriginal(TextPane value) =>
       value == TextPane.arabic && widget.item.hasOriginalPage;
 
+  int get _paneCount => widget.item.hasGujarati ? 4 : 3;
+
+  /// Ouvre une lecture, depuis les onglets ou un glissement du doigt.
+  void _selectPane(int index) {
+    setState(() {
+      pane = TextPane.values[index];
+      if (!_showsOriginal(pane)) _pageHistory = false;
+    });
+    final part = _jawshanPart;
+    if (isJawshanKabirId(widget.item.id) && part != null) {
+      _revealJawshanPart(part);
+    }
+  }
+
+  /// Menu de sélection réduit à la copie : sans lui, Android y ajoute toutes
+  /// les actions des autres applications (traduire, demander à…, payer…).
+  Widget _selectionMenu(BuildContext context, SelectableRegionState state) {
+    final items = [
+      for (final item in state.contextMenuButtonItems)
+        if (item.type == ContextMenuButtonType.copy)
+          ContextMenuButtonItem(label: 'Copier', onPressed: item.onPressed)
+        else if (item.type == ContextMenuButtonType.selectAll)
+          ContextMenuButtonItem(
+            label: 'Tout sélectionner',
+            onPressed: item.onPressed,
+          ),
+    ];
+    if (items.isEmpty) return const SizedBox.shrink();
+    return AdaptiveTextSelectionToolbar.buttonItems(
+      anchors: state.contextMenuAnchors,
+      buttonItems: items,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
+    final ios = Theme.of(context).platform == TargetPlatform.iOS;
     return PageBackScope(
       hasPageHistory: _pageHistory,
       onPageBack: () {
@@ -282,7 +317,13 @@ class _TextScreenState extends State<TextScreen> {
             Expanded(
               child: IosReadingBackEdge(
                 enabled: _pageHistory,
-                child: _pane(item),
+                child: PaneSwipe(
+                  index: pane.index,
+                  count: item.onlyOriginalPage ? 1 : _paneCount,
+                  onSwipe: _selectPane,
+                  ignoreLeftEdge: _pageHistory && ios ? 28 : 0,
+                  child: _pane(item),
+                ),
               ),
             ),
             if (_sizeOpen) _textSizeBar(),
@@ -297,16 +338,7 @@ class _TextScreenState extends State<TextScreen> {
                   'Phonétique',
                   if (item.hasGujarati) 'Gujarati',
                 ],
-                onSelected: (index) {
-                  setState(() {
-                    pane = TextPane.values[index];
-                    if (!_showsOriginal(pane)) _pageHistory = false;
-                  });
-                  final part = _jawshanPart;
-                  if (isJawshanKabirId(item.id) && part != null) {
-                    _revealJawshanPart(part);
-                  }
-                },
+                onSelected: _selectPane,
               ),
           ],
         ),
@@ -713,6 +745,7 @@ class _TextScreenState extends State<TextScreen> {
     return ColoredBox(
       color: context.site.canvas,
       child: SelectionArea(
+        contextMenuBuilder: _selectionMenu,
         child: ListView(
           controller: _scroll,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
@@ -969,6 +1002,7 @@ class _TextScreenState extends State<TextScreen> {
     return ColoredBox(
       color: context.site.canvas,
       child: SelectionArea(
+        contextMenuBuilder: _selectionMenu,
         child: SingleChildScrollView(
           key: const Key('jawshan-reading'),
           controller: _scroll,
