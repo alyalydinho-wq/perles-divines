@@ -372,29 +372,39 @@ class _SeekSliderState extends State<SeekSlider> {
   }
 }
 
-/// Déplacement minimal, en px, pour qu’un glissement entre lectures compte.
-const swipeMinTravel = 48.0;
+/// Déplacement minimal, en px logiques, pour qu’un glissement entre lectures
+/// compte : en dessous, c’est un appui ou une sélection de texte.
+const swipeMinTravel = 40.0;
+
+/// Vitesse, en px logiques par seconde, à partir de laquelle un coup de doigt
+/// suffit à tourner la page, si court soit-il (au-delà de [swipeMinTravel]).
+const swipeFlickVelocity = 300.0;
+
+/// Part de la largeur qu’un glissement lent doit couvrir pour tourner la page.
+const swipeDragShare = 0.35;
 
 /// Sens d’un glissement horizontal entre lectures voisines : -1 vers la
 /// gauche (lecture suivante), 1 vers la droite (précédente), 0 si le geste ne
 /// change rien.
 ///
-/// Pour compter, le geste doit avoir parcouru [swipeMinTravel], rester
-/// nettement plus horizontal que vertical, et son élan doit le porter au-delà
-/// de la moitié de la largeur : un doigt qui hésite ou revient en arrière
-/// laisse la lecture en place.
+/// Comme un carrousel : un coup de doigt franc tourne la page, un glissement
+/// lent la tourne s’il couvre [swipeDragShare] de la largeur. Le geste reste
+/// sans effet s’il est trop court, plus vertical qu’horizontal ([dy] est le
+/// déplacement vertical au lever), ou si le doigt repart en arrière.
 int swipeDirection({
   required double dx,
-  required double dyMax,
+  required double dy,
   required double velocity,
   required double width,
 }) {
   if (dx.abs() < swipeMinTravel) return 0;
-  if (dx.abs() < dyMax * 1.5) return 0;
-  final projected = dx + projectMomentum(velocity);
-  if (projected.sign != dx.sign) return 0;
-  if (projected.abs() < width / 2) return 0;
-  return dx.sign.toInt();
+  if (dx.abs() < dy.abs() * 1.2) return 0;
+  final sign = dx.sign;
+  final along = velocity * sign;
+  if (along <= -swipeFlickVelocity) return 0;
+  if (along >= swipeFlickVelocity) return sign.toInt();
+  if (dx.abs() >= width * swipeDragShare) return sign.toInt();
+  return 0;
 }
 
 /// Vitesse horizontale du doigt au moment où il se lève, en px/s : le chemin
@@ -464,8 +474,11 @@ typedef PaneBuilder = Widget Function(
 /// bascule a lieu dès qu’on lâche, sans attendre qu’une page sorte avant que
 /// l’autre arrive. Un geste hésitant laisse la lecture en place.
 ///
-/// Les deux voisines sont construites hors de l’écran peu après l’ouverture :
-/// le geste n’a rien à mettre en page quand il commence.
+/// Pendant le geste, rien n’est reconstruit ni remis en page : chaque lecture
+/// est figée dans sa propre couche, et seul son décalage change à chaque
+/// image. Les lectures ne sont reconstruites que lorsqu’une voisine apparaît
+/// ou disparaît. Les deux voisines sont préparées hors de l’écran peu après
+/// l’ouverture : le geste n’a rien à construire quand il commence.
 ///
 /// Le geste est lu sur les événements bruts du pointeur, sans arène : la zone
 /// de sélection du texte s’empare des glissements horizontaux sur Android et
@@ -502,21 +515,32 @@ class _PaneSwipeState extends State<PaneSwipe>
     with SingleTickerProviderStateMixin {
   late final AnimationController _dx = AnimationController.unbounded(
     vsync: this,
-  )..addListener(_redraw);
+  )..addListener(_onSlide);
   final Set<int> _ready = {};
   Timer? _warm;
   double _width = 1;
+
+  /// Côté par lequel une voisine est visible : -1 à droite (le doigt va vers
+  /// la gauche), 1 à gauche, 0 aucune. Seul son changement reconstruit.
+  int _side = 0;
   int? _pointer;
   Offset _origin = Offset.zero;
   bool _horizontal = false;
   double _grab = 0;
   double _base = 0;
   double _travel = 0;
-  double _dyMax = 0;
+  double _dy = 0;
   final _flick = FlickMeter();
 
-  void _redraw() {
-    if (mounted) setState(() {});
+  static int _sideOf(double dx) => dx < -0.5
+      ? -1
+      : dx > 0.5
+      ? 1
+      : 0;
+
+  void _onSlide() {
+    final side = _sideOf(_dx.value);
+    if (side != _side && mounted) setState(() => _side = side);
   }
 
   @override
@@ -562,7 +586,7 @@ class _PaneSwipeState extends State<PaneSwipe>
     _pointer = event.pointer;
     _origin = event.position;
     _horizontal = false;
-    _dyMax = 0;
+    _dy = 0;
     _travel = 0;
     _flick
       ..clear()
@@ -584,7 +608,7 @@ class _PaneSwipeState extends State<PaneSwipe>
       _grab = delta.dx;
       _base = _dx.value;
     }
-    _dyMax = math.max(_dyMax, delta.dy.abs());
+    _dy = delta.dy;
     _travel = delta.dx - _grab;
     final offset = _base + _travel;
     final blocked =
@@ -599,7 +623,7 @@ class _PaneSwipeState extends State<PaneSwipe>
     if (_horizontal) {
       // Le chemin fait jusqu’au lever compte, même sans mouvement reçu avant.
       final delta = event.position - _origin;
-      _dyMax = math.max(_dyMax, delta.dy.abs());
+      _dy = delta.dy;
       _travel = delta.dx - _grab;
     }
     _finish(_flick.velocity);
@@ -622,8 +646,9 @@ class _PaneSwipeState extends State<PaneSwipe>
     var direction = cancelled
         ? 0
         : swipeDirection(
-            dx: _travel,
-            dyMax: _dyMax,
+            // La distance totale depuis l’appui, glissement d’amorce compris.
+            dx: _travel + _grab,
+            dy: _dy,
             velocity: velocity,
             width: _width,
           );
@@ -656,15 +681,12 @@ class _PaneSwipeState extends State<PaneSwipe>
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
       _width = box.maxWidth.isFinite && box.maxWidth > 0 ? box.maxWidth : 1;
-      final dx = _dx.value;
       final current = widget.index;
-      // Sous un demi-pixel, le ressort est arrivé : la voisine se cache.
-      final beside = dx < -0.5
-          ? current + 1
-          : dx > 0.5
-          ? current - 1
-          : null;
-      final shown = beside != null && _valid(beside) ? beside : null;
+      // Recalculé ici, et non lu dans _side : au moment de la bascule, le
+      // décalage change de signe avant que le nouvel index n’arrive.
+      final side = _sideOf(_dx.value);
+      final beside = current - side;
+      final shown = side != 0 && _valid(beside) ? beside : null;
       final indices = {..._ready, current, ?shown}.where(_valid).toList()
         ..sort();
       return Listener(
@@ -681,7 +703,7 @@ class _PaneSwipeState extends State<PaneSwipe>
                   // La même clé quand une voisine devient la lecture ouverte :
                   // elle n’est pas reconstruite et garde son défilement.
                   key: ValueKey(index),
-                  child: _place(context, index, current, shown, dx),
+                  child: _place(context, index, current, shown),
                 ),
             ],
           ),
@@ -690,35 +712,49 @@ class _PaneSwipeState extends State<PaneSwipe>
     },
   );
 
-  Widget _place(
-    BuildContext context,
-    int index,
-    int current,
-    int? shown,
-    double dx,
-  ) {
+  Widget _place(BuildContext context, int index, int current, int? shown) {
     final role = index == current
         ? PaneRole.current
         : index == shown
         ? PaneRole.beside
         : PaneRole.hidden;
     final hidden = role == PaneRole.hidden;
-    final offset = switch (role) {
-      PaneRole.current => dx,
-      PaneRole.beside => dx + (index > current ? _width : -_width),
+    final shift = switch (role) {
+      PaneRole.current => 0.0,
+      PaneRole.beside => index > current ? _width : -_width,
       PaneRole.hidden => 0.0,
     };
     // Toujours la même suite de widgets : passer de cachée à visible ne
-    // reconstruit pas la lecture.
+    // reconstruit pas la lecture. Le décalage suit le doigt sans rien
+    // reconstruire, et la couche figée de la lecture glisse telle quelle.
+    final pane = RepaintBoundary(child: widget.builder(context, index, role));
     return Offstage(
       offstage: hidden,
       child: TickerMode(
         enabled: !hidden,
-        child: Transform.translate(
-          offset: Offset(offset, 0),
-          child: widget.builder(context, index, role),
-        ),
+        child: _Slide(dx: _dx, shift: shift, still: hidden, child: pane),
       ),
     );
+  }
+}
+
+/// Décale [child] de la valeur de [dx] plus [shift], sans reconstruire
+/// [child] à chaque image.
+class _Slide extends AnimatedWidget {
+  const _Slide({
+    required Animation<double> dx,
+    required this.shift,
+    required this.child,
+    this.still = false,
+  }) : super(listenable: dx);
+
+  final double shift;
+  final bool still;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final dx = still ? 0.0 : (listenable as Animation<double>).value;
+    return Transform.translate(offset: Offset(dx + shift, 0), child: child);
   }
 }

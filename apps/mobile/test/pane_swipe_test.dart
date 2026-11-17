@@ -32,19 +32,65 @@ Widget _app() => MaterialApp(
 
 void main() {
   test('un glissement ne compte que s’il est net et voulu', () {
-    // Lent mais jusqu’à la moitié de la largeur.
-    expect(swipeDirection(dx: -200, dyMax: 10, velocity: 0, width: 360), -1);
-    // Court mais lancé.
-    expect(swipeDirection(dx: -60, dyMax: 10, velocity: -1500, width: 360), -1);
-    expect(swipeDirection(dx: 200, dyMax: 0, velocity: 0, width: 360), 1);
+    int swipe(double dx, double dy, double velocity) =>
+        swipeDirection(dx: dx, dy: dy, velocity: velocity, width: 360);
+    // Lent, sur plus d’un tiers de la largeur.
+    expect(swipe(-130, 10, 0), -1);
+    expect(swipe(130, 0, 0), 1);
+    // Court mais lancé, même modérément, comme un pouce.
+    expect(swipe(-60, 10, -1500), -1);
+    expect(swipe(-70, 30, -350), -1);
+    expect(swipe(70, -20, 400), 1);
+    // Un pouce décrit un arc : un peu de vertical ne gêne pas.
+    expect(swipe(-120, 60, -800), -1);
     // Trop court, même très rapide.
-    expect(swipeDirection(dx: -30, dyMax: 0, velocity: -3000, width: 360), 0);
-    // Pas à mi-chemin et sans élan.
-    expect(swipeDirection(dx: -120, dyMax: 0, velocity: 0, width: 360), 0);
+    expect(swipe(-30, 0, -3000), 0);
+    // Lent et pas assez loin.
+    expect(swipe(-100, 0, 0), 0);
+    expect(swipe(-100, 0, -150), 0);
     // Autant vertical qu’horizontal.
-    expect(swipeDirection(dx: -200, dyMax: 180, velocity: 0, width: 360), 0);
+    expect(swipe(-200, 180, -800), 0);
     // Le doigt repart en arrière avant de lâcher.
-    expect(swipeDirection(dx: -200, dyMax: 0, velocity: 800, width: 360), 0);
+    expect(swipe(-200, 0, 800), 0);
+  });
+
+  testWidgets('le geste ne reconstruit pas les lectures à chaque image', (
+    tester,
+  ) async {
+    var builds = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PaneSwipe(
+          index: 1,
+          count: 3,
+          onSwipe: (_) {},
+          builder: (context, index, role) {
+            builds++;
+            return ColoredBox(
+              color: Colors.white,
+              child: Center(child: Text('Lecture $index')),
+            );
+          },
+        ),
+      ),
+    );
+    // Les deux voisines se préparent en coulisse.
+    await tester.pump(const Duration(seconds: 1));
+    final before = builds;
+
+    final gesture = await tester.startGesture(const Offset(400, 300));
+    for (var i = 0; i < 12; i++) {
+      await gesture.moveBy(const Offset(-8, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    // La voisine apparaît : une seule reconstruction des trois lectures, et
+    // non trois par image.
+    expect(builds - before, lessThanOrEqualTo(3));
+    final pane = tester.getTopLeft(find.text('Lecture 2')).dx;
+    expect(pane, lessThan(800 + 400));
+
+    await gesture.up();
+    await tester.pumpAndSettle();
   });
 
   test('l’élan se lit malgré des points rares et irréguliers', () {
