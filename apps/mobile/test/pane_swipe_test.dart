@@ -4,6 +4,7 @@ import 'package:perles_divines/features/catalog/text_screen.dart';
 import 'package:perles_divines/features/duas/dua.dart';
 import 'package:perles_divines/features/reader/content_install.dart';
 import 'package:perles_divines/ui/motion.dart';
+import 'package:perles_divines/ui/site.dart';
 
 const _arabic = 'بِسْمِ اللّٰهِ';
 const _french = 'Au nom d’Allàh, le Tout Miséricordieux.';
@@ -46,24 +47,103 @@ void main() {
     expect(swipeDirection(dx: -200, dyMax: 0, velocity: 800, width: 360), 0);
   });
 
-  testWidgets('glisser vers la gauche ouvre la lecture suivante, vers la droite '
-      'la précédente', (tester) async {
+  test('l’élan se lit malgré des points rares et irréguliers', () {
+    Duration ms(int value) => Duration(milliseconds: value);
+    // Points relevés sur l’émulateur : des trous de 30 à 50 ms, où
+    // l’estimateur de Flutter rendait zéro.
+    final flick = FlickMeter()
+      ..add(ms(0), 300)
+      ..add(ms(12), 290)
+      ..add(ms(42), 260)
+      ..add(ms(54), 245)
+      ..add(ms(100), 190)
+      ..add(ms(110), 180)
+      ..add(ms(110), 180);
+    expect(flick.velocity, lessThan(-1000));
+
+    // Vers la droite, le même geste donne le même élan, de l’autre signe.
+    final back = FlickMeter()
+      ..add(ms(0), 180)
+      ..add(ms(48), 240)
+      ..add(ms(96), 300)
+      ..add(ms(96), 300);
+    expect(back.velocity, greaterThan(1000));
+  });
+
+  test('un doigt arrêté avant de se lever n’a plus d’élan', () {
+    Duration ms(int value) => Duration(milliseconds: value);
+    final flick = FlickMeter()
+      ..add(ms(0), 300)
+      ..add(ms(40), 200)
+      ..add(ms(80), 120)
+      ..add(ms(600), 120);
+    expect(flick.velocity, 0);
+    expect(FlickMeter().velocity, 0);
+  });
+
+  test('des points manquants avant le lever ne coupent pas l’élan', () {
+    Duration ms(int value) => Duration(milliseconds: value);
+    // Plus rien pendant 150 ms, mais le doigt a continué : il était lancé.
+    final flick = FlickMeter()
+      ..add(ms(0), 300)
+      ..add(ms(20), 280)
+      ..add(ms(170), 120);
+    expect(flick.velocity, lessThan(-1000));
+  });
+
+  testWidgets(
+    'glisser vers la gauche ouvre la lecture suivante, vers la droite '
+    'la précédente',
+    (tester) async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+      expect(find.text(_arabic), findsOneWidget);
+
+      await tester.fling(find.text(_arabic), const Offset(-250, 0), 1200);
+      await tester.pumpAndSettle();
+      expect(find.text(_french), findsOneWidget);
+      expect(find.text(_arabic), findsNothing);
+
+      await tester.fling(find.text(_french), const Offset(-250, 0), 1200);
+      await tester.pumpAndSettle();
+      expect(find.text(_latin), findsOneWidget);
+
+      await tester.fling(find.text(_latin), const Offset(250, 0), 1200);
+      await tester.pumpAndSettle();
+      expect(find.text(_french), findsOneWidget);
+    },
+  );
+
+  testWidgets('la voisine suit le doigt et s’ouvre dès qu’on lâche', (
+    tester,
+  ) async {
     await tester.pumpWidget(_app());
     await tester.pumpAndSettle();
-    expect(find.text(_arabic), findsOneWidget);
+    // Laisse le temps de préparer les voisines en coulisse.
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text(_french), findsNothing);
 
-    await tester.fling(find.text(_arabic), const Offset(-250, 0), 1200);
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text(_arabic)),
+    );
+    for (var i = 0; i < 10; i++) {
+      await gesture.moveBy(const Offset(-50, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    // Pendant le geste, la traduction entre déjà par la droite.
+    expect(find.text(_french), findsOneWidget);
+    final width = tester.getSize(find.byType(MaterialApp)).width;
+    expect(tester.getTopLeft(find.text(_french)).dx, lessThan(width));
+
+    await gesture.up();
+    await tester.pump();
+    // Un seul cadre après le lâcher : l’onglet a déjà changé.
+    final tabs = tester.widget<SiteTextTabs>(find.byType(SiteTextTabs));
+    expect(tabs.selected, TextPane.translation.index);
+
     await tester.pumpAndSettle();
     expect(find.text(_french), findsOneWidget);
     expect(find.text(_arabic), findsNothing);
-
-    await tester.fling(find.text(_french), const Offset(-250, 0), 1200);
-    await tester.pumpAndSettle();
-    expect(find.text(_latin), findsOneWidget);
-
-    await tester.fling(find.text(_latin), const Offset(250, 0), 1200);
-    await tester.pumpAndSettle();
-    expect(find.text(_french), findsOneWidget);
   });
 
   testWidgets('un geste court, en biais ou sans voisine laisse la lecture', (

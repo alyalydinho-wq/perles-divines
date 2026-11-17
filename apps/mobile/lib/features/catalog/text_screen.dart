@@ -322,7 +322,8 @@ class _TextScreenState extends State<TextScreen> {
                   count: item.onlyOriginalPage ? 1 : _paneCount,
                   onSwipe: _selectPane,
                   ignoreLeftEdge: _pageHistory && ios ? 28 : 0,
-                  child: _pane(item),
+                  builder: (context, index, role) =>
+                      _pane(item, TextPane.values[index], role),
                 ),
               ),
             ),
@@ -572,24 +573,34 @@ class _TextScreenState extends State<TextScreen> {
     );
   }
 
-  Widget _pane(DevotionalText item) {
-    if (isJawshanKabirId(item.id)) return _jawshanReading(item);
-    switch (pane) {
+  /// Lecture [value]. Seule la lecture ouverte ([PaneRole.current]) tient le
+  /// défilement partagé et les repères du Jawshan ; les voisines en ont un à
+  /// elles.
+  Widget _pane(DevotionalText item, TextPane value, PaneRole role) {
+    final current = role == PaneRole.current;
+    if (isJawshanKabirId(item.id)) {
+      return _jawshanReading(item, value, current: current);
+    }
+    switch (value) {
       case TextPane.arabic:
         if (item.hasOriginalPage) {
           return ColoredBox(
             color: context.site.canvas,
-            child: ReaderScreen(
-              key: _readerKey,
-              edition: widget.edition,
-              initialPage: item.pagePath,
-              compact: true,
-              textZoom: _pageTextZoom,
-              opensUpdatedText: widget.opensUpdatedText,
-              onOpenUpdatedText: _openUpdatedText,
-              onOpenAppSommaire: () => goToSommaire(context),
-              onPageHistory: _setPageHistory,
-            ),
+            // La page d’origine n’est chargée que lorsqu’on la voit : une
+            // WebView cachée en coulisse coûterait trop.
+            child: role == PaneRole.hidden
+                ? const SizedBox.expand()
+                : ReaderScreen(
+                    key: _readerKey,
+                    edition: widget.edition,
+                    initialPage: item.pagePath,
+                    compact: true,
+                    textZoom: _pageTextZoom,
+                    opensUpdatedText: widget.opensUpdatedText,
+                    onOpenUpdatedText: _openUpdatedText,
+                    onOpenAppSommaire: () => goToSommaire(context),
+                    onPageHistory: current ? _setPageHistory : null,
+                  ),
           );
         }
         if (item.hasArabic) {
@@ -597,6 +608,7 @@ class _TextScreenState extends State<TextScreen> {
             _hadith(item.introduction),
             item.arabic,
             const [],
+            current: current,
             rtl: true,
             surahInfo: item.kind == DevotionalKind.quran
                 ? _surahInfo(item.translation)
@@ -611,6 +623,7 @@ class _TextScreenState extends State<TextScreen> {
           _hadith(item.introduction),
           item.translation,
           item.references,
+          current: current,
           translationVerses: item.kind == DevotionalKind.quran,
           surahInfo: item.kind == DevotionalKind.quran
               ? _surahInfo(item.translation)
@@ -626,13 +639,20 @@ class _TextScreenState extends State<TextScreen> {
           _hadith(item.introduction),
           item.transliteration,
           const [],
+          current: current,
           verses: true,
         );
       case TextPane.gujarati:
         if (!item.hasGujarati) {
           return _empty('Gujarati non disponible');
         }
-        return _reading('', item.gujarati, const [], gujarati: true);
+        return _reading(
+          '',
+          item.gujarati,
+          const [],
+          current: current,
+          gujarati: true,
+        );
     }
   }
 
@@ -712,6 +732,7 @@ class _TextScreenState extends State<TextScreen> {
     String? introduction,
     String body,
     List<String> references, {
+    bool current = true,
     bool rtl = false,
     bool verses = false,
     bool translationVerses = false,
@@ -747,7 +768,8 @@ class _TextScreenState extends State<TextScreen> {
       child: SelectionArea(
         contextMenuBuilder: _selectionMenu,
         child: ListView(
-          controller: _scroll,
+          controller: current ? _scroll : null,
+          primary: false,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
           children: [
             SizedBox(
@@ -972,32 +994,44 @@ class _TextScreenState extends State<TextScreen> {
     });
   }
 
-  double get _jawshanHeaderSize => switch (pane) {
+  double _jawshanHeaderSize(TextPane value) => switch (value) {
     TextPane.arabic || TextPane.translation => translationSize,
     TextPane.transliteration => transliterationSize,
     TextPane.gujarati => gujaratiSize,
   };
 
-  Widget _jawshanReading(DevotionalText item) {
+  Widget _jawshanReading(
+    DevotionalText item,
+    TextPane value, {
+    required bool current,
+  }) {
     final hadith = jawshanHadith(_hadith(item.introduction));
-    final headerSize = _jawshanHeaderSize;
+    final headerSize = _jawshanHeaderSize(value);
     final List<String> blocks;
     var preamble = '';
-    switch (pane) {
+    switch (value) {
       case TextPane.arabic:
         blocks = jawshanBlocks(item.arabic);
       case TextPane.transliteration:
         blocks = jawshanBlocks(item.transliteration);
       case TextPane.translation:
         final parsed = parseJawshanTranslation(item.translation);
-        if (parsed == null) return _fallbackJawshan(item);
+        if (parsed == null) {
+          return _fallbackJawshan(item, value, current: current);
+        }
         preamble = parsed.preamble;
         blocks = parsed.parts;
       case TextPane.gujarati:
-        return _reading('', item.gujarati, const [], gujarati: true);
+        return _reading(
+          '',
+          item.gujarati,
+          const [],
+          current: current,
+          gujarati: true,
+        );
     }
     if (blocks.length != 100 || _jawshanKeys.length != 100) {
-      return _fallbackJawshan(item);
+      return _fallbackJawshan(item, value, current: current);
     }
     return ColoredBox(
       color: context.site.canvas,
@@ -1005,7 +1039,8 @@ class _TextScreenState extends State<TextScreen> {
         contextMenuBuilder: _selectionMenu,
         child: SingleChildScrollView(
           key: const Key('jawshan-reading'),
-          controller: _scroll,
+          controller: current ? _scroll : null,
+          primary: false,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1050,8 +1085,8 @@ class _TextScreenState extends State<TextScreen> {
                     thickness: 1,
                     color: context.site.softRule,
                   ),
-                _jawshanHeader(i + 1, headerSize),
-                ..._jawshanBody(blocks[i], headerSize),
+                _jawshanHeader(i + 1, headerSize, current: current),
+                ..._jawshanBody(blocks[i], headerSize, value),
               ],
               // Laisse la dernière partie atteindre le haut de l’écran.
               SizedBox(height: MediaQuery.sizeOf(context).height * 0.55),
@@ -1062,25 +1097,38 @@ class _TextScreenState extends State<TextScreen> {
     );
   }
 
-  Widget _fallbackJawshan(DevotionalText item) {
+  Widget _fallbackJawshan(
+    DevotionalText item,
+    TextPane value, {
+    required bool current,
+  }) {
     final hadith = _hadith(item.introduction);
-    return switch (pane) {
-      TextPane.arabic => _reading(hadith, item.arabic, const [], rtl: true),
+    return switch (value) {
+      TextPane.arabic => _reading(
+        hadith,
+        item.arabic,
+        const [],
+        current: current,
+        rtl: true,
+      ),
       TextPane.translation => _reading(
         hadith,
         item.translation,
         item.references,
+        current: current,
       ),
       TextPane.transliteration => _reading(
         hadith,
         item.transliteration,
         const [],
+        current: current,
         verses: true,
       ),
       TextPane.gujarati => _reading(
         '',
         item.gujarati,
         const [],
+        current: current,
         gujarati: true,
       ),
     };
@@ -1125,10 +1173,12 @@ class _TextScreenState extends State<TextScreen> {
     );
   }
 
-  Widget _jawshanHeader(int number, double size) {
+  Widget _jawshanHeader(int number, double size, {required bool current}) {
     final french = _jawshanFrench(number);
     return Padding(
-      key: _jawshanKeys[number - 1],
+      // Les repères de la table ne vont qu’à la lecture ouverte : une clé
+      // globale ne peut être qu’à un endroit.
+      key: current ? _jawshanKeys[number - 1] : null,
       padding: const EdgeInsets.only(top: 18, bottom: 16),
       child: Column(
         children: [
@@ -1159,8 +1209,8 @@ class _TextScreenState extends State<TextScreen> {
     );
   }
 
-  List<Widget> _jawshanBody(String block, double size) {
-    switch (pane) {
+  List<Widget> _jawshanBody(String block, double size, TextPane value) {
+    switch (value) {
       case TextPane.arabic:
         return [
           _JustifiedArabic(

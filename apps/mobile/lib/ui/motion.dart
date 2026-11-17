@@ -397,9 +397,75 @@ int swipeDirection({
   return dx.sign.toInt();
 }
 
-/// Glissement du doigt entre les lectures (Arabe, Traduction, Phonétique…) :
-/// la page suit le doigt, puis part d’un ressort si le geste était voulu, et
-/// la lecture voisine entre par l’autre bord. Sinon elle revient en place.
+/// Vitesse horizontale du doigt au moment où il se lève, en px/s : le chemin
+/// parcouru pendant les dernières [window], lever compris.
+///
+/// L’estimateur de Flutter ([VelocityTracker]) ignore le lever et rend zéro,
+/// voire le mauvais sens, quand les points sont rares : un coup de doigt
+/// court et franc passait alors pour un geste hésitant.
+class FlickMeter {
+  FlickMeter({this.window = const Duration(milliseconds: 100)});
+
+  final Duration window;
+  final List<(Duration, double)> _samples = [];
+
+  void clear() => _samples.clear();
+
+  void add(Duration time, double x) {
+    _samples.add((time, x));
+    if (_samples.length > 32) _samples.removeAt(0);
+  }
+
+  double get velocity {
+    if (_samples.length < 2) return 0;
+    final (end, endX) = _samples.last;
+    var first = _samples.length - 1;
+    while (first > 0 && end - _samples[first - 1].$1 <= window) {
+      first--;
+    }
+    if (first == _samples.length - 1) {
+      // Aucun point récent avant le lever. Si le doigt n’a pas bougé depuis
+      // le dernier, il s’était arrêté et n’a plus d’élan. S’il a bougé, les
+      // points ont seulement manqué (téléphone chargé) : le dernier trajet
+      // donne la vitesse.
+      final (previous, previousX) = _samples[_samples.length - 2];
+      if ((endX - previousX).abs() < 2) return 0;
+      final seconds = (end - previous).inMicroseconds / 1e6;
+      return seconds > 0 ? (endX - previousX) / seconds : 0;
+    }
+    final (start, startX) = _samples[first];
+    final seconds = (end - start).inMicroseconds / 1e6;
+    if (seconds <= 0) return 0;
+    return (endX - startX) / seconds;
+  }
+}
+
+/// Place d’une lecture dans [PaneSwipe].
+enum PaneRole {
+  /// La lecture ouverte.
+  current,
+
+  /// La voisine que le doigt fait entrer, ou celle qui finit de sortir.
+  beside,
+
+  /// Une voisine prête, hors de l’écran.
+  hidden,
+}
+
+/// Construit la lecture [index] pour la place [role].
+typedef PaneBuilder = Widget Function(
+  BuildContext context,
+  int index,
+  PaneRole role,
+);
+
+/// Glissement du doigt entre les lectures (Arabe, Traduction, Phonétique…),
+/// comme on tourne une page : la lecture voisine entre avec le doigt, et la
+/// bascule a lieu dès qu’on lâche, sans attendre qu’une page sorte avant que
+/// l’autre arrive. Un geste hésitant laisse la lecture en place.
+///
+/// Les deux voisines sont construites hors de l’écran peu après l’ouverture :
+/// le geste n’a rien à mettre en page quand il commence.
 ///
 /// Le geste est lu sur les événements bruts du pointeur, sans arène : la zone
 /// de sélection du texte s’empare des glissements horizontaux sur Android et
@@ -411,17 +477,22 @@ class PaneSwipe extends StatefulWidget {
     required this.index,
     required this.count,
     required this.onSwipe,
+    required this.builder,
     this.ignoreLeftEdge = 0,
-    required this.child,
+    this.warmDelay = const Duration(milliseconds: 450),
   });
 
   final int index;
   final int count;
   final ValueChanged<int> onSwipe;
+  final PaneBuilder builder;
 
   /// Largeur, à gauche, laissée à un autre geste (retour iOS).
   final double ignoreLeftEdge;
-  final Widget child;
+
+  /// Attente avant de préparer les voisines : l’ouverture de la page et la
+  /// fin d’un glissement passent d’abord.
+  final Duration warmDelay;
 
   @override
   State<PaneSwipe> createState() => _PaneSwipeState();
@@ -432,6 +503,8 @@ class _PaneSwipeState extends State<PaneSwipe>
   late final AnimationController _dx = AnimationController.unbounded(
     vsync: this,
   )..addListener(_redraw);
+  final Set<int> _ready = {};
+  Timer? _warm;
   double _width = 1;
   int? _pointer;
   Offset _origin = Offset.zero;
@@ -440,35 +513,66 @@ class _PaneSwipeState extends State<PaneSwipe>
   double _base = 0;
   double _travel = 0;
   double _dyMax = 0;
-  VelocityTracker? _velocity;
-  bool _leaving = false;
+  final _flick = FlickMeter();
 
   void _redraw() {
     if (mounted) setState(() {});
   }
 
   @override
+  void initState() {
+    super.initState();
+    _scheduleWarm();
+  }
+
+  @override
+  void didUpdateWidget(PaneSwipe oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _ready.removeWhere((index) => index >= widget.count);
+    if (oldWidget.index != widget.index || oldWidget.count != widget.count) {
+      _scheduleWarm();
+    }
+  }
+
+  @override
   void dispose() {
+    _warm?.cancel();
     _dx.dispose();
     super.dispose();
   }
 
+  bool _valid(int index) => index >= 0 && index < widget.count;
+
+  void _scheduleWarm() {
+    _warm?.cancel();
+    _warm = Timer(widget.warmDelay, () {
+      if (!mounted) return;
+      final wanted = [
+        widget.index - 1,
+        widget.index + 1,
+      ].where((index) => _valid(index) && !_ready.contains(index)).toList();
+      if (wanted.isEmpty) return;
+      setState(() => _ready.addAll(wanted));
+    });
+  }
+
   void _down(PointerDownEvent event) {
-    if (_pointer != null || _leaving || widget.count < 2) return;
+    if (_pointer != null || widget.count < 2) return;
     if (event.localPosition.dx < widget.ignoreLeftEdge) return;
     _pointer = event.pointer;
     _origin = event.position;
     _horizontal = false;
     _dyMax = 0;
     _travel = 0;
-    _velocity = VelocityTracker.withKind(event.kind)
-      ..addPosition(event.timeStamp, event.position);
+    _flick
+      ..clear()
+      ..add(event.timeStamp, event.position.dx);
   }
 
   void _move(PointerMoveEvent event) {
     if (event.pointer != _pointer) return;
     final delta = event.position - _origin;
-    _velocity?.addPosition(event.timeStamp, event.position);
+    _flick.add(event.timeStamp, event.position.dx);
     if (!_horizontal) {
       if (delta.distance < kTouchSlop) return;
       if (delta.dx.abs() <= delta.dy.abs()) {
@@ -491,8 +595,14 @@ class _PaneSwipeState extends State<PaneSwipe>
 
   void _up(PointerUpEvent event) {
     if (event.pointer != _pointer) return;
-    final velocity = _velocity?.getVelocity().pixelsPerSecond.dx ?? 0;
-    _finish(velocity);
+    _flick.add(event.timeStamp, event.position.dx);
+    if (_horizontal) {
+      // Le chemin fait jusqu’au lever compte, même sans mouvement reçu avant.
+      final delta = event.position - _origin;
+      _dyMax = math.max(_dyMax, delta.dy.abs());
+      _travel = delta.dx - _grab;
+    }
+    _finish(_flick.velocity);
   }
 
   void _cancel(PointerCancelEvent event) {
@@ -502,11 +612,11 @@ class _PaneSwipeState extends State<PaneSwipe>
 
   void _release() {
     _pointer = null;
-    _velocity = null;
   }
 
   void _finish(double velocity, {bool cancelled = false}) {
     final horizontal = _horizontal;
+    _horizontal = false;
     _release();
     if (!horizontal) return;
     var direction = cancelled
@@ -518,40 +628,27 @@ class _PaneSwipeState extends State<PaneSwipe>
             width: _width,
           );
     final next = widget.index - direction;
-    if (next < 0 || next >= widget.count) direction = 0;
+    if (!_valid(next)) direction = 0;
     if (direction == 0) {
-      _settle(0, velocity);
+      _settle(velocity);
       return;
     }
     HapticFeedback.selectionClick();
-    if (reduceMotion(context)) {
-      _dx.value = 0;
-      widget.onSwipe(next);
-      return;
-    }
-    _leaving = true;
-    final edge = direction * _width;
-    _dx
-        .animateWith(
-          SpringSimulation(uiSpring(response: 0.3), _dx.value, edge, velocity),
-        )
-        .then((_) {
-          if (!mounted) return;
-          _leaving = false;
-          widget.onSwipe(next);
-          // La lecture voisine entre par le bord opposé.
-          _dx.value = -edge;
-          _settle(0, velocity);
-        });
+    // La voisine devient la lecture ouverte là où le doigt l’a laissée :
+    // elle finit d’entrer pendant que l’ancienne finit de sortir.
+    _ready.add(widget.index);
+    widget.onSwipe(next);
+    _dx.value -= direction * _width;
+    _settle(velocity);
   }
 
-  void _settle(double target, double velocity) {
+  void _settle(double velocity) {
     if (reduceMotion(context)) {
-      _dx.value = target;
+      _dx.value = 0;
       return;
     }
     _dx.animateWith(
-      SpringSimulation(uiSpring(response: 0.3), _dx.value, target, velocity),
+      SpringSimulation(uiSpring(response: 0.28), _dx.value, 0, velocity),
     );
   }
 
@@ -559,17 +656,69 @@ class _PaneSwipeState extends State<PaneSwipe>
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
       _width = box.maxWidth.isFinite && box.maxWidth > 0 ? box.maxWidth : 1;
+      final dx = _dx.value;
+      final current = widget.index;
+      // Sous un demi-pixel, le ressort est arrivé : la voisine se cache.
+      final beside = dx < -0.5
+          ? current + 1
+          : dx > 0.5
+          ? current - 1
+          : null;
+      final shown = beside != null && _valid(beside) ? beside : null;
+      final indices = {..._ready, current, ?shown}.where(_valid).toList()
+        ..sort();
       return Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: _down,
         onPointerMove: _move,
         onPointerUp: _up,
         onPointerCancel: _cancel,
-        child: Transform.translate(
-          offset: Offset(_dx.value, 0),
-          child: widget.child,
+        child: ClipRect(
+          child: Stack(
+            children: [
+              for (final index in indices)
+                Positioned.fill(
+                  // La même clé quand une voisine devient la lecture ouverte :
+                  // elle n’est pas reconstruite et garde son défilement.
+                  key: ValueKey(index),
+                  child: _place(context, index, current, shown, dx),
+                ),
+            ],
+          ),
         ),
       );
     },
   );
+
+  Widget _place(
+    BuildContext context,
+    int index,
+    int current,
+    int? shown,
+    double dx,
+  ) {
+    final role = index == current
+        ? PaneRole.current
+        : index == shown
+        ? PaneRole.beside
+        : PaneRole.hidden;
+    final hidden = role == PaneRole.hidden;
+    final offset = switch (role) {
+      PaneRole.current => dx,
+      PaneRole.beside => dx + (index > current ? _width : -_width),
+      PaneRole.hidden => 0.0,
+    };
+    // Toujours la même suite de widgets : passer de cachée à visible ne
+    // reconstruit pas la lecture.
+    return Offstage(
+      offstage: hidden,
+      child: TickerMode(
+        enabled: !hidden,
+        child: Transform.translate(
+          offset: Offset(offset, 0),
+          child: widget.builder(context, index, role),
+        ),
+      ),
+    );
+  }
 }

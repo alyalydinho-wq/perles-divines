@@ -136,7 +136,13 @@ Future<void> _showPart(WidgetTester tester, int number) async {
   await _jump(tester, 0);
   tester
       .widget<InkWell>(
-        find.byKey(Key('jawshan-toc-$number'), skipOffstage: false),
+        // La table de la lecture ouverte : les voisines prêtes en coulisse
+        // ont la leur.
+        find.descendant(
+          of: find.byKey(const Key('jawshan-reading')),
+          matching: find.byKey(Key('jawshan-toc-$number')),
+          skipOffstage: false,
+        ),
       )
       .onTap!();
   await tester.pump();
