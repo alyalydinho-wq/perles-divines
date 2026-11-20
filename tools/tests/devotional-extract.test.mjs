@@ -38,7 +38,7 @@ test('le catalogue embarqué reprend les pages importées et lit l’arabe de du
   const items = JSON.parse(
     await fs.readFile('apps/mobile/assets/content/catalog.json', 'utf8'),
   );
-  assert.equal(items.filter(item => item.kind === 'dua').length, 31);
+  assert.equal(items.filter(item => item.kind === 'dua').length, 32);
   assert.equal(items.filter(item => item.kind === 'ziyarat').length, 12);
   const kumail = items.find(item => item.title === 'Doua-e-Kumayl');
   assert.ok(kumail);
@@ -48,4 +48,27 @@ test('le catalogue embarqué reprend les pages importées et lit l’arabe de du
   assert.equal(kumail.pagePath, '');
   assert.equal(kumail.sourceUrl, 'https://www.perlesdivines.fr/fr/kumail.html');
   assert.deepEqual(kumail.audioIds, ['758bc928-c06f-5fc2-999a-793464bb5c91']);
+});
+
+test('Naad-e-Ali et Naad-e-Ali (Kabeer) sont deux textes, chacun avec sa traduction', async () => {
+  const items = JSON.parse(
+    await fs.readFile('apps/mobile/assets/content/catalog.json', 'utf8'),
+  );
+  const titles = items.filter(item => item.kind === 'dua').map(item => item.title);
+  const short = items.find(item => item.title === 'Naad-e-Ali');
+  const kabeer = items.find(item => item.title === 'Naad-e-Ali (Kabeer)');
+  assert.ok(short && kabeer);
+  assert.equal(titles.indexOf('Naad-e-Ali (Kabeer)'), titles.indexOf('Naad-e-Ali') + 1);
+  const lines = text => text.split('\n');
+  // Version courte : cinq lignes, sans la suite du Kabeer.
+  assert.equal(lines(short.arabic).length, 5);
+  assert.equal(lines(short.transliteration).length, 5);
+  assert.doesNotMatch(short.arabic, /اَللّٰهُ اَكْبَرُ/);
+  assert.match(short.translation, /Ô Ali! Ô Ali! Ô Ali!/);
+  // Kabeer : une ligne de traduction et de phonétique par ligne d'arabe.
+  assert.equal(lines(kabeer.arabic).length, 19);
+  assert.equal(lines(kabeer.transliteration).length, 19);
+  assert.equal(lines(kabeer.translation).length, 19);
+  assert.match(kabeer.arabic, /اَللّٰهُمَّ صَلِّ عَلٰی مُحَمَّدٍ/);
+  assert.match(kabeer.translation, /Allàh me suffit/);
 });

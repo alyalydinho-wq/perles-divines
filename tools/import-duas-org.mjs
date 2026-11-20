@@ -18,7 +18,9 @@ const CATALOG = 'apps/mobile/assets/content/catalog.json';
 // v2: identifiant de data_v2/<id>.json. legacy: nom de page .htm.
 // quran: numéro de sourate (+ verse pour un verset seul), cf. QURAN_MAPPING.
 export const MAPPING = [
-  {title: 'Naad-e-Ali', v2: 'naad-e-ali'},
+  // La page duas.org donne la version courte (dua-1) puis Naad-e-Ali Kabeer (dua-2).
+  {title: 'Naad-e-Ali', v2: 'naad-e-ali', dua: 'dua-1'},
+  {title: 'Naad-e-Ali (Kabeer)', v2: 'naad-e-ali', dua: 'dua-2'},
   {title: 'Hadith-e-Kissa', v2: 'hadis-e-kisa'},
   {title: 'Doua-e-Kumayl', v2: 'dua-kumayl'},
   {title: 'Doua-e-Tawassoul', v2: 'dua-tawassul'},
