@@ -31,7 +31,8 @@ AudioShelf shelfOf(Track track) {
   if (RegExp(r'hadith|hadis|hadic').hasMatch(title)) return AudioShelf.hadith;
   // Les douas du 1er au 30e jour de Ramadan sont les aamal de ce mois.
   if (_isRamadanDayDua(title)) return AudioShelf.aamal;
-  if (RegExp(r'doua|mounajat|salawat|salat').hasMatch(title)) {
+  // Naad-e-Ali est un doua, même sans le mot dans son titre.
+  if (RegExp(r'doua|mounajat|salawat|salat|naad').hasMatch(title)) {
     return AudioShelf.doua;
   }
   if (_isAamal(title)) return AudioShelf.aamal;

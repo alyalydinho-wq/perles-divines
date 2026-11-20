@@ -110,7 +110,7 @@ void main() {
     ]);
   });
 
-  test('le catalogue publié classe les 86 audios sans en oublier', () async {
+  test('le catalogue publié classe les 87 audios sans en oublier', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
     final rows = jsonDecode(
       await rootBundle.loadString('assets/content/audio-catalog.json'),
@@ -122,13 +122,13 @@ void main() {
       for (final shelf in AudioShelf.values)
         shelf: tracksOf(shelf, tracks).length,
     };
-    expect(tracks.length, 86);
-    expect(counts[AudioShelf.doua], 30);
+    expect(tracks.length, 87);
+    expect(counts[AudioShelf.doua], 31);
     expect(counts[AudioShelf.zyaraate], 26);
     expect(counts[AudioShelf.aamal], 29);
     expect(counts[AudioShelf.hadith], 1);
     expect(counts[AudioShelf.autres], 0);
-    expect(counts.values.reduce((a, b) => a + b), 86);
+    expect(counts.values.reduce((a, b) => a + b), 87);
   });
 
   testWidgets('les audios s’ouvrent par rubrique', (tester) async {

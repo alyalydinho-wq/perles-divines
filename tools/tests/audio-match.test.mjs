@@ -68,6 +68,8 @@ test("le catalogue embarqué relie chaque texte à son audio déjà publié", ()
   linked("Doua-e-Kumayl", "Doua-e-Kumayl");
   linked("Doua-e-Ahad", "Doua-e-Ahad");
   linked("Doua-e-Makarimoul-Akhlak", "Doua-e-Makarimoul-Akhlak");
+  linked("Naad-e-Ali (Kabeer)", "Naad-e-Ali (Kabeer)");
+  assert.deepEqual(byTitle.get("Naad-e-Ali").audioIds, []);
   const iftetah = byTitle.get("Doua-e-Iftetah");
   assert.deepEqual(
     iftetah.audioIds.map((id) => tracks.find((track) => track.id === id).title),

@@ -82,5 +82,11 @@
     "textId": "12849e71-3748-55da-a379-2cb3d3e878d1",
     "sourceFile": "audio/ziarat-imam-hassan-askari-as.m4a",
     "catalogTitle": "Zyaarat du Jeudi Imam Hassan al Askari (as)"
+  },
+  {
+    "audioId": "69ae01ab-8665-5fb6-a725-ed9d81b7f544",
+    "textId": "a77534e5-1a52-5f6a-8f21-900ac4b2dba8",
+    "sourceFile": "audio/naad-e-ali-kabeer.m4a",
+    "catalogTitle": "Naad-e-Ali (Kabeer)"
   }
 ]
