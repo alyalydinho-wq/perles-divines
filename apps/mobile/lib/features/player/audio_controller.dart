@@ -197,7 +197,10 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     if (track == null || _loading) return;
     await store.writeState('position:${track.transferId}', {
       'ms': player.position.inMilliseconds,
-      'completed': completed,
+      'completed': savedAsCompleted(
+        player.processingState,
+        finished: completed,
+      ),
       'savedAt': DateTime.now().toUtc().toIso8601String(),
     });
   }

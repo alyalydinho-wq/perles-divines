@@ -58,10 +58,18 @@ String exportName(String title, {String extension = '.mp3'}) {
   return '${clean.isEmpty ? 'audio' : clean.substring(0, clean.length.clamp(0, 120))}$ext';
 }
 
+/// Le lecteur s’arrête souvent quelques millisecondes avant la durée du
+/// catalogue : une position aussi près de la fin vaut une écoute terminée,
+/// sinon la reprise jouerait un instant puis s’arrêterait.
+const finishedMargin = Duration(seconds: 2);
+
 Duration restoredPosition(
   int savedMs,
   int durationMs, {
   bool completed = false,
-}) => completed || savedMs < 0 || savedMs >= durationMs
+}) =>
+    completed ||
+        savedMs < 0 ||
+        savedMs >= durationMs - finishedMargin.inMilliseconds
     ? Duration.zero
     : Duration(milliseconds: savedMs);

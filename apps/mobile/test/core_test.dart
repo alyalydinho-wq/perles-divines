@@ -8,6 +8,16 @@ void main() {
     expect(restoredPosition(100, 20000, completed: true), Duration.zero);
     expect(restoredPosition(-1, 20000), Duration.zero);
   });
+  test('Une piste arrêtée juste avant la durée du catalogue repart à zéro', () {
+    // Naad-e-Ali (Kabeer) : le lecteur s’était arrêté à 401 589 ms pour
+    // 401 612 ms au catalogue, et la reprise s’arrêtait aussitôt.
+    expect(restoredPosition(401589, 401612), Duration.zero);
+    expect(restoredPosition(399700, 401612), Duration.zero);
+    expect(
+      restoredPosition(399000, 401612),
+      const Duration(milliseconds: 399000),
+    );
+  });
   test('Le cache local reprend l’extension publiée', () {
     const track = Track(
       id: 'a',

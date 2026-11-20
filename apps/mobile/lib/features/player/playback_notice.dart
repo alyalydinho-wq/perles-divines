@@ -110,6 +110,11 @@ PlaybackState systemPlaybackState({
   );
 }
 
+/// Une piste reste notée « terminée » tant que le lecteur est à sa fin,
+/// même si la pause qui suit la fin enregistre de nouveau la position.
+bool savedAsCompleted(ProcessingState state, {bool finished = false}) =>
+    finished || state == ProcessingState.completed;
+
 bool playbackResumable(ProcessingState state) =>
     state == ProcessingState.ready ||
     state == ProcessingState.buffering ||
