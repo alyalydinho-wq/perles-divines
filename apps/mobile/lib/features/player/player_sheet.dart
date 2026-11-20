@@ -124,35 +124,6 @@ class PlayerSheet extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'File de lecture',
-              style: siteText(
-                color: context.site.ink,
-                fontSize: 16,
-                lineHeight: 20,
-                weight: FontWeight.w700,
-              ),
-            ),
-            StreamBuilder<List<MediaItem>>(
-              stream: audio.queue,
-              builder: (context, snapshot) => Column(
-                children: [
-                  for (final (index, item) in (snapshot.data ?? []).indexed)
-                    ListTile(
-                      title: Text(
-                        item.title,
-                        style: siteText(
-                          color: context.site.ink,
-                          fontSize: 16,
-                          lineHeight: 20,
-                        ),
-                      ),
-                      onTap: () => audio.skipToQueueItem(index),
-                    ),
-                ],
-              ),
-            ),
           ],
         ),
       ),

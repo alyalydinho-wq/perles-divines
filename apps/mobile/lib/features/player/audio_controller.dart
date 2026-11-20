@@ -265,6 +265,11 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     await super.stop();
   }
 
+  /// Sur Android, balayer l’application hors des applications récentes
+  /// arrête l’audio et retire sa notification ; la position reste enregistrée.
+  @override
+  Future<void> onTaskRemoved() => stop();
+
   @override
   Future<void> seek(Duration position) async {
     await player.seek(
