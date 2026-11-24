@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -5,10 +7,8 @@ import 'package:just_audio/just_audio.dart';
 
 import '../../core/scope.dart';
 import '../../ui/motion.dart';
-import '../../ui/site.dart';
 import 'audio_card.dart';
 import 'playback_notice.dart';
-import 'player_sheet.dart';
 
 class SiteMiniPlayer extends StatefulWidget {
   const SiteMiniPlayer({super.key, this.location});
@@ -29,6 +29,24 @@ class _SiteMiniPlayerState extends State<SiteMiniPlayer> {
   String? _dismissedId;
   GoRouter? _router;
   String? _location;
+  StreamSubscription<bool>? _notificationClicks;
+
+  @override
+  void initState() {
+    super.initState();
+    // Un appui sur la notification déplie ce lecteur, qui réunit toutes les
+    // commandes. La valeur déjà connue du flux est ignorée : seul un nouvel
+    // appui compte.
+    _notificationClicks = AudioService.notificationClicked.skip(1).listen((
+      clicked,
+    ) {
+      if (!clicked || !mounted) return;
+      setState(() {
+        _expanded = true;
+        _dismissedId = null;
+      });
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -51,6 +69,7 @@ class _SiteMiniPlayerState extends State<SiteMiniPlayer> {
 
   @override
   void dispose() {
+    _notificationClicks?.cancel();
     _router?.routerDelegate.removeListener(_onRoute);
     super.dispose();
   }
@@ -124,25 +143,26 @@ class _SiteMiniPlayerState extends State<SiteMiniPlayer> {
                           dense: true,
                           collapsed: !_expanded,
                           keyed: false,
+                          controls: true,
                           onExpanded: (expanded) {
                             if (_expanded == expanded || !mounted) return;
                             setState(() => _expanded = expanded);
                           },
                           onDismiss: itemId == null
                               ? null
-                              : () {
+                              : () async {
+                                  // La croix ferme le lecteur même pendant
+                                  // l’écoute : l’audio s’arrête d’abord, sinon
+                                  // la barre reviendrait aussitôt.
+                                  if (audio.player.playing) {
+                                    await audio.pause();
+                                  }
                                   if (!mounted) return;
                                   setState(() {
                                     _dismissedId = itemId;
                                     _expanded = false;
                                   });
                                 },
-                          onTitle: () => showModalBottomSheet<void>(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: context.site.canvas,
-                            builder: (context) => PlayerSheet(audio: audio),
-                          ),
                         ),
                 );
               },

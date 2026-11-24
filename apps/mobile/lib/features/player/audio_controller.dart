@@ -38,12 +38,6 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     });
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (player.playing && ++_ticks % 5 == 0) unawaited(_save());
-      if (_deadline != null &&
-          _remaining != null &&
-          _clock.elapsed >= _remaining!) {
-        unawaited(setSleep(null));
-        unawaited(pause());
-      }
     });
   }
   final AppStore store;
@@ -55,11 +49,8 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
   final error = StreamController<String>.broadcast();
   List<Track> _tracks = [];
   int _index = 0, _ticks = 0, _intent = 0;
-  bool _loading = false, _endOfTrack = false, _bundled = false;
+  bool _loading = false, _bundled = false;
   late Timer _ticker;
-  DateTime? _deadline;
-  Duration? _remaining;
-  final _clock = Stopwatch();
   final _subscriptions = <StreamSubscription>[];
   bool _resumeAfterInterruption = false;
   int _interruptionIntent = 0;
@@ -101,17 +92,6 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     );
     final speed = await store.readState('speed');
     if (speed is num) await player.setSpeed(speed.toDouble());
-    final sleep = await store.readState('sleep');
-    _endOfTrack = sleep is Map && sleep['endOfTrack'] == true;
-    if (sleep is Map && sleep['deadline'] is String) {
-      _deadline = DateTime.parse(sleep['deadline']);
-      if (DateTime.now().toUtc().isAfter(_deadline!)) {
-        await setSleep(null);
-      } else {
-        _remaining = _deadline!.difference(DateTime.now().toUtc());
-        _clock.start();
-      }
-    }
     // La position de chaque piste reste enregistrée, mais la barre
     // n’est pas rouverte après la fermeture de l’application.
     await store.writeState('queue', {
@@ -208,11 +188,6 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> _finished() async {
     if (_loading || current == null) return;
     await _save(completed: true);
-    if (_endOfTrack) {
-      _endOfTrack = false;
-      await pause();
-      return;
-    }
     if (_index + 1 < _tracks.length) {
       await _load(_index + 1, autoplay: true);
     } else {
@@ -322,28 +297,11 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     _broadcast();
   }
 
-  Future<void> setSleep(Duration? duration, {bool endOfTrack = false}) async {
-    _endOfTrack = endOfTrack;
-    _remaining = duration;
-    _clock.reset();
-    _deadline = duration == null ? null : DateTime.now().toUtc().add(duration);
-    if (duration != null) {
-      _clock.start();
-    } else {
-      _clock.stop();
-    }
-    await store.writeState('sleep', {
-      'deadline': _deadline?.toIso8601String(),
-      'endOfTrack': endOfTrack,
-    });
-  }
-
   void _broadcast() {
     if (player.playing) _announced = true;
     if (!_announced) return;
     final willAdvance =
         player.processingState == ProcessingState.completed &&
-        !_endOfTrack &&
         _index + 1 < _tracks.length;
     if (willAdvance) _retainSystemSession = true;
     final playing = player.playing;

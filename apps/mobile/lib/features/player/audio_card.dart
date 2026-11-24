@@ -28,6 +28,7 @@ const audioBusyStates = {
 ///
 /// Réduit (`collapsed`), il ne garde que le titre et lecture/pause pour
 /// laisser l’écran libre. [onExpanded] reçoit `true` pour déplier.
+/// Déplié, il montre sous la barre les [controls] du lecteur, s’il y en a.
 class AudioFace extends StatelessWidget {
   const AudioFace({
     super.key,
@@ -51,6 +52,7 @@ class AudioFace extends StatelessWidget {
     this.playKey,
     this.downloadKey,
     this.favoriteKey,
+    this.controls,
   });
 
   final String title;
@@ -70,13 +72,16 @@ class AudioFace extends StatelessWidget {
   /// `true` pour déplier la barre, `false` pour la réduire.
   final ValueChanged<bool>? onExpanded;
 
-  /// Masque la barre quand l’audio n’est plus en lecture.
+  /// Ferme la barre (l’audio en cours est d’abord mis en pause).
   final VoidCallback? onDismiss;
   final bool dense;
   final bool collapsed;
   final Key? playKey;
   final Key? downloadKey;
   final Key? favoriteKey;
+
+  /// Vitesse et ±15 s ([PlaybackControls]), sous la barre.
+  final Widget? controls;
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +194,7 @@ class AudioFace extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (onDismiss != null && !playing)
+                    if (onDismiss != null)
                       _DismissButton(onPressed: onDismiss!),
                     _StarButton(
                       key: favoriteKey,
@@ -229,6 +234,13 @@ class AudioFace extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (controls case final controls?)
+                  // La marge de gauche est plus large que celle de droite :
+                  // on égalise pour centrer les commandes sur la largeur.
+                  Padding(
+                    padding: EdgeInsets.only(right: dense ? 8 : 10),
+                    child: controls,
+                  ),
                 if (error != null && error!.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(8, 0, 12, 6),
@@ -533,7 +545,7 @@ class _CollapsedPlaybackBar extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (onDismiss != null && !playing) ...[
+                    if (onDismiss != null) ...[
                       const SizedBox(width: 4),
                       _DismissButton(onPressed: onDismiss!),
                     ],
@@ -561,6 +573,7 @@ class AudioSessionCard extends StatefulWidget {
     this.onTitle,
     this.onExpanded,
     this.onDismiss,
+    this.controls = false,
   });
 
   final Track track;
@@ -573,6 +586,9 @@ class AudioSessionCard extends StatefulWidget {
   final VoidCallback? onTitle;
   final ValueChanged<bool>? onExpanded;
   final VoidCallback? onDismiss;
+
+  /// Montre la vitesse et ±15 s quand la piste est en cours.
+  final bool controls;
 
   @override
   State<AudioSessionCard> createState() => _AudioSessionCardState();
@@ -687,6 +703,22 @@ class _AudioSessionCardState extends State<AudioSessionCard> {
       playKey: widget.keyed ? Key('play-${track.id}') : null,
       downloadKey: widget.keyed ? Key('download-${track.id}') : null,
       favoriteKey: widget.keyed ? Key('favorite-${track.id}') : null,
+      controls: widget.controls && active ? _controls() : null,
+    );
+  }
+
+  Widget? _controls() {
+    final audio = widget.audio;
+    if (audio == null) return null;
+    return StreamBuilder<double>(
+      stream: audio.player.speedStream,
+      initialData: audio.player.speed,
+      builder: (context, speed) => PlaybackControls(
+        speed: speed.data ?? 1,
+        onSpeed: audio.setSpeed,
+        onRewind: audio.rewind,
+        onForward: audio.fastForward,
+      ),
     );
   }
 
@@ -725,6 +757,133 @@ class _AudioSessionCardState extends State<AudioSessionCard> {
     } finally {
       _confirming = false;
     }
+  }
+}
+
+/// Vitesses proposées, les mêmes que celles acceptées par le lecteur.
+const playbackSpeeds = [.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+
+/// Vitesse à la française : « 1× », « 0,75× », « 1,5× ».
+String formatSpeed(double speed) {
+  var text = speed.toStringAsFixed(2);
+  while (text.contains('.') && (text.endsWith('0') || text.endsWith('.'))) {
+    text = text.substring(0, text.length - 1);
+  }
+  return '${text.replaceAll('.', ',')}×';
+}
+
+/// Ligne du lecteur sous la barre : vitesse, −15 s et +15 s, groupés au
+/// centre. La vitesse s’ouvre en menu.
+class PlaybackControls extends StatelessWidget {
+  const PlaybackControls({
+    super.key,
+    required this.speed,
+    required this.onSpeed,
+    this.onRewind,
+    this.onForward,
+  });
+
+  final double speed;
+  final ValueChanged<double> onSpeed;
+  final VoidCallback? onRewind;
+  final VoidCallback? onForward;
+
+  /// Blanc entre le bord d’un bouton ±15 s et sa flèche : 9 px de marge du
+  /// bouton (48 px autour d’une icône de 30 px), plus ~5 px laissés vides
+  /// dans l’icône elle-même.
+  static const iconBlank = 14.0;
+
+  /// Espace visible entre deux commandes voisines.
+  static const _gap = 36.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 44,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Le même blanc à gauche de la vitesse qu’à droite de la flèche
+          // +15 s : le groupe paraît centré, pas seulement ses boîtes.
+          Padding(
+            padding: const EdgeInsets.only(left: iconBlank),
+            child: _speed(context),
+          ),
+          const SizedBox(width: _gap - iconBlank),
+          _skip(context, forward: false),
+          const SizedBox(width: _gap - 2 * iconBlank),
+          _skip(context, forward: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _speed(BuildContext context) {
+    return PopupMenuButton<double>(
+      key: const Key('player-speed'),
+      tooltip: 'Vitesse de lecture',
+      initialValue: speed,
+      color: context.site.canvas,
+      onSelected: onSpeed,
+      itemBuilder: (context) => [
+        for (final value in playbackSpeeds)
+          CheckedPopupMenuItem<double>(
+            value: value,
+            checked: value == speed,
+            child: Text(formatSpeed(value)),
+          ),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        decoration: BoxDecoration(
+          border: Border.all(color: context.site.neutralBorder),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          formatSpeed(speed),
+          style: siteText(
+            color: context.site.green,
+            fontSize: 15,
+            lineHeight: 18,
+            weight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _skip(BuildContext context, {required bool forward}) {
+    final color = context.site.green;
+    return IconButton(
+      key: Key(forward ? 'player-forward' : 'player-rewind'),
+      tooltip: forward ? 'Avancer de 15 s' : 'Reculer de 15 s',
+      onPressed: forward ? onForward : onRewind,
+      icon: SizedBox(
+        width: 30,
+        height: 30,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Transform.flip(
+              flipX: forward,
+              child: Icon(Icons.replay_rounded, color: color, size: 30),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: Text(
+                '15',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 9,
+                  height: 1,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

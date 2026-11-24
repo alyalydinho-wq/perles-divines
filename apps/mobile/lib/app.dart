@@ -13,7 +13,6 @@ import 'core/track.dart';
 import 'features/downloads/download_controller.dart';
 import 'features/duas/catalog.dart';
 import 'features/player/audio_controller.dart';
-import 'features/player/playback_notice.dart';
 import 'features/reader/content_install.dart';
 import 'routing.dart';
 import 'ui/site.dart';
@@ -55,19 +54,12 @@ class _PerlesAppState extends State<PerlesApp> {
   late final GoRouter router = createRouter();
   Object? _failure;
   int _attempt = 0;
-  StreamSubscription<bool>? _notificationClicks;
 
   @override
   void initState() {
     super.initState();
     _services = Services(store: AppStore());
     unawaited(prepare());
-  }
-
-  @override
-  void dispose() {
-    _notificationClicks?.cancel();
-    super.dispose();
   }
 
   void _arrive(int attempt, Services Function(Services current) update) {
@@ -126,14 +118,6 @@ class _PerlesAppState extends State<PerlesApp> {
     );
     await audio.initialize();
     _arrive(attempt, (s) => s.copyWith(audio: audio));
-    _notificationClicks ??= AudioService.notificationClicked.listen((clicked) {
-      final current = router.state.uri.path;
-      final destination = routeAfterNotificationClick(
-        clicked: clicked,
-        currentPath: current,
-      );
-      if (destination != null) router.push(destination);
-    });
   }
 
   @override

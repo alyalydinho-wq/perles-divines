@@ -165,20 +165,6 @@ void main() {
     );
   });
 
-  test('un appui sur la notification ouvre le lecteur', () {
-    expect(
-      routeAfterNotificationClick(clicked: true, currentPath: '/audios'),
-      playerLocation,
-    );
-    expect(
-      routeAfterNotificationClick(clicked: true, currentPath: playerLocation),
-      isNull,
-    );
-    expect(
-      routeAfterNotificationClick(clicked: false, currentPath: '/'),
-      isNull,
-    );
-  });
   test('la pause qui suit la fin garde la piste notée terminée', () {
     expect(savedAsCompleted(ProcessingState.completed), isTrue);
     expect(savedAsCompleted(ProcessingState.ready, finished: true), isTrue);

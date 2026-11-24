@@ -9,8 +9,6 @@ import 'features/catalog/audio_shelves.dart';
 import 'features/catalog/favorites_screen.dart';
 import 'features/catalog/section_screen.dart';
 import 'features/catalog/sections.dart';
-import 'features/player/playback_notice.dart';
-import 'features/player/player_screen.dart';
 import 'features/player/site_mini_player.dart';
 import 'features/sommaire/sommaire_screen.dart';
 import 'ui/site.dart';
@@ -105,10 +103,6 @@ GoRouter createRouter() => GoRouter(
           builder: (context, state) => const AboutScreen(),
         ),
       ],
-    ),
-    GoRoute(
-      path: playerLocation,
-      builder: (context, state) => const PlayerScreen(),
     ),
   ],
 );

@@ -322,7 +322,7 @@ void main() {
     expect(tester.getSize(find.byType(AudioFace)).height, rest);
   });
 
-  testWidgets('la barre arrêtée se masque d’un appui, pas pendant la lecture', (
+  testWidgets('la croix ferme la barre, en lecture comme en pause', (
     tester,
   ) async {
     var dismissed = 0;
@@ -347,20 +347,16 @@ void main() {
       );
     }
 
-    await show(playing: true, collapsed: true);
-    await tester.pump();
-    expect(find.byKey(const Key('player-dismiss')), findsNothing);
-
-    await show(playing: false, collapsed: true);
-    await tester.pump();
-    expect(find.byTooltip('Masquer le lecteur'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('player-dismiss')));
-    await tester.pump();
-    expect(dismissed, 1);
-
-    await show(playing: false, collapsed: false);
-    await tester.pump();
-    expect(find.byKey(const Key('player-dismiss')), findsOneWidget);
+    for (final playing in [true, false]) {
+      for (final collapsed in [true, false]) {
+        await show(playing: playing, collapsed: collapsed);
+        await tester.pumpAndSettle();
+        expect(find.byTooltip('Masquer le lecteur'), findsOneWidget);
+        await tester.tap(find.byKey(const Key('player-dismiss')));
+        await tester.pump();
+      }
+    }
+    expect(dismissed, 4);
   });
 
   testWidgets('le téléchargement et la suppression demandent confirmation', (

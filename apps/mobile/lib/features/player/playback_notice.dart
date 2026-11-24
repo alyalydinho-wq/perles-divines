@@ -5,7 +5,6 @@ import 'package:just_audio/just_audio.dart';
 import '../../core/track.dart';
 
 const playbackAppName = 'Perles Divines';
-const playerLocation = '/lecteur';
 
 /// Lecture de fond : la catégorie `playback` laisse l’audio continuer
 /// quand l’application n’est plus au premier plan, et l’usage Android
@@ -140,8 +139,3 @@ String? retainedMiniPlayerDismissal({
   if (dismissedId == null || playing || itemId != dismissedId) return null;
   return dismissedId;
 }
-
-String? routeAfterNotificationClick({
-  required bool clicked,
-  required String currentPath,
-}) => clicked && currentPath != playerLocation ? playerLocation : null;
