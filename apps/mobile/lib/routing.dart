@@ -10,6 +10,7 @@ import 'features/catalog/favorites_screen.dart';
 import 'features/catalog/section_screen.dart';
 import 'features/catalog/sections.dart';
 import 'features/player/site_mini_player.dart';
+import 'features/reader/original_page_screen.dart';
 import 'features/sommaire/sommaire_screen.dart';
 import 'ui/site.dart';
 
@@ -65,8 +66,17 @@ GoRouter createRouter() => GoRouter(
         ),
         GoRoute(
           path: '/text/:id',
-          builder: (context, state) =>
-              CatalogTextPage(id: state.pathParameters['id'] ?? ''),
+          builder: (context, state) => CatalogTextPage(
+            id: state.pathParameters['id'] ?? '',
+            anchor: state.uri.queryParameters['anchor'],
+          ),
+        ),
+        GoRoute(
+          path: '/page/:id',
+          builder: (context, state) => OriginalPageScreen(
+            id: state.pathParameters['id'] ?? '',
+            anchor: state.uri.queryParameters['anchor'],
+          ),
         ),
         GoRoute(
           path: '/audios',

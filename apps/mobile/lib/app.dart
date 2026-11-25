@@ -13,7 +13,7 @@ import 'core/track.dart';
 import 'features/downloads/download_controller.dart';
 import 'features/duas/catalog.dart';
 import 'features/player/audio_controller.dart';
-import 'features/reader/content_install.dart';
+import 'features/reader/original_page.dart';
 import 'routing.dart';
 import 'ui/site.dart';
 import 'ui/theme.dart';
@@ -81,8 +81,8 @@ class _PerlesAppState extends State<PerlesApp> {
         loadBundledTracks().then(
           (tracks) => _arrive(attempt, (s) => s.copyWith(tracks: tracks)),
         ),
-        LocalEdition.install().then(
-          (edition) => _arrive(attempt, (s) => s.copyWith(edition: edition)),
+        OriginalPages.load().then(
+          (pages) => _arrive(attempt, (s) => s.copyWith(originalPages: pages)),
         ),
         _prepareAudio(attempt, store),
       ]);
@@ -97,6 +97,8 @@ class _PerlesAppState extends State<PerlesApp> {
     await WidgetsBinding.instance.endOfFrame;
     // Reprise après un échec : le lecteur du premier essai reste en place.
     if (_services.audio != null) return;
+    // Les versions à WebView copiaient les pages HTML : on libère la place.
+    unawaited(removeCopiedEdition());
     final downloads = DownloadController(store, baseUrl: mediaBase);
     await downloads.initialize();
     _arrive(attempt, (s) => s.copyWith(downloads: downloads));

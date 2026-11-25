@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {legacySommairePageIds} from './native-pages.mjs';
 
 const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 const pageLink = new RegExp(`(${uuid})\\.html`, 'gi');
@@ -56,7 +57,7 @@ export function planSitePrune({bundle, catalog, read, updatedDuaIds, legacyPageI
       queue.push(`pages/${id}.html`);
     }
   }
-  // L'accueil reste la page de secours de `_startFile` ; la page d'erreur reste liée par le site.
+  // L'accueil et la page d'erreur restent : l'édition élaguée garde sa forme.
   const keep = new Set([bundle.home, 'unavailable.html', ...pages]);
   for (const page of [...keep]) {
     for (const asset of parsed.get(page)?.assets ?? []) {
@@ -78,10 +79,10 @@ export function planSitePrune({bundle, catalog, read, updatedDuaIds, legacyPageI
   };
 }
 
-/// Lit dans le code Dart les deux listes qui décident où mènent les liens.
+/// Règles qui décident où mènent les liens : la liste des douas mises à
+/// jour est lue dans le code Dart, l'ancien sommaire vient de `native-pages.mjs`.
 export async function readNavigationRules(mobileRoot) {
   const dua = await fs.readFile(path.join(mobileRoot, 'lib/features/duas/dua.dart'), 'utf8');
-  const reader = await fs.readFile(path.join(mobileRoot, 'lib/features/reader/reader_screen.dart'), 'utf8');
   const ids = (source, name) => {
     const body = source.match(new RegExp(`${name}\\s*=\\s*\\{([\\s\\S]*?)\\}`))?.[1];
     const found = [...(body ?? '').matchAll(new RegExp(`'(${uuid})(?:\\.html)?'`, 'gi'))].map((m) => m[1].toLowerCase());
@@ -90,12 +91,11 @@ export async function readNavigationRules(mobileRoot) {
   };
   return {
     updatedDuaIds: ids(dua, '_updatedAamalDuaIds'),
-    legacyPageIds: ids(reader, 'legacySommairePageNames'),
+    legacyPageIds: new Set(legacySommairePageIds),
   };
 }
 
-export async function pruneMobileSite(mobileRoot = 'apps/mobile') {
-  const site = path.join(mobileRoot, 'assets/site');
+export async function pruneMobileSite(mobileRoot = 'apps/mobile', site = path.join(mobileRoot, 'assets/site')) {
   const bundle = JSON.parse(await fs.readFile(path.join(site, 'bundle.json'), 'utf8'));
   const catalog = JSON.parse(await fs.readFile(path.join(mobileRoot, 'assets/content/catalog.json'), 'utf8'));
   const rules = await readNavigationRules(mobileRoot);
@@ -112,5 +112,5 @@ export async function pruneMobileSite(mobileRoot = 'apps/mobile') {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await pruneMobileSite();
+  await pruneMobileSite('apps/mobile', process.argv[2]);
 }

@@ -17,7 +17,7 @@ Le produit distribue **un catalogue embarqué**. Les textes arabes, traductions,
 npm ci
 npm test
 node tools/extract-devotional-catalog.mjs
-node tools/prepare-mobile-content.mjs
+node tools/prepare-mobile-pages.mjs
 cd apps/mobile
 flutter pub get
 flutter analyze
@@ -26,7 +26,9 @@ flutter test
 
 Les assets générés doivent être contrôlés avant compilation. Une modification du catalogue nécessite une nouvelle version de l'application.
 
-`tools/prepare-mobile-content.mjs` retire de `assets/site/` les pages et images que l'application ne peut pas ouvrir (`tools/prune-mobile-site.mjs`). Si une lecture native remplace une ancienne page, relancer `node tools/prune-mobile-site.mjs` ; pour la rétablir, relancer le générateur.
+Les pages d'origine du site (textes dont l'arabe n'existe qu'en images) s'affichent en natif, sans WebView. `node tools/prepare-mobile-pages.mjs` les prépare depuis l'import du site, sans toucher au catalogue : il écarte les pages que l'application ne peut pas ouvrir (`tools/prune-mobile-site.mjs`), puis les convertit en blocs (`assets/content/pages.json`) et en images (`assets/pages/`, hors Git, à régénérer après un clonage). Le relancer après qu'une lecture native a remplacé une ancienne page.
+
+`tools/prepare-mobile-content.mjs` régénère aussi `catalog.json` depuis l'import brut : il écrase les retouches faites depuis dans le catalogue.
 
 ## Compiler pour un téléphone
 

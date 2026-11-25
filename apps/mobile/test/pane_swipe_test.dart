@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:perles_divines/features/catalog/text_screen.dart';
 import 'package:perles_divines/features/duas/dua.dart';
-import 'package:perles_divines/features/reader/content_install.dart';
 import 'package:perles_divines/ui/motion.dart';
 import 'package:perles_divines/ui/site.dart';
 
@@ -24,7 +23,6 @@ const _item = DevotionalText(
 Widget _app() => MaterialApp(
   home: TextScreen(
     item: _item,
-    edition: LocalEdition('/tmp', const {'home': 'index.html'}),
     favorite: false,
     onFavorite: () async {},
   ),

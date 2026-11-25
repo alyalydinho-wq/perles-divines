@@ -2,21 +2,19 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:perles_divines/core/scope.dart';
+import 'package:perles_divines/core/services.dart';
 import 'package:perles_divines/core/store.dart';
 import 'package:perles_divines/features/catalog/favorites_screen.dart';
 import 'package:perles_divines/features/catalog/section_screen.dart';
 import 'package:perles_divines/features/catalog/sections.dart';
-import 'package:perles_divines/features/catalog/text_screen.dart';
 import 'package:perles_divines/features/duas/catalog.dart';
 import 'package:perles_divines/features/duas/dua.dart';
 import 'package:perles_divines/features/duas/favorites.dart';
-import 'package:perles_divines/features/reader/content_install.dart';
-import 'package:perles_divines/features/reader/page_history.dart';
-import 'package:perles_divines/features/reader/reader_screen.dart';
+import 'package:perles_divines/features/reader/original_page.dart';
+import 'package:perles_divines/features/reader/original_page_screen.dart';
 import 'package:perles_divines/features/sommaire/sommaire_screen.dart';
 import 'package:perles_divines/ui/site.dart';
-
-String _url(String id) => 'file:///C:/edition/pages/$id.html';
 
 const _safar = '50ebee15-3228-5bd9-944b-a1d847c06e5a';
 const _safarDua = 'c97581bf-b0ab-5a0b-8c74-0c4813dce712';
@@ -25,8 +23,8 @@ const _rajab = 'a5becaaa-d8e4-50f3-b7c5-cdd00e31b232';
 const _rajabDua = '7dc1b848-72f1-5d99-a96c-d09843597b5e';
 const _ramadhan = 'a21cb585-f002-5c39-baff-38928673c3ac';
 const _ramadhanNamaz = '02d64c56-4c53-553b-ae94-b12852a5473f';
-const _sommaireHtml = '1af50233-0b26-5c4b-993e-c96c078fdb46';
-const _logo = '386bba3e-88c0-5136-bd4e-8215613a7064';
+const _ramadhanDays = '640d4c0d-0000-4000-8000-000000000003';
+const _shab = '13f8d881-0000-4000-8000-000000000010';
 const _fatihah = '7918100a-56f9-5035-b4b0-46e1e2c53b32';
 
 DevotionalText _text({
@@ -35,6 +33,7 @@ DevotionalText _text({
   required String title,
   String arabic = '',
   String translation = '',
+  bool page = false,
 }) {
   return DevotionalText(
     id: id,
@@ -45,176 +44,170 @@ DevotionalText _text({
     transliteration: '',
     references: const [],
     audioIds: const [],
+    pagePath: page ? 'pages/$id.html' : '',
   );
 }
 
-/// Même contrat que ReaderScreen : une page finie entre dans la pile,
-/// le retour natif ou le rechargement retire exactement la dernière.
-String? _backOne(LocalPageHistory history) {
-  final target = history.beginBack();
-  if (target == null) return null;
-  history.noteFinished(target);
-  return history.current;
-}
+/// Page d’origine réduite : son titre puis un bouton par lien.
+OriginalPage _page(
+  String title, {
+  List<(String, String)> links = const [],
+  List<PageBlock> extra = const [],
+}) => OriginalPage(
+  title: title,
+  blocks: [
+    ParagraphBlock(
+      anchors: const [],
+      spans: [PageSpan(text: title, bold: true)],
+    ),
+    for (final (label, link) in links)
+      ButtonBlock(anchors: const [], label: label, link: link),
+    ...extra,
+  ],
+);
+
+final _pages = OriginalPages({
+  _safar: _page(
+    'Aamal du mois de Safar',
+    links: [
+      ('Doua du mois de Safar', 'page:$_safarDua'),
+      ('Zyaarat-e-Arbae\'en', 'page:$_arbaeen'),
+      ('Retour au sommaire', 'sommaire'),
+    ],
+  ),
+  _rajab: _page(
+    'Aamal du mois de Rajab',
+    links: [('Doua du mois de Rajab', 'page:$_rajabDua')],
+  ),
+  _ramadhan: _page(
+    'Aamal du mois de Ramadhan',
+    links: [('Namaz du 1 au 30 Ramadhan', 'page:$_ramadhanNamaz')],
+  ),
+  _ramadhanNamaz: _page(
+    'Namaz du 1 au 30 Ramadhan',
+    links: [
+      ('1er jour', 'page:$_ramadhanDays#jour-1'),
+      ('Plus bas', '#bas'),
+    ],
+    extra: [
+      for (var i = 0; i < 40; i++) const GapBlock([], 4),
+      const ParagraphBlock(
+        anchors: ['bas'],
+        spans: [PageSpan(text: 'Fin de la page')],
+      ),
+    ],
+  ),
+  // Page d’origine qui n’est pas un texte du catalogue.
+  _ramadhanDays: _page(
+    'Les jours du Ramadhan',
+    extra: [
+      for (var i = 0; i < 40; i++) const GapBlock([], 4),
+      const ParagraphBlock(
+        anchors: ['jour-1'],
+        spans: [PageSpan(text: 'Premier jour du Ramadhan')],
+      ),
+    ],
+  ),
+  _shab: _page(
+    'Namaz-e-Shab',
+    links: [('Sourate al-Fâtihah (1)', 'page:$_fatihah')],
+  ),
+});
+
+List<DevotionalText> _items() => [
+  _text(
+    id: _safar,
+    kind: DevotionalKind.aamal,
+    title: 'Aamal du mois de Safar',
+    page: true,
+  ),
+  _text(
+    id: _rajab,
+    kind: DevotionalKind.aamal,
+    title: 'Aamal du mois de Rajab',
+    page: true,
+  ),
+  _text(
+    id: _ramadhan,
+    kind: DevotionalKind.aamal,
+    title: 'Aamal du mois de Ramadhan',
+    page: true,
+  ),
+  _text(
+    id: _ramadhanNamaz,
+    kind: DevotionalKind.namaz,
+    title: 'Namaz du 1 au 30 Ramadhan',
+    page: true,
+  ),
+  for (var i = 0; i < 8; i++)
+    _text(
+      id: 'mois-$i',
+      kind: DevotionalKind.aamal,
+      title: 'Aamal du mois de Moharram $i',
+    ),
+  _text(
+    id: _safarDua,
+    kind: DevotionalKind.dua,
+    title: 'Doua du mois de Safar',
+    arabic: 'يَا',
+    translation: 'Invocation de Safar',
+  ),
+  _text(
+    id: _arbaeen,
+    kind: DevotionalKind.ziyarat,
+    title: 'Zyaarat-e-Arbae\'en',
+    arabic: 'اَلسَّلَامُ',
+  ),
+  _text(
+    id: _rajabDua,
+    kind: DevotionalKind.dua,
+    title: 'Doua du mois de Rajab',
+    arabic: 'اَللّٰهُمَّ',
+  ),
+  _text(
+    id: _fatihah,
+    kind: DevotionalKind.quran,
+    title: 'Sourate al-Fâtihah (1)',
+    arabic: 'بِسْمِ',
+    translation: 'Au nom d’Allàh.',
+  ),
+  _text(
+    id: 'ikhlas',
+    kind: DevotionalKind.quran,
+    title: 'Sourate al-Ikhlâç (112)',
+    arabic: 'قُلْ',
+    translation: 'Dis : Il est Allàh.',
+  ),
+  _text(
+    id: _shab,
+    kind: DevotionalKind.namaz,
+    title: 'Namaz-e-Shab',
+    page: true,
+  ),
+  _text(
+    id: 'ghofaylah',
+    kind: DevotionalKind.namaz,
+    title: 'Namaz-e-Ghofaylah',
+  ),
+];
 
 void main() {
-  test('Aamal : mois puis doua ou ziyarat, un retour retire une page', () {
-    final steps = <(String, String)>[
-      (_safar, _safarDua),
-      (_safar, _arbaeen),
-      (_rajab, _rajabDua),
-      (
-        '20ad67f1-817f-58b6-9b17-33bd0cd07923',
-        '13f8d881-0000-4000-8000-000000000001',
-      ),
-      (
-        '94875b15-8146-553c-ba51-7fb3be31cb97',
-        '489f9452-0000-4000-8000-000000000002',
-      ),
-      (_ramadhan, _ramadhanNamaz),
-      (
-        'f97e71a5-4991-54c1-867b-051547500ae4',
-        '2f0346f6-e430-588c-9491-bb7933f4a494',
-      ),
-    ];
-    for (final (month, child) in steps) {
-      final history = LocalPageHistory()
-        ..noteFinished(_url(month))
-        ..noteFinished(_url(child));
-      expect(history.canGoBack, isTrue, reason: month);
-      expect(_backOne(history), _url(month));
-      expect(history.canGoBack, isFalse, reason: month);
-      expect(history.beginBack(), isNull, reason: month);
-    }
-  });
-
-  test('le WebView vide ne devient pas une page, l’ancre non plus', () {
-    final history = LocalPageHistory()..noteFinished(_url(_safar));
-    expect(history.noteFinished('about:blank'), HistoryArrival.ignored);
-    expect(history.urls, hasLength(1));
-
-    history.noteFinished(_url(_safarDua));
-    history.noteFinished('${_url(_safarDua)}#TRANSLITTERATION');
-    expect(history.urls, hasLength(2));
-
-    history.beginBack();
-    expect(history.noteFinished('about:blank'), HistoryArrival.reloadPrevious);
-    expect(
-      LocalPageHistory.identity(history.previous!),
-      LocalPageHistory.identity(_url(_safar)),
+  test('un lien de page mène à la lecture, à la page seule ou nulle part', () {
+    final services = Services(
+      store: AppStore(NativeDatabase.memory()),
+      devotionalCatalog: LocalDevotionalCatalog(_items()),
+      originalPages: _pages,
     );
-    history.noteFinished(_url(_safar));
-    expect(history.canGoBack, isFalse);
-    expect(LocalPageHistory.fileOf(_url(_safar)), isNotNull);
-  });
-
-  test('une sourate mise à jour ouvre une route, pas une page du WebView', () {
-    const surah = DevotionalText(
-      id: _fatihah,
-      kind: DevotionalKind.quran,
-      title: 'Sourate al-Fâtihah (1)',
-      arabic: 'بِسْمِ',
-      translation: '',
-      transliteration: '',
-      references: [],
-      audioIds: [],
-    );
-    expect(surah.opensUpdatedReading, isTrue);
-    expect(
-      decideReaderNavigation(
-        Uri.parse(_url(_fatihah)),
-        editionDirectory: r'C:\edition',
-        opensUpdatedText: (id) => id == _fatihah,
-      ),
-      ReaderNavigation.openUpdatedText,
-    );
-    expect(
-      decideReaderNavigation(
-        Uri.parse(_url(_logo)),
-        editionDirectory: r'C:\edition',
-      ),
-      ReaderNavigation.openAppSommaire,
-    );
-    final history = LocalPageHistory()..noteFinished(_url(_ramadhanNamaz));
-    expect(history.canGoBack, isFalse);
-  });
-
-  test('isLegacySommaireUrl reconnaît sommaire et accueil, pas les autres pages', () {
-    const legacy = [
-      'file:///C:/edition/pages/1af50233-0b26-5c4b-993e-c96c078fdb46.html',
-      'file:///C:/edition/pages/1af50233-0b26-5c4b-993e-c96c078fdb46.html#haut',
-      'file:///C:/edition/pages/1af50233-0b26-5c4b-993e-c96c078fdb46.html?x=1',
-      'file:///data/user/0/app/pages/386bba3e-88c0-5136-bd4e-8215613a7064.html',
-      'file:///C:/edition/sommaire.html',
-      'file:///C:/edition/index.html#accueil',
-      'sommaire.html',
-      'pages/386bba3e-88c0-5136-bd4e-8215613a7064.html',
-      'https://www.perlesdivines.fr/sommaire.html',
-      'https://www.perlesdivines.fr/sommaire.html#liste',
-      'https://perlesdivines.fr/index.html?ref=1',
-      'http://www.perlesdivines.fr/',
-      'https://perlesdivines.fr',
-      'https://www.perlesdivines.fr/fr/',
-      'https://WWW.perlesdivines.fr/fr/index.html',
-      'https://www.perlesdivines.fr/fr/sommaire.html',
-    ];
-    for (final url in legacy) {
-      expect(isLegacySommaireUrl(Uri.parse(url)), isTrue, reason: url);
-    }
-    const kept = [
-      'file:///C:/edition/pages/50ebee15-3228-5bd9-944b-a1d847c06e5a.html',
-      'file:///C:/edition/pages/c97581bf-b0ab-5a0b-8c74-0c4813dce712.html#TRADUCTION',
-      'https://www.perlesdivines.fr/fr/aamal_safar.html',
-      'https://www.perlesdivines.fr/aamal_safar.html',
-      'https://example.com/sommaire.html',
-      'https://example.com/',
-      'mailto:contact@perlesdivines.fr',
-    ];
-    for (final url in kept) {
-      expect(isLegacySommaireUrl(Uri.parse(url)), isFalse, reason: url);
-    }
-  });
-
-  test(
-    'la décision de navigation distingue sommaire, page et lien externe',
-    () {
-      const edition = r'C:\edition';
-      ReaderNavigation go(String url) => decideReaderNavigation(
-        Uri.parse(url),
-        editionDirectory: edition,
-        opensUpdatedText: (id) => id == _fatihah,
-      );
-
-      expect(go(_url(_sommaireHtml)), ReaderNavigation.openAppSommaire);
-      expect(
-        go('https://www.perlesdivines.fr/index.html#haut'),
-        ReaderNavigation.openAppSommaire,
-      );
-      expect(go(_url(_safarDua)), ReaderNavigation.showPage);
-      expect(go(_url(_fatihah)), ReaderNavigation.openUpdatedText);
-      expect(
-        go('https://www.perlesdivines.fr/fr/doua.html'),
-        ReaderNavigation.external,
-      );
-      expect(go('mailto:a@b.c'), ReaderNavigation.external);
-      expect(
-        go('file:///C:/ailleurs/pages/$_safarDua.html'),
-        ReaderNavigation.blocked,
-      );
-
-      final history = LocalPageHistory()
-        ..noteFinished(_url(_safar))
-        ..noteFinished(_url(_safarDua));
-      history.clear();
-      expect(history.canGoBack, isFalse);
-      expect(history.beginBack(), isNull);
-    },
-  );
-
-  test('une page ouverte depuis la recherche n’a pas l’historique du mois', () {
-    final history = LocalPageHistory()..noteFinished(_url(_safarDua));
-    expect(history.canGoBack, isFalse);
-    expect(history.beginBack(), isNull);
+    addTearDown(services.store.close);
+    // Texte dont la page est l’onglet Arabe, avec son repère.
+    expect(locatePage(services, _ramadhanNamaz, 'x y'), '/text/$_ramadhanNamaz?anchor=x+y');
+    // Sourate mise à jour : sa lecture native.
+    expect(locatePage(services, _fatihah, null), '/text/$_fatihah');
+    // Page d’origine hors catalogue.
+    expect(locatePage(services, _ramadhanDays, 'jour-1'), '/page/$_ramadhanDays?anchor=jour-1');
+    // Doua sans page d’origine : sa lecture, sans repère.
+    expect(locatePage(services, _safarDua, 'TRADUCTION'), '/text/$_safarDua');
+    expect(locatePage(services, '00000000-0000-4000-8000-000000000000', null), isNull);
   });
 
   testWidgets('Aamal Mensuel → Safar → Doua, la flèche descend d’un niveau', (
@@ -223,17 +216,16 @@ void main() {
     await _pumpCatalog(tester);
     await _openSafar(tester);
     await _tapText(tester, 'Doua du mois de Safar');
-    expect(_heading(tester), 'Doua du mois de Safar');
+    expect(_title('Doua du mois de Safar'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Retour').hitTestable());
     await _settle(tester);
-    expect(find.byKey(const Key('reading-body')), findsOneWidget);
-    expect(_heading(tester), 'Aamal du mois de Safar');
-    expect(_bodyText('Zyaarat-e-Arbae\'en'), findsOneWidget);
+    expect(_title('Aamal du mois de Safar'), findsOneWidget);
+    expect(find.text('Zyaarat-e-Arbae\'en'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Retour').hitTestable());
     await _settle(tester);
-    expect(find.byKey(const Key('reading-body')), findsNothing);
+    expect(find.byType(OriginalPageView), findsNothing);
     expect(find.text('Aamal du mois de Moharram 0'), findsOneWidget);
   });
 
@@ -243,46 +235,41 @@ void main() {
       await _pumpCatalog(tester);
       await _openSafar(tester);
       await _tapText(tester, 'Zyaarat-e-Arbae\'en');
-      expect(_heading(tester), 'Zyaarat-e-Arbae\'en');
+      expect(_title('Zyaarat-e-Arbae\'en'), findsOneWidget);
 
       await tester.binding.handlePopRoute();
       await _settle(tester);
-      expect(_heading(tester), 'Aamal du mois de Safar');
-      expect(_bodyText('Doua du mois de Safar'), findsOneWidget);
+      expect(_title('Aamal du mois de Safar'), findsOneWidget);
+      expect(find.text('Doua du mois de Safar'), findsOneWidget);
 
       await tester.binding.handlePopRoute();
       await _settle(tester);
       expect(find.text('Aamal du mois de Rajab'), findsOneWidget);
       await _tapText(tester, 'Aamal du mois de Rajab');
       await _tapText(tester, 'Doua du mois de Rajab');
-      expect(_heading(tester), 'Doua du mois de Rajab');
+      expect(_title('Doua du mois de Rajab'), findsOneWidget);
       await tester.binding.handlePopRoute();
       await _settle(tester);
-      expect(_heading(tester), 'Aamal du mois de Rajab');
+      expect(_title('Aamal du mois de Rajab'), findsOneWidget);
       await tester.binding.handlePopRoute();
       await _settle(tester);
       expect(find.text('Aamal Mensuel'), findsWidgets);
-      expect(find.byKey(const Key('reading-body')), findsNothing);
+      expect(find.byType(OriginalPageView), findsNothing);
     },
   );
 
   testWidgets(
-    'Ramadhan → namaz, puis le geste iOS, sans quitter l’application',
+    'Ramadhan → namaz sur iOS : chaque page est un écran, le retour les défait',
     (tester) async {
       await _pumpCatalog(tester, platform: TargetPlatform.iOS);
       await _tapText(tester, 'Aamal Mensuel');
       await _tapText(tester, 'Aamal du mois de Ramadhan');
       await _tapText(tester, 'Namaz du 1 au 30 Ramadhan');
-      expect(find.byKey(const Key('reading-back-edge')), findsOneWidget);
+      expect(_title('Namaz du 1 au 30 Ramadhan'), findsOneWidget);
 
-      await tester.fling(
-        find.byKey(const Key('reading-back-edge')),
-        const Offset(160, 0),
-        800,
-      );
+      await tester.binding.handlePopRoute();
       await _settle(tester);
-      expect(_heading(tester), 'Aamal du mois de Ramadhan');
-
+      expect(_title('Aamal du mois de Ramadhan'), findsOneWidget);
       await tester.binding.handlePopRoute();
       await _settle(tester);
       expect(find.text('Aamal du mois de Ramadhan'), findsOneWidget);
@@ -296,22 +283,44 @@ void main() {
     },
   );
 
-  testWidgets('Retour au sommaire HTML ouvre le sommaire de l’application', (
+  testWidgets('une ancre de la page fait défiler jusqu’au repère', (
+    tester,
+  ) async {
+    await _pumpCatalog(tester);
+    await _tapText(tester, 'Aamal Mensuel');
+    await _tapText(tester, 'Aamal du mois de Ramadhan');
+    await _tapText(tester, 'Namaz du 1 au 30 Ramadhan');
+    expect(find.text('Fin de la page'), findsNothing);
+    await tester.tap(find.text('Plus bas'));
+    await tester.pumpAndSettle();
+    expect(find.text('Fin de la page'), findsOneWidget);
+  });
+
+  testWidgets('un lien vers une autre page ouvre son écran, à son repère', (
+    tester,
+  ) async {
+    await _pumpCatalog(tester);
+    await _tapText(tester, 'Aamal Mensuel');
+    await _tapText(tester, 'Aamal du mois de Ramadhan');
+    await _tapText(tester, 'Namaz du 1 au 30 Ramadhan');
+    await tester.tap(find.text('1er jour'));
+    await tester.pumpAndSettle();
+    expect(find.byType(OriginalPageScreen), findsOneWidget);
+    expect(_title('Les jours du Ramadhan'), findsOneWidget);
+    expect(find.text('Premier jour du Ramadhan'), findsOneWidget);
+    await tester.tap(find.byTooltip('Retour').hitTestable());
+    await _settle(tester);
+    expect(_title('Namaz du 1 au 30 Ramadhan'), findsOneWidget);
+  });
+
+  testWidgets('Retour au sommaire de la page ouvre le sommaire de l’application', (
     tester,
   ) async {
     await _pumpCatalog(tester);
     await _openSafar(tester);
-    await _tapText(tester, 'Doua du mois de Safar');
-    await tester.tap(find.byTooltip('Retour').hitTestable());
+    await tester.tap(find.text('Retour au sommaire'));
     await _settle(tester);
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const Key('reading-body')),
-        matching: find.text('Retour au sommaire'),
-      ),
-    );
-    await _settle(tester);
-    expect(find.byKey(const Key('reading-body')), findsNothing);
+    expect(find.byType(OriginalPageView), findsNothing);
     expect(find.text('Aamal Mensuel'), findsOneWidget);
     expect(find.text('Doua'), findsOneWidget);
     final stayed = await tester.binding.handlePopRoute();
@@ -329,7 +338,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('Zyaarate'), findsOneWidget);
-    expect(find.byKey(const Key('reading-body')), findsNothing);
+    expect(find.byType(OriginalPageView), findsNothing);
     expect(find.byTooltip('Lire'), findsNothing);
   });
 
@@ -421,32 +430,32 @@ void main() {
     expect(find.text('بِسْمِ'), findsOneWidget);
     await tester.tap(find.byTooltip('Retour').hitTestable());
     await _settle(tester);
-    expect(find.byKey(const Key('reading-body')), findsOneWidget);
-    expect(_bodyText('Namaz-e-Shab'), findsOneWidget);
+    expect(find.byType(OriginalPageView), findsOneWidget);
+    expect(_title('Namaz-e-Shab'), findsOneWidget);
     await tester.tap(find.byTooltip('Retour').hitTestable());
     await _settle(tester);
     expect(find.text('Namaz-e-Ghofaylah'), findsOneWidget);
   });
 }
 
-Finder _bodyText(String text) => find.descendant(
-  of: find.byKey(const Key('reading-body')),
+/// Le titre affiché dans l’en-tête vert de l’écran visible.
+Finder _title(String text) => find.descendant(
+  of: find.byType(SiteReaderHeader),
   matching: find.text(text),
 );
-
-String _heading(WidgetTester tester) =>
-    tester.widget<Text>(find.byKey(const Key('page-heading'))).data!;
 
 Future<void> _settle(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 50));
+  // La transition de page finit avant la vérification suivante.
+  await tester.pump(const Duration(milliseconds: 500));
 }
 
 Future<void> _tapText(WidgetTester tester, String text) async {
   final finder = find.text(text);
   await tester.ensureVisible(finder.first);
   await tester.pump();
-  await tester.tap(finder.hitTestable());
+  await tester.tap(finder.hitTestable().first);
   await _settle(tester);
 }
 
@@ -457,12 +466,20 @@ Future<GoRouter> _pumpCatalog(
 }) async {
   final memory = store ?? AppStore(NativeDatabase.memory());
   addTearDown(memory.close);
-  final router = _catalogRouter(memory);
+  final catalog = LocalDevotionalCatalog(_items());
+  final router = _catalogRouter(catalog, memory);
   addTearDown(router.dispose);
   await tester.pumpWidget(
-    MaterialApp.router(
-      theme: platform == null ? null : ThemeData(platform: platform),
-      routerConfig: router,
+    ServicesScope(
+      services: Services(
+        store: memory,
+        devotionalCatalog: catalog,
+        originalPages: _pages,
+      ),
+      child: MaterialApp.router(
+        theme: platform == null ? null : ThemeData(platform: platform),
+        routerConfig: router,
+      ),
     ),
   );
   return router;
@@ -471,119 +488,10 @@ Future<GoRouter> _pumpCatalog(
 Future<void> _openSafar(WidgetTester tester) async {
   await _tapText(tester, 'Aamal Mensuel');
   await _tapText(tester, 'Aamal du mois de Safar');
-  expect(find.byKey(const Key('reading-body')), findsOneWidget);
+  expect(find.byType(OriginalPageView), findsOneWidget);
 }
 
-class _Node {
-  const _Node(
-    this.id,
-    this.title, {
-    this.links = const [],
-    this.button,
-    this.opensRoute = false,
-  });
-
-  final String id;
-  final String title;
-  final String? button;
-  final List<_Node> links;
-  final bool opensRoute;
-
-  String get buttonLabel => button ?? title;
-}
-
-final _safarPage = _Node(
-  _safar,
-  'Aamal du mois de Safar',
-  links: [
-    const _Node(_safarDua, 'Doua du mois de Safar'),
-    const _Node(_arbaeen, 'Zyaarat-e-Arbae\'en'),
-    const _Node(
-      _sommaireHtml,
-      'Sommaire du site',
-      button: 'Retour au sommaire',
-    ),
-  ],
-);
-
-final _rajabPage = _Node(
-  _rajab,
-  'Aamal du mois de Rajab',
-  links: [const _Node(_rajabDua, 'Doua du mois de Rajab')],
-);
-
-final _ramadhanPage = _Node(
-  _ramadhan,
-  'Aamal du mois de Ramadhan',
-  links: [const _Node(_ramadhanNamaz, 'Namaz du 1 au 30 Ramadhan')],
-);
-
-final _shabPage = _Node(
-  '13f8d881-0000-4000-8000-000000000010',
-  'Namaz-e-Shab',
-  links: [const _Node(_fatihah, 'Sourate al-Fâtihah (1)', opensRoute: true)],
-);
-
-_Node? _webRoot(String id) {
-  for (final node in [_safarPage, _rajabPage, _ramadhanPage, _shabPage]) {
-    if (node.id == id) return node;
-  }
-  return null;
-}
-
-List<DevotionalText> _items() => [
-  _text(
-    id: _safar,
-    kind: DevotionalKind.aamal,
-    title: 'Aamal du mois de Safar',
-  ),
-  _text(
-    id: _rajab,
-    kind: DevotionalKind.aamal,
-    title: 'Aamal du mois de Rajab',
-  ),
-  _text(
-    id: _ramadhan,
-    kind: DevotionalKind.aamal,
-    title: 'Aamal du mois de Ramadhan',
-  ),
-  for (var i = 0; i < 8; i++)
-    _text(
-      id: 'mois-$i',
-      kind: DevotionalKind.aamal,
-      title: 'Aamal du mois de Moharram $i',
-    ),
-  _text(
-    id: _safarDua,
-    kind: DevotionalKind.dua,
-    title: 'Doua du mois de Safar',
-    arabic: 'يَا',
-    translation: 'Invocation de Safar',
-  ),
-  _text(
-    id: _fatihah,
-    kind: DevotionalKind.quran,
-    title: 'Sourate al-Fâtihah (1)',
-    arabic: 'بِسْمِ',
-    translation: 'Au nom d’Allàh.',
-  ),
-  _text(
-    id: 'ikhlas',
-    kind: DevotionalKind.quran,
-    title: 'Sourate al-Ikhlâç (112)',
-    arabic: 'قُلْ',
-    translation: 'Dis : Il est Allàh.',
-  ),
-  _text(id: _shabPage.id, kind: DevotionalKind.namaz, title: 'Namaz-e-Shab'),
-  _text(
-    id: 'ghofaylah',
-    kind: DevotionalKind.namaz,
-    title: 'Namaz-e-Ghofaylah',
-  ),
-];
-
-GoRouter _catalogRouter(AppStore store) {
-  final catalog = LocalDevotionalCatalog(_items());
+GoRouter _catalogRouter(LocalDevotionalCatalog catalog, AppStore store) {
   return GoRouter(
     initialLocation: '/sommaire',
     routes: [
@@ -602,18 +510,17 @@ GoRouter _catalogRouter(AppStore store) {
       ),
       GoRoute(
         path: '/text/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          final web = _webRoot(id);
-          if (web != null) return _WebReading(root: web);
-          final item = catalog.items.firstWhere((entry) => entry.id == id);
-          return TextScreen(
-            item: item,
-            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
-            favorite: false,
-            onFavorite: () async {},
-          );
-        },
+        builder: (context, state) => CatalogTextPage(
+          id: state.pathParameters['id'] ?? '',
+          anchor: state.uri.queryParameters['anchor'],
+        ),
+      ),
+      GoRoute(
+        path: '/page/:id',
+        builder: (context, state) => OriginalPageScreen(
+          id: state.pathParameters['id'] ?? '',
+          anchor: state.uri.queryParameters['anchor'],
+        ),
       ),
       GoRoute(
         path: '/favoris',
@@ -622,103 +529,4 @@ GoRouter _catalogRouter(AppStore store) {
       ),
     ],
   );
-}
-
-class _WebReading extends StatefulWidget {
-  const _WebReading({required this.root});
-  final _Node root;
-
-  @override
-  State<_WebReading> createState() => _WebReadingState();
-}
-
-class _WebReadingState extends State<_WebReading> {
-  final history = LocalPageHistory();
-  late _Node current;
-  late final Map<String, _Node> _byUrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _byUrl = {};
-    void walk(_Node node) {
-      _byUrl[_url(node.id)] = node;
-      for (final link in node.links) {
-        walk(link);
-      }
-    }
-
-    walk(widget.root);
-    current = widget.root;
-    history.noteFinished(_url(current.id));
-  }
-
-  void _open(_Node node) {
-    final decision = decideReaderNavigation(
-      Uri.parse(_url(node.id)),
-      editionDirectory: r'C:\edition',
-      opensUpdatedText: (id) => node.opensRoute && id == node.id,
-    );
-    if (decision == ReaderNavigation.openAppSommaire) {
-      history.clear();
-      GoRouter.of(context).go('/sommaire');
-      return;
-    }
-    if (decision == ReaderNavigation.openUpdatedText) {
-      GoRouter.of(context).push('/text/${node.id}');
-      return;
-    }
-    setState(() {
-      history.noteFinished(_url(node.id));
-      current = node;
-    });
-  }
-
-  void _pageBack() {
-    final target = history.beginBack();
-    if (target == null) return;
-    final node = _byUrl[target];
-    setState(() {
-      history.noteFinished(target);
-      if (node != null) current = node;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return PageBackScope(
-      hasPageHistory: history.canGoBack,
-      onPageBack: _pageBack,
-      child: Scaffold(
-        body: Column(
-          children: [
-            SiteReaderHeader(
-              title: widget.root.title,
-              onBack: () => Navigator.of(context).maybePop(),
-              onHome: () => GoRouter.of(context).go('/sommaire'),
-              onScrollToTop: () {},
-              onPlay: () {},
-              onShare: () {},
-            ),
-            Expanded(
-              child: IosReadingBackEdge(
-                enabled: history.canGoBack,
-                child: ListView(
-                  key: const Key('reading-body'),
-                  children: [
-                    Text(current.title, key: const Key('page-heading')),
-                    for (final link in current.links)
-                      TextButton(
-                        onPressed: () => _open(link),
-                        child: Text(link.buttonLabel),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

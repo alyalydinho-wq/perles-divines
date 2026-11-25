@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:perles_divines/features/catalog/jawshan.dart';
 import 'package:perles_divines/features/catalog/text_screen.dart';
 import 'package:perles_divines/features/duas/dua.dart';
-import 'package:perles_divines/features/reader/content_install.dart';
 
 void main() {
   test('le hadith se sépare de la liste Doua', () {
@@ -107,7 +106,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -168,7 +166,6 @@ Widget _app(List<JawshanTitle> titles) {
   return MaterialApp(
     home: TextScreen(
       item: item,
-      edition: LocalEdition('/tmp', const {'home': 'index.html'}),
       favorite: false,
       onFavorite: () async {},
       jawshanTitles: titles,

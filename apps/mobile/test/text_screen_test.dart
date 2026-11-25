@@ -10,7 +10,6 @@ import 'package:go_router/go_router.dart';
 import 'package:perles_divines/core/store.dart';
 import 'package:perles_divines/features/catalog/text_screen.dart';
 import 'package:perles_divines/features/duas/dua.dart';
-import 'package:perles_divines/features/reader/content_install.dart';
 import 'package:perles_divines/features/player/audio_card.dart';
 import 'package:perles_divines/ui/site.dart';
 
@@ -62,14 +61,13 @@ void main() {
 
   test('les pages d’origine suivent les cinq tailles de texte', () {
     // Petit, Normal, Grand, Très grand, Énorme : le texte de la page grossit
-    // avec A+ comme la traduction, sans pincement.
-    expect([16.0, 18.0, 22.0, 26.0, 30.0].map(pageTextZoom).toList(), [
-      89,
-      100,
-      122,
-      144,
-      167,
-    ]);
+    // avec A+ comme la traduction, sur Android comme sur iOS.
+    expect(
+      [16.0, 18.0, 22.0, 26.0, 30.0]
+          .map((size) => (pageTextScale(size) * 100).round())
+          .toList(),
+      [89, 100, 122, 144, 167],
+    );
   });
 
   test('le chronomètre de lecture reste lisible', () {
@@ -98,7 +96,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -158,7 +155,6 @@ void main() {
         MaterialApp(
           home: TextScreen(
             item: item,
-            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
             favorite: favorite,
             onFavorite: () async {},
           ),
@@ -201,7 +197,6 @@ void main() {
             data: const MediaQueryData(padding: EdgeInsets.only(bottom: 48)),
             child: TextScreen(
               item: item,
-              edition: LocalEdition('/tmp', const {'home': 'index.html'}),
               favorite: false,
               onFavorite: () async {},
             ),
@@ -238,7 +233,6 @@ void main() {
         MaterialApp(
           home: TextScreen(
             item: item,
-            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
             favorite: false,
             onFavorite: () async {},
             store: store,
@@ -324,7 +318,6 @@ void main() {
           home: TextScreen(
             key: const ValueKey('reopen'),
             item: item,
-            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
             favorite: false,
             onFavorite: () async {},
             store: store,
@@ -361,7 +354,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -415,7 +407,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -466,7 +457,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -515,7 +505,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -567,7 +556,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -619,7 +607,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -659,7 +646,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -745,7 +731,6 @@ void main() {
         MaterialApp(
           home: TextScreen(
             item: item,
-            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
             favorite: false,
             onFavorite: () async {},
           ),
@@ -784,7 +769,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -832,7 +816,6 @@ void main() {
         MaterialApp(
           home: TextScreen(
             item: item,
-            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
             favorite: false,
             onFavorite: () async {},
           ),
@@ -1076,7 +1059,6 @@ void main() {
         home: TextScreen(
           key: const ValueKey('reopen'),
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
           store: store,
@@ -1107,7 +1089,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: _sample(arabic: arabic),
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
           store: store,
@@ -1200,7 +1181,6 @@ void main() {
           path: '/texte',
           builder: (context, state) => TextScreen(
             item: item,
-            edition: LocalEdition('/tmp', const {'home': 'index.html'}),
             favorite: false,
             onFavorite: () async {},
           ),
@@ -1223,9 +1203,6 @@ void main() {
                   MaterialPageRoute<void>(
                     builder: (context) => TextScreen(
                       item: _sample(),
-                      edition: LocalEdition('/tmp', const {
-                        'home': 'index.html',
-                      }),
                       favorite: false,
                       onFavorite: () async {},
                     ),
@@ -1253,7 +1230,6 @@ void main() {
       MaterialApp(
         home: TextScreen(
           item: item,
-          edition: LocalEdition('/tmp', const {'home': 'index.html'}),
           favorite: false,
           onFavorite: () async {},
         ),
@@ -1437,7 +1413,6 @@ Future<void> _pumpReading(
       home: TextScreen(
         key: key,
         item: item,
-        edition: LocalEdition('/tmp', const {'home': 'index.html'}),
         favorite: false,
         onFavorite: () async {},
         store: store,

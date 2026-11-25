@@ -1,37 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:path/path.dart' as p;
 import 'package:perles_divines/features/duas/dua.dart';
-import 'package:perles_divines/features/reader/reader_screen.dart';
 
 void main() {
   const fatihah = '7918100a-56f9-5035-b4b0-46e1e2c53b32';
-
-  test('un lien de sourate dans une page locale désigne le catalogue', () {
-    final edition = p.join(Directory.systemTemp.path, 'pd-edition');
-    final page = Uri.file(p.join(edition, 'pages', '$fatihah.html'));
-    expect(localCatalogId(page, edition), fatihah);
-    expect(
-      localCatalogId(page.replace(fragment: 'TRADUCTION'), edition),
-      fatihah,
-    );
-    expect(
-      localCatalogId(Uri.file(p.join(edition, 'pages', 'index.html')), edition),
-      isNull,
-    );
-    expect(
-      localCatalogId(
-        Uri.file(p.join(Directory.systemTemp.path, '$fatihah.html')),
-        edition,
-      ),
-      isNull,
-    );
-    expect(
-      localCatalogId(Uri.parse('https://example.test/fateha.html'), edition),
-      isNull,
-    );
-  });
 
   test('seule une sourate déjà mise à jour quitte l’ancienne page', () {
     const updated = DevotionalText(
@@ -129,16 +100,6 @@ void main() {
         reason: id,
       );
     }
-    final edition = p.join(Directory.systemTemp.path, 'pd-edition');
-    expect(
-      decideReaderNavigation(
-        Uri.file(p.join(edition, 'pages', '${waressa.id}.html')),
-        editionDirectory: edition,
-        opensUpdatedText: (id) =>
-            id == waressa.id && waressa.opensUpdatedReading,
-      ),
-      ReaderNavigation.openUpdatedText,
-    );
   });
 
   test('une page d’origine seule n’a pas d’onglets de traduction', () {

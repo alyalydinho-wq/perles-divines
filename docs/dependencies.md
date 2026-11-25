@@ -8,7 +8,7 @@ Installation reproductible : `npm ci`. Audit : `npm audit`.
 
 ## Flutter
 
-`apps/mobile/pubspec.yaml` est la source unique des dépendances de l'application. Il couvre l'interface Flutter, la lecture audio, le stockage SQLite local, les tâches de transfert, l'intégrité SHA-256, la WebView locale, le partage et l'ouverture de liens. `apps/mobile/pubspec.lock` verrouille les résolutions.
+`apps/mobile/pubspec.yaml` est la source unique des dépendances de l'application. Il couvre l'interface Flutter, la lecture audio, le stockage SQLite local, les tâches de transfert, l'intégrité SHA-256, le partage et l'ouverture de liens. `apps/mobile/pubspec.lock` verrouille les résolutions.
 
 Commandes :
 

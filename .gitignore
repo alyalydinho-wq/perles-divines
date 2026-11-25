@@ -9,7 +9,7 @@ content/imports/
 content/preview/
 content/development/
 content/fixtures/*.mp3
-apps/mobile/assets/site/
+apps/mobile/assets/pages/
 artifacts/
 *.log
 .dart_tool/

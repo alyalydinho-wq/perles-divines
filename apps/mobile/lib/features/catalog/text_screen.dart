@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/navigation.dart';
@@ -16,9 +14,8 @@ import '../duas/dua.dart';
 import 'jawshan.dart';
 import '../downloads/download_controller.dart';
 import '../player/audio_controller.dart';
-import '../reader/content_install.dart';
-import '../reader/page_history.dart';
-import '../reader/reader_screen.dart';
+import '../reader/original_page.dart';
+import '../reader/original_page_screen.dart';
 
 enum TextPane { arabic, translation, transliteration, gujarati }
 
@@ -43,9 +40,9 @@ const _textSizeLevels = <_TextSizeLevel>[
   _TextSizeLevel('Énorme', 46, 30),
 ];
 
-/// Taille du texte des pages d’origine, en pourcentage, pour une taille de
-/// traduction donnée : la taille « Normal » (18) vaut 100 %.
-int pageTextZoom(double proseSize) => (proseSize / 18 * 100).round();
+/// Échelle du texte des pages d’origine pour une taille de traduction
+/// donnée : la taille « Normal » (18) garde la taille du site.
+double pageTextScale(double proseSize) => proseSize / 18;
 
 class _TextSizeLevel {
   const _TextSizeLevel(this.name, this.arabic, this.prose);
@@ -69,28 +66,30 @@ class TextScreen extends StatefulWidget {
   const TextScreen({
     super.key,
     required this.item,
-    required this.edition,
+    this.originalPage,
+    this.initialAnchor,
     required this.favorite,
     required this.onFavorite,
     this.audio,
     this.downloads,
     this.tracks = const [],
     this.store,
-    this.opensUpdatedText,
     this.jawshanTitles,
   });
 
   final DevotionalText item;
-  final LocalEdition edition;
+
+  /// Page d’origine du texte, montrée dans l’onglet Arabe.
+  final OriginalPage? originalPage;
+
+  /// Repère de cette page où s’ouvrir (lien venu d’une autre page).
+  final String? initialAnchor;
   final bool favorite;
   final Future<void> Function() onFavorite;
   final PerlesAudioHandler? audio;
   final DownloadController? downloads;
   final List<Track> tracks;
   final AppStore? store;
-
-  /// Vrai pour une sourate dont la lecture native remplace l’ancienne page.
-  final bool Function(String id)? opensUpdatedText;
 
   /// Titres déjà chargés. Sinon, Jawshan les lit dans l’asset au démarrage.
   final List<JawshanTitle>? jawshanTitles;
@@ -101,7 +100,6 @@ class TextScreen extends StatefulWidget {
 
 class _TextScreenState extends State<TextScreen> {
   final _scroll = ScrollController();
-  final _readerKey = GlobalKey<ReaderScreenState>();
   bool _surahInfoOpen = false;
   double arabicSize = 28;
   double translationSize = 18;
@@ -114,7 +112,6 @@ class _TextScreenState extends State<TextScreen> {
   bool _sizeOpen = false;
   late bool favorite = widget.favorite;
   late TextPane pane;
-  bool _pageHistory = false;
   int? _jawshanPart;
   List<JawshanTitle> _jawshanTitles = const [];
   List<GlobalKey> _jawshanKeys = const [];
@@ -255,22 +252,11 @@ class _TextScreenState extends State<TextScreen> {
     });
   }
 
-  void _setPageHistory(bool value) {
-    if (!mounted || _pageHistory == value) return;
-    setState(() => _pageHistory = value);
-  }
-
-  bool _showsOriginal(TextPane value) =>
-      value == TextPane.arabic && widget.item.hasOriginalPage;
-
   int get _paneCount => widget.item.hasGujarati ? 4 : 3;
 
   /// Ouvre une lecture, depuis les onglets ou un glissement du doigt.
   void _selectPane(int index) {
-    setState(() {
-      pane = TextPane.values[index];
-      if (!_showsOriginal(pane)) _pageHistory = false;
-    });
+    setState(() => pane = TextPane.values[index]);
     final part = _jawshanPart;
     if (isJawshanKabirId(widget.item.id) && part != null) {
       _revealJawshanPart(part);
@@ -300,49 +286,36 @@ class _TextScreenState extends State<TextScreen> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-    final ios = Theme.of(context).platform == TargetPlatform.iOS;
-    return PageBackScope(
-      hasPageHistory: _pageHistory,
-      onPageBack: () {
-        final reader = _readerKey.currentState;
-        if (reader == null) return;
-        unawaited(reader.goBack());
-      },
-      child: Scaffold(
-        backgroundColor: context.site.canvas,
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _header(item),
-            Expanded(
-              child: IosReadingBackEdge(
-                enabled: _pageHistory,
-                child: PaneSwipe(
-                  index: pane.index,
-                  count: item.onlyOriginalPage ? 1 : _paneCount,
-                  onSwipe: _selectPane,
-                  ignoreLeftEdge: _pageHistory && ios ? 28 : 0,
-                  builder: (context, index, role) =>
-                      _pane(item, TextPane.values[index], role),
-                ),
-              ),
+    return Scaffold(
+      backgroundColor: context.site.canvas,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _header(item),
+          Expanded(
+            child: PaneSwipe(
+              index: pane.index,
+              count: item.onlyOriginalPage ? 1 : _paneCount,
+              onSwipe: _selectPane,
+              builder: (context, index, role) =>
+                  _pane(item, TextPane.values[index], role),
             ),
-            if (_sizeOpen) _textSizeBar(),
-            // Une page d’origine sans traduction ni phonétique séparées n’a
-            // qu’une version : des onglets n’y mèneraient qu’à des pages vides.
-            if (!item.onlyOriginalPage)
-              SiteTextTabs(
-                selected: pane.index,
-                labels: [
-                  'Arabe',
-                  'Traduction',
-                  'Phonétique',
-                  if (item.hasGujarati) 'Gujarati',
-                ],
-                onSelected: _selectPane,
-              ),
-          ],
-        ),
+          ),
+          if (_sizeOpen) _textSizeBar(),
+          // Une page d’origine sans traduction ni phonétique séparées n’a
+          // qu’une version : des onglets n’y mèneraient qu’à des pages vides.
+          if (!item.onlyOriginalPage)
+            SiteTextTabs(
+              selected: pane.index,
+              labels: [
+                'Arabe',
+                'Traduction',
+                'Phonétique',
+                if (item.hasGujarati) 'Gujarati',
+              ],
+              onSelected: _selectPane,
+            ),
+        ],
       ),
     );
   }
@@ -382,14 +355,7 @@ class _TextScreenState extends State<TextScreen> {
     return widget.tracks.any((track) => track.id == current.id);
   }
 
-  int get _pageTextZoom => pageTextZoom(translationSize);
-
   Widget _textSizeBar() {
-    // iOS n’a pas de réglage du texte des pages d’origine : il garde le
-    // pincement. Android règle ces pages avec A− et A+ comme les autres.
-    if (_showsOriginal(pane) && defaultTargetPlatform == TargetPlatform.iOS) {
-      return const _OriginalPageHint();
-    }
     final atMin = _levelIndex <= 0;
     final atMax = _levelIndex >= _textSizeLevels.length - 1;
     final label = atMin
@@ -520,17 +486,7 @@ class _TextScreenState extends State<TextScreen> {
     );
   }
 
-  void _openUpdatedText(String id) {
-    if (widget.opensUpdatedText?.call(id) != true) return;
-    GoRouter.maybeOf(context)?.push('/text/$id');
-  }
-
   void _scrollToTop() {
-    final reader = _readerKey.currentState;
-    if (reader != null) {
-      unawaited(reader.scrollToTop());
-      return;
-    }
     if (!_scroll.hasClients) return;
     _scroll.animateTo(
       0,
@@ -584,23 +540,18 @@ class _TextScreenState extends State<TextScreen> {
     switch (value) {
       case TextPane.arabic:
         if (item.hasOriginalPage) {
-          return ColoredBox(
-            color: context.site.canvas,
-            // La page d’origine n’est chargée que lorsqu’on la voit : une
-            // WebView cachée en coulisse coûterait trop.
-            child: role == PaneRole.hidden
-                ? const SizedBox.expand()
-                : ReaderScreen(
-                    key: _readerKey,
-                    edition: widget.edition,
-                    initialPage: item.pagePath,
-                    compact: true,
-                    textZoom: _pageTextZoom,
-                    opensUpdatedText: widget.opensUpdatedText,
-                    onOpenUpdatedText: _openUpdatedText,
-                    onOpenAppSommaire: () => goToSommaire(context),
-                    onPageHistory: current ? _setPageHistory : null,
-                  ),
+          final page = widget.originalPage;
+          if (page == null) {
+            return _empty('La page d’origine de ce texte est introuvable.');
+          }
+          return OriginalPageView(
+            page: page,
+            controller: current ? _scroll : null,
+            scale: pageTextScale(translationSize),
+            initialAnchor: current ? widget.initialAnchor : null,
+            arabicStyle: _arabicStyle(),
+            contextMenuBuilder: _selectionMenu,
+            onLink: (destination) => openPageLink(context, destination),
           );
         }
         if (item.hasArabic) {
@@ -1249,41 +1200,6 @@ class _TextScreenState extends State<TextScreen> {
       case TextPane.gujarati:
         return const [];
     }
-  }
-}
-
-class _OriginalPageHint extends StatelessWidget {
-  const _OriginalPageHint();
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      key: const Key('text-size-bar'),
-      color: context.site.panel,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 56),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border(top: BorderSide(color: context.site.panelBorder)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Center(
-              child: Text(
-                'Pour agrandir cette page, écartez deux doigts',
-                textAlign: TextAlign.center,
-                style: siteText(
-                  color: context.site.ink,
-                  fontSize: 16,
-                  lineHeight: 22,
-                  weight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 

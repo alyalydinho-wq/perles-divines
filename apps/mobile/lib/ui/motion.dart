@@ -482,7 +482,7 @@ typedef PaneBuilder = Widget Function(
 ///
 /// Le geste est lu sur les événements bruts du pointeur, sans arène : la zone
 /// de sélection du texte s’empare des glissements horizontaux sur Android et
-/// n’en fait rien, et la page d’origine (WebView) garde ses propres touches.
+/// n’en fait rien.
 /// Un geste d’abord vertical est laissé au défilement.
 class PaneSwipe extends StatefulWidget {
   const PaneSwipe({

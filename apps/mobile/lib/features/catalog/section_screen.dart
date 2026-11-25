@@ -114,8 +114,11 @@ class _SectionScreenState extends State<SectionScreen> {
 }
 
 class CatalogTextPage extends StatelessWidget {
-  const CatalogTextPage({super.key, required this.id});
+  const CatalogTextPage({super.key, required this.id, this.anchor});
   final String id;
+
+  /// Repère de la page d’origine où ouvrir le texte (lien d’une autre page).
+  final String? anchor;
 
   @override
   Widget build(BuildContext context) {
@@ -126,10 +129,10 @@ class CatalogTextPage extends StatelessWidget {
       );
     }
     final catalog = services.devotionalCatalog;
-    final edition = services.edition;
+    final pages = services.originalPages;
     // Juste après l’ouverture, le catalogue ou les pages d’origine peuvent
     // être encore en préparation : la page s’affiche dès qu’ils arrivent.
-    if (catalog == null || edition == null) {
+    if (catalog == null || pages == null) {
       return const SitePage(
         children: [
           SiteGap(height: 44),
@@ -162,19 +165,14 @@ class CatalogTextPage extends StatelessWidget {
       builder: (context, snapshot) {
         return TextScreen(
           item: item,
-          edition: edition,
+          originalPage: item.hasOriginalPage ? pages[item.id] : null,
+          initialAnchor: anchor,
           favorite: snapshot.data?.contains(item.id) ?? false,
           audio: services.audio,
           downloads: services.downloads,
           tracks: tracks,
           store: services.store,
           onFavorite: () => DevotionalFavorites(services.store).toggle(item.id),
-          opensUpdatedText: (id) {
-            for (final candidate in catalog.items) {
-              if (candidate.id == id) return candidate.opensUpdatedReading;
-            }
-            return false;
-          },
         );
       },
     );

@@ -3,7 +3,7 @@ import '../core/track.dart';
 import '../features/downloads/download_controller.dart';
 import '../features/duas/catalog.dart';
 import '../features/player/audio_controller.dart';
-import '../features/reader/content_install.dart';
+import '../features/reader/original_page.dart';
 
 /// Services de l’app. Le sommaire s’affiche avant qu’ils soient tous prêts :
 /// chacun arrive dès qu’il est chargé, et un champ vide veut dire « encore
@@ -11,7 +11,7 @@ import '../features/reader/content_install.dart';
 class Services {
   const Services({
     required this.store,
-    this.edition,
+    this.originalPages,
     this.devotionalCatalog,
     this.downloads,
     this.audio,
@@ -20,22 +20,22 @@ class Services {
 
   final AppStore store;
 
-  /// Pages d’origine copiées sur le téléphone.
-  final LocalEdition? edition;
+  /// Pages d’origine du site, affichées en natif.
+  final OriginalPages? originalPages;
   final LocalDevotionalCatalog? devotionalCatalog;
   final DownloadController? downloads;
   final PerlesAudioHandler? audio;
   final List<Track> tracks;
 
   Services copyWith({
-    LocalEdition? edition,
+    OriginalPages? originalPages,
     LocalDevotionalCatalog? devotionalCatalog,
     DownloadController? downloads,
     PerlesAudioHandler? audio,
     List<Track>? tracks,
   }) => Services(
     store: store,
-    edition: edition ?? this.edition,
+    originalPages: originalPages ?? this.originalPages,
     devotionalCatalog: devotionalCatalog ?? this.devotionalCatalog,
     downloads: downloads ?? this.downloads,
     audio: audio ?? this.audio,
