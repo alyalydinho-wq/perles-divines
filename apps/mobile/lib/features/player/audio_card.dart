@@ -17,6 +17,7 @@ String formatPlaybackClock(Duration duration) {
 }
 
 const audioBusyStates = {
+  'streaming',
   'queued',
   'downloading',
   'waitingForNetwork',

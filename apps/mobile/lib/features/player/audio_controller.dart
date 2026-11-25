@@ -112,7 +112,12 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
     _tracks = List.of(tracks);
     _bundled = bundled || tracks.any((track) => track.bundled || track.fixture);
     _publishQueue();
-    _downloadForOffline(_tracks);
+    // La piste lue se remplit pendant l’écoute ; les suivantes se
+    // téléchargent en arrière-plan.
+    _downloadForOffline([
+      for (final (position, track) in _tracks.indexed)
+        if (position != index) track,
+    ]);
     if (_tracks.isNotEmpty) await _load(index, autoplay: true);
   }
 
@@ -146,7 +151,7 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
             ? AudioSource.uri(Uri.file(local))
             : track.bundled
             ? AudioSource.asset('assets/${track.file}')
-            : AudioSource.uri(Uri.parse('${downloads.baseUrl}/${track.file}'));
+            : await downloads.playbackSource(track);
         try {
           mediaItem.add(queue.value[next]);
           await player.setAudioSource(source, initialPosition: position);
@@ -199,7 +204,9 @@ class PerlesAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> play() async {
     _intent++;
     if (current == null) return;
-    _downloadForOffline([current!]);
+    // Relance un téléchargement échoué ; rien à faire si l’audio se
+    // remplit déjà pendant l’écoute.
+    unawaited(downloads.keepOffline(current!));
     _announced = true;
     _sessionReleased = false;
     _sessionGeneration++;

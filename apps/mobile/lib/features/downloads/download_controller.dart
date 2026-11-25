@@ -7,6 +7,7 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -14,13 +15,38 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/store.dart';
 import '../../core/track.dart';
 
-Future<bool> verifyMedia(String path, int size, String expectedHash) =>
-    Isolate.run(() async {
-      final file = File(path);
-      if (!await file.exists() || await file.length() != size) return false;
-      return (await sha256.bind(file.openRead()).first).toString() ==
-          expectedHash;
-    });
+/// Fichier présent et de la taille attendue.
+///
+/// C’est le contrôle de chaque ouverture et de chaque lecture : l’empreinte
+/// complète n’est calculée qu’une fois, quand le fichier arrive. Un transfert
+/// interrompu laisse un fichier trop court, que ce contrôle refuse.
+Future<bool> mediaPresent(String path, int size) async {
+  final file = File(path);
+  return await file.exists() && await file.length() == size;
+}
+
+/// Taille et empreinte SHA-256 : le fichier est exactement celui du catalogue.
+Future<bool> verifyMedia(String path, int size, String expectedHash) async {
+  if (!await mediaPresent(path, size)) return false;
+  return Isolate.run(
+    () async =>
+        (await sha256.bind(File(path).openRead()).first).toString() ==
+        expectedHash,
+  );
+}
+
+/// États d’un transfert déjà confié au téléchargement en arrière-plan.
+const _engineStates = {
+  'queued',
+  'waitingForNetwork',
+  'downloading',
+  'verifying',
+  'paused',
+};
+
+/// Sans progrès pendant ce délai, l’écoute en ligne a décroché : le
+/// téléchargement en arrière-plan reprend le fichier.
+const streamStallDelay = Duration(seconds: 90);
 
 class DownloadController {
   DownloadController(this.store, {required this.baseUrl});
@@ -33,10 +59,27 @@ class DownloadController {
   final _finishing = <String>{};
   Future<void> _events = Future.value();
   StreamSubscription<TaskUpdate>? _subscription;
+
+  /// Écoutes en ligne qui remplissent en même temps le fichier local.
+  ///
+  /// `LockCachingAudioSource` est marqué expérimental par just_audio : si
+  /// l’écoute décroche, [_handOver] confie le fichier au téléchargement en
+  /// arrière-plan, comme avant.
+  // ignore: experimental_member_use
+  final _streams = <String, LockCachingAudioSource>{};
+  final _streamProgress = <String, StreamSubscription<double>>{};
+  final _stalls = <String, Timer>{};
+
+  String _mediaPath(Track track) =>
+      p.join(root.path, 'media', cachedMediaName(track));
+
   Future<void> initialize() async {
     root = await getApplicationSupportDirectory();
     await engine.configure(globalConfig: (Config.holdingQueue, (3, 3, 3)));
-    await Directory(p.join(root.path, 'media')).create(recursive: true);
+    final media = await Directory(
+      p.join(root.path, 'media'),
+    ).create(recursive: true);
+    await _removeStreamLeftovers(media);
     _subscription = engine.updates.listen((event) {
       _events = _events.then((_) => _handle(event)).catchError((
         Object e,
@@ -58,11 +101,19 @@ class DownloadController {
     };
     for (final row in await store.select(store.transfers).get()) {
       final track = Track.fromJson(jsonDecode(row.trackJson));
-      final finalPath = p.join(
-        root.path,
-        'media',
-        cachedMediaName(track),
-      );
+      final finalPath = _mediaPath(track);
+      final relative = p.relative(finalPath, from: root.path);
+      // Déjà vérifié à son arrivée : la taille suffit, sans relire le fichier.
+      if (row.state == 'downloaded' &&
+          await mediaPresent(finalPath, track.sizeBytes)) {
+        if (row.relativePath != relative) {
+          await store.updateTransfer(
+            row.id,
+            TransfersCompanion(relativePath: Value(relative)),
+          );
+        }
+        continue;
+      }
       if (await verifyMedia(finalPath, track.sizeBytes, track.sha256)) {
         await store.updateTransfer(
           row.id,
@@ -88,6 +139,13 @@ class DownloadController {
               'Transfert interrompu. Vous pouvez le relancer.',
             ),
           ),
+        );
+      } else if (row.state == 'streaming') {
+        // L’application a été fermée pendant une écoute en ligne : le
+        // téléchargement en arrière-plan termine le fichier.
+        await store.updateTransfer(
+          row.id,
+          const TransfersCompanion(state: Value('queued'), progress: Value(0)),
         );
       } else if (row.state == 'downloaded') {
         await store.updateTransfer(
@@ -119,19 +177,7 @@ class DownloadController {
         if (old != null && !['failed', 'cancelled'].contains(old.state)) {
           continue;
         }
-        final task = DownloadTask(
-          taskId: track.transferId,
-          url: '$baseUrl/${track.file}',
-          filename: '${track.transferId}.part',
-          directory: 'staging',
-          baseDirectory: BaseDirectory.applicationSupport,
-          updates: Updates.statusAndProgress,
-          allowPause: true,
-          requiresWiFi: individual ? false : wifi,
-          retries: 3,
-          priority: individual ? 1 : 5,
-          displayName: track.title,
-        );
+        final task = _taskFor(track, individual: individual, wifi: wifi);
         await store
             .into(store.transfers)
             .insertOnConflictUpdate(
@@ -147,6 +193,194 @@ class DownloadController {
       }
     });
     await pump();
+  }
+
+  DownloadTask _taskFor(
+    Track track, {
+    required bool individual,
+    required bool wifi,
+  }) => DownloadTask(
+    taskId: track.transferId,
+    url: '$baseUrl/${track.file}',
+    filename: '${track.transferId}.part',
+    directory: 'staging',
+    baseDirectory: BaseDirectory.applicationSupport,
+    updates: Updates.statusAndProgress,
+    allowPause: true,
+    requiresWiFi: individual ? false : wifi,
+    retries: 3,
+    priority: individual ? 1 : 5,
+    displayName: track.title,
+  );
+
+  /// Source de lecture d’un audio pas encore sur le téléphone.
+  ///
+  /// L’écoute en ligne remplit directement le fichier local : un seul
+  /// transfert, et l’audio reste ensuite disponible hors connexion. Si un
+  /// téléchargement en arrière-plan est déjà en cours, on lit en ligne
+  /// sans enregistrer, pour ne pas doubler le transfert.
+  Future<AudioSource> playbackSource(Track track) async {
+    final remote = Uri.parse('$baseUrl/${track.file}');
+    if (track.fixture) return AudioSource.uri(remote);
+    final id = track.transferId;
+    final active = _streams[id];
+    if (active != null) return active;
+    final row = await store.transfer(id);
+    if (row != null && _engineStates.contains(row.state)) {
+      return AudioSource.uri(remote);
+    }
+    final target = File(_mediaPath(track));
+    if (await target.exists()) {
+      if (await verifyMedia(target.path, track.sizeBytes, track.sha256)) {
+        await store
+            .into(store.transfers)
+            .insertOnConflictUpdate(
+              TransfersCompanion.insert(
+                id: id,
+                trackJson: jsonEncode(track.toJson()),
+                state: const Value('downloaded'),
+                progress: const Value(1),
+                relativePath: Value('media/${cachedMediaName(track)}'),
+                error: const Value(null),
+              ),
+            );
+        return AudioSource.uri(Uri.file(target.path));
+      }
+      await target.delete();
+    }
+    final wifi = await store.readState('wifiOnly') != false;
+    await store
+        .into(store.transfers)
+        .insertOnConflictUpdate(
+          TransfersCompanion.insert(
+            id: id,
+            trackJson: jsonEncode(track.toJson()),
+            taskJson: Value(
+              jsonEncode(
+                _taskFor(track, individual: true, wifi: wifi).toJson(),
+              ),
+            ),
+            priority: const Value(1),
+            state: const Value('streaming'),
+            progress: const Value(0),
+            relativePath: const Value(null),
+            error: const Value(null),
+          ),
+        );
+    // ignore: experimental_member_use
+    final source = LockCachingAudioSource(remote, cacheFile: target);
+    _streams[id] = source;
+    var shown = -1.0;
+    _streamProgress[id] = source.downloadProgressStream.listen((progress) {
+      _armStall(track);
+      if (progress >= 1) {
+        unawaited(_adoptStreamed(track));
+      } else if (progress - shown >= 0.01) {
+        shown = progress;
+        unawaited(
+          store.updateTransfer(
+            id,
+            TransfersCompanion(progress: Value(progress)),
+          ),
+        );
+      }
+    });
+    _armStall(track);
+    return source;
+  }
+
+  /// Garde [track] pour l’écoute hors connexion, sauf s’il se remplit déjà
+  /// pendant l’écoute.
+  Future<void> keepOffline(Track track) async {
+    if (track.fixture ||
+        track.bundled ||
+        _streams.containsKey(track.transferId)) {
+      return;
+    }
+    await enqueue([track], individual: true);
+  }
+
+  void _armStall(Track track) {
+    _stalls.remove(track.transferId)?.cancel();
+    _stalls[track.transferId] = Timer(
+      streamStallDelay,
+      () => unawaited(_handOver(track)),
+    );
+  }
+
+  void _forgetStream(String id) {
+    _streams.remove(id);
+    unawaited(_streamProgress.remove(id)?.cancel());
+    _stalls.remove(id)?.cancel();
+  }
+
+  /// L’écoute en ligne a décroché : le téléchargement en arrière-plan prend
+  /// le relais et attend le réseau s’il le faut.
+  Future<void> _handOver(Track track) async {
+    final id = track.transferId;
+    _forgetStream(id);
+    final row = await store.transfer(id);
+    if (row?.state != 'streaming') return;
+    await store.updateTransfer(
+      id,
+      const TransfersCompanion(state: Value('queued'), progress: Value(0)),
+    );
+    await pump();
+  }
+
+  /// L’écoute a reçu tout le fichier : on le vérifie une fois, puis il
+  /// compte comme téléchargé.
+  Future<void> _adoptStreamed(Track track) async {
+    final id = track.transferId;
+    if (!_streams.containsKey(id)) return;
+    _forgetStream(id);
+    final target = File(_mediaPath(track));
+    // La progression atteint 100 % juste avant que le fichier prenne son nom.
+    for (var wait = 0; wait < 50 && !await target.exists(); wait++) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    if (await verifyMedia(target.path, track.sizeBytes, track.sha256)) {
+      await _markDownloaded(id);
+      return;
+    }
+    if (await target.exists()) await target.delete();
+    final row = await store.transfer(id);
+    if (row?.state != 'streaming') return;
+    await store.updateTransfer(
+      id,
+      const TransfersCompanion(state: Value('queued'), progress: Value(0)),
+    );
+    await pump();
+  }
+
+  Future<void> _markDownloaded(String id) async {
+    final row = await store.transfer(id);
+    if (row == null) return;
+    final track = Track.fromJson(jsonDecode(row.trackJson));
+    await store.updateTransfer(
+      id,
+      TransfersCompanion(
+        state: const Value('downloaded'),
+        progress: const Value(1),
+        relativePath: Value('media/${cachedMediaName(track)}'),
+        error: const Value(null),
+      ),
+    );
+  }
+
+  /// Morceaux laissés par une écoute en ligne interrompue (`.part`) et
+  /// types de fichier notés pendant l’écoute (`.mime`).
+  static Future<void> _removeStreamLeftovers(Directory media) async {
+    try {
+      await for (final entry in media.list(followLinks: false)) {
+        if (entry is File &&
+            (entry.path.endsWith('.part') || entry.path.endsWith('.mime'))) {
+          await entry.delete();
+        }
+      }
+    } on FileSystemException {
+      return;
+    }
   }
 
   /// Espace libre, ou null quand Android a relancé le service audio avant
@@ -269,7 +503,14 @@ class DownloadController {
       final relative = 'media/${cachedMediaName(track)}';
       final target = File(p.join(root.path, relative));
       // Native completion can be replayed after process death or reconciliation.
+      // The file may also have arrived first, filled while listening.
       if (await verifyMedia(target.path, track.sizeBytes, track.sha256)) {
+        try {
+          final staged = File(await task.filePath());
+          if (await staged.exists()) await staged.delete();
+        } on FileSystemException {
+          // Un reste dans staging ne gêne pas la lecture.
+        }
         await store.updateTransfer(
           task.taskId,
           TransfersCompanion(
@@ -318,7 +559,7 @@ class DownloadController {
     final row = await store.transfer(track.transferId);
     if (row?.state != 'downloaded' || row?.relativePath == null) return null;
     final file = File(p.join(root.path, row!.relativePath!));
-    if (!await verifyMedia(file.path, track.sizeBytes, track.sha256)) {
+    if (!await mediaPresent(file.path, track.sizeBytes)) {
       await store.updateTransfer(
         track.transferId,
         const TransfersCompanion(
@@ -421,6 +662,9 @@ class DownloadController {
   }
 
   Future<void> dispose() async {
+    for (final id in _streams.keys.toList()) {
+      _forgetStream(id);
+    }
     await _subscription?.cancel();
   }
 }

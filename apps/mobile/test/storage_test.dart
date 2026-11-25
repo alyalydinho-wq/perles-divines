@@ -55,6 +55,19 @@ void main() {
     expect(await verifyMedia(file.path, bytes.length, '0' * 64), false);
     await file.writeAsBytes(bytes.sublist(0, 9000));
     expect(await verifyMedia(file.path, bytes.length, hash), false);
+    expect(await verifyMedia('${directory.path}/absent.mp3', 1, hash), false);
     await directory.delete(recursive: true);
+  });
+
+  test('À la lecture, seul un fichier présent et complet est accepté', () async {
+    final directory = await Directory.systemTemp.createTemp('perles-present-');
+    addTearDown(() => directory.delete(recursive: true));
+    final file = File('${directory.path}/piste.m4a');
+    expect(await mediaPresent(file.path, 10), isFalse);
+    await file.writeAsBytes(List.filled(10, 1));
+    expect(await mediaPresent(file.path, 10), isTrue);
+    // Un transfert interrompu laisse un fichier trop court.
+    await file.writeAsBytes(List.filled(7, 1));
+    expect(await mediaPresent(file.path, 10), isFalse);
   });
 }
