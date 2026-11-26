@@ -718,154 +718,163 @@ class _TextScreenState extends State<TextScreen> {
       color: context.site.canvas,
       child: SelectionArea(
         contextMenuBuilder: _selectionMenu,
-        child: ListView(
-          controller: current ? _scroll : null,
-          primary: false,
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-          children: [
-            SizedBox(
-              width: double.infinity,
-              child: Text(
-                widget.item.title.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: siteText(
-                  color: context.site.accent,
-                  fontSize: 16,
-                  lineHeight: 22,
-                  weight: FontWeight.w700,
-                ),
-              ),
-            ),
-            if (greenCaption.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                greenCaption,
-                textAlign: TextAlign.center,
-                style: siteText(
-                  color: context.site.accent,
-                  fontSize: 16,
-                  lineHeight: 22,
-                  weight: FontWeight.w700,
-                ),
-              ),
-            ],
-            const SizedBox(height: 10),
-            if (surahInfo != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _SurahInfo(
-                  open: _surahInfoOpen,
-                  onToggle: _toggleSurahInfo,
-                  text: surahInfo,
-                  size: proseSize,
-                ),
-              ),
-            if (cardIntro.isNotEmpty && text.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _InfoCard(text: cardIntro, size: proseSize),
-              )
-            else if (cardIntro.isNotEmpty) ...[
-              Text(
-                cardIntro,
-                style: siteText(
-                  color: context.site.ink,
-                  fontSize: proseSize,
-                  lineHeight: proseSize * 1.35,
-                ).copyWith(fontStyle: FontStyle.italic),
-              ),
-              const SizedBox(height: 12),
-            ],
-            if (text.isNotEmpty &&
-                rtl &&
-                widget.item.kind == DevotionalKind.quran)
-              _QuranArabic(text: text, style: _arabicStyle())
-            else if (text.isNotEmpty &&
-                rtl &&
-                (widget.item.kind == DevotionalKind.dua ||
-                    widget.item.kind == DevotionalKind.ziyarat) &&
-                _arabicScript(text))
-              _JustifiedArabic(
-                text: text,
-                style: _arabicStyle(),
-                proseStyle: siteText(
-                  color: context.site.ink,
-                  fontSize: proseSize,
-                  lineHeight: proseSize * 1.4,
-                  weight: FontWeight.w700,
-                ),
-              )
-            else if (text.isNotEmpty && rtl) ...[
-              for (final block in text.split(RegExp(r'\n{2,}')))
-                if (block.trim().isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      block.trim(),
-                      textDirection: _arabicScript(block)
-                          ? TextDirection.rtl
-                          : TextDirection.ltr,
-                      textAlign: TextAlign.center,
-                      style: _arabicScript(block)
-                          ? _ruled(_arabicStyle(), context.site.ink)
-                          : siteText(
-                              color: context.site.ink,
-                              fontSize: proseSize,
-                              lineHeight: proseSize * 1.4,
-                              weight: FontWeight.w700,
-                            ),
-                    ),
+        child: LayoutBuilder(
+          builder: (context, box) => ListView(
+            controller: current ? _scroll : null,
+            primary: false,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  widget.item.title.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: siteText(
+                    color: context.site.accent,
+                    fontSize: 16,
+                    lineHeight: 22,
+                    weight: FontWeight.w700,
                   ),
-            ] else if (text.isNotEmpty && gujarati) ...[
-              for (final paragraph in text.split(RegExp(r'\n{2,}')))
-                if (paragraph.trim().isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: Text(
-                      paragraph.trim(),
-                      textAlign: TextAlign.start,
-                      style: _gujaratiStyle(proseSize),
-                    ),
+                ),
+              ),
+              if (greenCaption.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  greenCaption,
+                  textAlign: TextAlign.center,
+                  style: siteText(
+                    color: context.site.accent,
+                    fontSize: 16,
+                    lineHeight: 22,
+                    weight: FontWeight.w700,
                   ),
-            ] else if (translated != null) ...[
-              for (final line in translated.lines)
-                _verseLine(line, proseSize, italic: false),
-            ] else if (text.isNotEmpty && verses) ...[
-              for (final line in _verseLines(
-                widget.item.kind == DevotionalKind.quran
-                    ? widget.item.arabic
-                    : '',
-                text,
-                numbered: widget.item.kind == DevotionalKind.quran,
-              ))
-                _verseLine(line, proseSize, italic: true),
-            ] else if (verseBody.isNotEmpty) ...[
-              for (final paragraph in _paragraphs(verseBody))
+                ),
+              ],
+              const SizedBox(height: 10),
+              if (surahInfo != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(
-                    paragraph,
-                    textAlign: TextAlign.start,
-                    style: siteText(
-                      color: context.site.ink,
-                      fontSize: proseSize,
-                      lineHeight: proseSize * 1.4,
-                    ),
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: _SurahInfo(
+                    open: _surahInfoOpen,
+                    onToggle: _toggleSurahInfo,
+                    text: surahInfo,
+                    size: proseSize,
                   ),
                 ),
-            ],
-            for (final reference in references) ...[
-              const SizedBox(height: 16),
-              Text(
-                reference,
-                style: siteText(
-                  color: context.site.ink,
-                  fontSize: proseSize,
-                  lineHeight: proseSize * 1.4,
+              if (cardIntro.isNotEmpty && text.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: _InfoCard(text: cardIntro, size: proseSize),
+                )
+              else if (cardIntro.isNotEmpty) ...[
+                Text(
+                  cardIntro,
+                  style: siteText(
+                    color: context.site.ink,
+                    fontSize: proseSize,
+                    lineHeight: proseSize * 1.35,
+                  ).copyWith(fontStyle: FontStyle.italic),
                 ),
-              ),
+                const SizedBox(height: 12),
+              ],
+              if (text.isNotEmpty &&
+                  rtl &&
+                  widget.item.kind == DevotionalKind.quran)
+                ..._quranArabicChildren(
+                  text,
+                  _arabicStyle(),
+                  MediaQuery.textScalerOf(context),
+                  _arabicWidth(box),
+                )
+              else if (text.isNotEmpty &&
+                  rtl &&
+                  (widget.item.kind == DevotionalKind.dua ||
+                      widget.item.kind == DevotionalKind.ziyarat) &&
+                  _arabicScript(text))
+                ..._justifiedArabicChildren(
+                  text,
+                  _arabicStyle(),
+                  siteText(
+                    color: context.site.ink,
+                    fontSize: proseSize,
+                    lineHeight: proseSize * 1.4,
+                    weight: FontWeight.w700,
+                  ),
+                  MediaQuery.textScalerOf(context),
+                  _arabicWidth(box),
+                )
+              else if (text.isNotEmpty && rtl) ...[
+                for (final block in text.split(RegExp(r'\n{2,}')))
+                  if (block.trim().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        block.trim(),
+                        textDirection: _arabicScript(block)
+                            ? TextDirection.rtl
+                            : TextDirection.ltr,
+                        textAlign: TextAlign.center,
+                        style: _arabicScript(block)
+                            ? _ruled(_arabicStyle(), context.site.ink)
+                            : siteText(
+                                color: context.site.ink,
+                                fontSize: proseSize,
+                                lineHeight: proseSize * 1.4,
+                                weight: FontWeight.w700,
+                              ),
+                      ),
+                    ),
+              ] else if (text.isNotEmpty && gujarati) ...[
+                for (final paragraph in text.split(RegExp(r'\n{2,}')))
+                  if (paragraph.trim().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: Text(
+                        paragraph.trim(),
+                        textAlign: TextAlign.start,
+                        style: _gujaratiStyle(proseSize),
+                      ),
+                    ),
+              ] else if (translated != null) ...[
+                for (final line in translated.lines)
+                  _verseLine(line, proseSize, italic: false),
+              ] else if (text.isNotEmpty && verses) ...[
+                for (final line in _verseLines(
+                  widget.item.kind == DevotionalKind.quran
+                      ? widget.item.arabic
+                      : '',
+                  text,
+                  numbered: widget.item.kind == DevotionalKind.quran,
+                ))
+                  _verseLine(line, proseSize, italic: true),
+              ] else if (verseBody.isNotEmpty) ...[
+                for (final paragraph in _paragraphs(verseBody))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      paragraph,
+                      textAlign: TextAlign.start,
+                      style: siteText(
+                        color: context.site.ink,
+                        fontSize: proseSize,
+                        lineHeight: proseSize * 1.4,
+                      ),
+                    ),
+                  ),
+              ],
+              for (final reference in references) ...[
+                const SizedBox(height: 16),
+                Text(
+                  reference,
+                  style: siteText(
+                    color: context.site.ink,
+                    fontSize: proseSize,
+                    lineHeight: proseSize * 1.4,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -993,55 +1002,59 @@ class _TextScreenState extends State<TextScreen> {
           controller: current ? _scroll : null,
           primary: false,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: Text(
-                  item.title.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  style: siteText(
-                    color: context.site.accent,
-                    fontSize: 16,
-                    lineHeight: 22,
-                    weight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              if (hadith.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: _InfoCard(text: hadith, size: headerSize),
-                ),
-              _jawshanToc(headerSize),
-              if (preamble.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16, bottom: 4),
+          // Le défilement déplace le texte déjà dessiné au lieu de redessiner
+          // les cent parties à chaque image.
+          child: RepaintBoundary(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: double.infinity,
                   child: Text(
-                    preamble,
-                    textAlign: TextAlign.start,
+                    item.title.toUpperCase(),
+                    textAlign: TextAlign.center,
                     style: siteText(
-                      color: context.site.ink,
-                      fontSize: headerSize,
-                      lineHeight: headerSize * 1.4,
+                      color: context.site.accent,
+                      fontSize: 16,
+                      lineHeight: 22,
+                      weight: FontWeight.w700,
                     ),
                   ),
                 ),
-              for (var i = 0; i < blocks.length; i++) ...[
-                if (i > 0)
-                  Divider(
-                    height: 28,
-                    thickness: 1,
-                    color: context.site.softRule,
+                const SizedBox(height: 10),
+                if (hadith.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _InfoCard(text: hadith, size: headerSize),
                   ),
-                _jawshanHeader(i + 1, headerSize, current: current),
-                ..._jawshanBody(blocks[i], headerSize, value),
+                _jawshanToc(headerSize),
+                if (preamble.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16, bottom: 4),
+                    child: Text(
+                      preamble,
+                      textAlign: TextAlign.start,
+                      style: siteText(
+                        color: context.site.ink,
+                        fontSize: headerSize,
+                        lineHeight: headerSize * 1.4,
+                      ),
+                    ),
+                  ),
+                for (var i = 0; i < blocks.length; i++) ...[
+                  if (i > 0)
+                    Divider(
+                      height: 28,
+                      thickness: 1,
+                      color: context.site.softRule,
+                    ),
+                  _jawshanHeader(i + 1, headerSize, current: current),
+                  ..._jawshanBody(blocks[i], headerSize, value),
+                ],
+                // Laisse la dernière partie atteindre le haut de l’écran.
+                SizedBox(height: MediaQuery.sizeOf(context).height * 0.55),
               ],
-              // Laisse la dernière partie atteindre le haut de l’écran.
-              SizedBox(height: MediaQuery.sizeOf(context).height * 0.55),
-            ],
+            ),
           ),
         ),
       ),
@@ -1608,34 +1621,148 @@ class _JustifiedArabic extends StatelessWidget {
   }
 }
 
-class _QuranArabic extends StatelessWidget {
-  const _QuranArabic({required this.text, required this.style});
+/// Lignes de l’arabe d’un doua, d’une ziyarat ou d’une sourate, par paquets.
+///
+/// Chaque paquet est un enfant de la liste de lecture : seuls ceux proches de
+/// l’écran sont construits, placés et dessinés. Un texte entier en un seul
+/// bloc était mesuré et placé mot par mot d’un coup, à l’ouverture ou en
+/// arrivant sous l’introduction : plusieurs secondes figées en pleine lecture
+/// sur les téléphones lents (Redmi Note 13 Pro).
+const _linesPerChunk = 2;
 
-  final String text;
-  final TextStyle style;
+/// Largeur des lignes d’arabe dans la liste de lecture : marges de la liste
+/// (16 de chaque côté) et du texte (10 de chaque côté).
+double _arabicWidth(BoxConstraints box) =>
+    box.maxWidth.isFinite ? math.max(0.0, box.maxWidth - 52) : 0;
 
-  @override
-  Widget build(BuildContext context) {
-    final lines = _markedArabic(text);
-    if (lines.isEmpty) return const SizedBox.shrink();
-    final scaler = MediaQuery.textScalerOf(context);
-    final opening = _isBasmala(lines.first.text) ? lines.first : null;
-    final body = opening == null ? lines : lines.sublist(1);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (opening != null)
-            _BasmalaLine(text: opening.text, style: style, scaler: scaler),
-          if (opening != null && body.isNotEmpty) const SizedBox(height: 18),
-          if (body.isNotEmpty)
-            _QuranFlow(lines: body, style: style, scaler: scaler),
-        ],
+List<Widget> _quranArabicChildren(
+  String text,
+  TextStyle style,
+  TextScaler scaler,
+  double maxWidth,
+) {
+  final lines = _markedArabic(text);
+  if (lines.isEmpty) return const [];
+  final opening = _isBasmala(lines.first.text) ? lines.first : null;
+  final body = opening == null ? lines : lines.sublist(1);
+  return [
+    if (opening != null)
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: _BasmalaLine(text: opening.text, style: style, scaler: scaler),
       ),
-    );
-  }
+    if (opening != null && body.isNotEmpty) const SizedBox(height: 18),
+    if (body.isNotEmpty) ..._flowChunks(body, style, scaler, maxWidth),
+  ];
 }
+
+List<Widget> _justifiedArabicChildren(
+  String text,
+  TextStyle style,
+  TextStyle proseStyle,
+  TextScaler scaler,
+  double maxWidth,
+) {
+  final blocks = text
+      .split(RegExp(r'\n{2,}'))
+      .map((block) => block.trim())
+      .where((block) => block.isNotEmpty);
+  return [
+    for (final block in blocks)
+      if (RegExp(r'[\u0600-\u06FF]').hasMatch(block))
+        ..._flowChunks(
+          [_Line(block.replaceAll(RegExp(r'\s+'), ' ').trim())],
+          style,
+          scaler,
+          maxWidth,
+          bottom: 8,
+        )
+      else
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+          child: Text(
+            block,
+            textDirection: TextDirection.ltr,
+            textAlign: TextAlign.center,
+            style: proseStyle,
+          ),
+        ),
+  ];
+}
+
+/// Paquets de [_linesPerChunk] lignes : `quran-flow` pour le premier,
+/// `quran-flow+2`, `quran-flow+4`… pour les suivants.
+List<Widget> _flowChunks(
+  List<_Line> lines,
+  TextStyle style,
+  TextScaler scaler,
+  double maxWidth, {
+  double bottom = 0,
+}) {
+  final visual = _cachedQuranLines(lines, style, scaler, maxWidth);
+  return [
+    for (var start = 0; start < visual.length; start += _linesPerChunk)
+      Padding(
+        padding: EdgeInsets.fromLTRB(
+          10,
+          0,
+          10,
+          start + _linesPerChunk >= visual.length ? bottom : 0,
+        ),
+        child: _QuranLines(
+          key: start == 0
+              ? const Key('quran-flow')
+              : ValueKey('quran-flow+$start'),
+          lines: visual.sublist(
+            start,
+            math.min(start + _linesPerChunk, visual.length),
+          ),
+          first: start,
+          style: style,
+          scaler: scaler,
+          maxWidth: maxWidth,
+        ),
+      ),
+  ];
+}
+
+typedef _VisualLine = ({List<({String text, int? number})> runs, bool fill});
+
+/// Coupures déjà calculées : reconstruire l’écran (favori, réglage de
+/// taille, retour sur la lecture) ne remesure pas tout le texte.
+final _quranLineCache = <Object, List<_VisualLine>>{};
+
+List<_VisualLine> _cachedQuranLines(
+  List<_Line> lines,
+  TextStyle style,
+  TextScaler scaler,
+  double maxWidth,
+) {
+  final key = (
+    lines.map((line) => '${line.number}\u0001${line.text}').join('\n'),
+    _metricsKey(style, scaler),
+    maxWidth,
+  );
+  final known = _quranLineCache.remove(key);
+  if (known != null) return _quranLineCache[key] = known;
+  final visual = layoutQuranLines(
+    verses: [for (final line in lines) (text: line.text, number: line.number)],
+    style: style,
+    scaler: scaler,
+    maxWidth: maxWidth,
+  );
+  if (_quranLineCache.length >= 12) {
+    _quranLineCache.remove(_quranLineCache.keys.first);
+  }
+  return _quranLineCache[key] = visual;
+}
+
+/// Ce qui change la largeur d’un mot : police, taille, interligne et échelle
+/// de texte du système. Le gras dessiné par-dessus n’en change pas.
+String _metricsKey(TextStyle style, TextScaler scaler) =>
+    '${style.fontFamily}|${style.fontSize}|${style.height}|'
+    '${style.fontWeight?.value}|${style.letterSpacing}|${style.wordSpacing}|'
+    '${scaler.scale(100)}';
 
 class _BasmalaLine extends StatelessWidget {
   const _BasmalaLine({
@@ -1703,30 +1830,52 @@ class _QuranFlow extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth;
-        final visual = layoutQuranLines(
-          verses: [
-            for (final line in lines) (text: line.text, number: line.number),
-          ],
+        return _QuranLines(
+          key: const Key('quran-flow'),
+          lines: _cachedQuranLines(lines, style, scaler, maxWidth),
+          first: 0,
           style: style,
           scaler: scaler,
           maxWidth: maxWidth,
         );
-        return Column(
-          key: const Key('quran-flow'),
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (var i = 0; i < visual.length; i++)
-              _QuranVisualLine(
-                runs: visual[i].runs,
-                fill: visual[i].fill,
-                style: style,
-                scaler: scaler,
-                maxWidth: maxWidth,
-                index: i,
-              ),
-          ],
-        );
       },
+    );
+  }
+}
+
+/// Lignes déjà coupées, numérotées à partir de [first].
+class _QuranLines extends StatelessWidget {
+  const _QuranLines({
+    super.key,
+    required this.lines,
+    required this.first,
+    required this.style,
+    required this.scaler,
+    required this.maxWidth,
+  });
+
+  final List<_VisualLine> lines;
+  final int first;
+  final TextStyle style;
+  final TextScaler scaler;
+  final double maxWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    final visual = lines;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < visual.length; i++)
+          _QuranVisualLine(
+            runs: visual[i].runs,
+            fill: visual[i].fill,
+            style: style,
+            scaler: scaler,
+            maxWidth: maxWidth,
+            index: first + i,
+          ),
+      ],
     );
   }
 }
@@ -1935,8 +2084,14 @@ double _runsWidth(
   var width = 0.0;
   for (var i = 0; i < runs.length; i++) {
     if (i > 0) width += gap;
-    if (runs[i].text.isNotEmpty) {
-      width += _measureQuran(runs[i].text, style, scaler);
+    // Somme des mots déjà mesurés pour couper les lignes : mesurer la ligne
+    // entière remettrait en forme tous ses mots à chaque ligne affichée.
+    final words = runs[i].text.split(' ').where((word) => word.isNotEmpty);
+    var first = true;
+    for (final word in words) {
+      if (!first) width += gap;
+      width += _measureQuran(word, style, scaler);
+      first = false;
     }
     final number = runs[i].number;
     if (number != null) width += 4 + _badgeDiameter(style, number);
@@ -1944,7 +2099,19 @@ double _runsWidth(
   return width;
 }
 
+/// Largeurs déjà mesurées. Un doua répète beaucoup de mots, et chaque mesure
+/// met en forme le mot entier : la seconde fois, elle ne coûte plus rien.
+final _quranWidths = <String, double>{};
+
 double _measureQuran(String text, TextStyle style, TextScaler scaler) {
+  final key = '${_metricsKey(style, scaler)}\u0001$text';
+  final known = _quranWidths[key];
+  if (known != null) return known;
+  if (_quranWidths.length >= 20000) _quranWidths.clear();
+  return _quranWidths[key] = _layoutQuranWidth(text, style, scaler);
+}
+
+double _layoutQuranWidth(String text, TextStyle style, TextScaler scaler) {
   final painter = TextPainter(
     text: TextSpan(text: text, style: style),
     textDirection: TextDirection.rtl,

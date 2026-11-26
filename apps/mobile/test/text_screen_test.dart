@@ -63,9 +63,13 @@ void main() {
     // Petit, Normal, Grand, Très grand, Énorme : le texte de la page grossit
     // avec A+ comme la traduction, sur Android comme sur iOS.
     expect(
-      [16.0, 18.0, 22.0, 26.0, 30.0]
-          .map((size) => (pageTextScale(size) * 100).round())
-          .toList(),
+      [
+        16.0,
+        18.0,
+        22.0,
+        26.0,
+        30.0,
+      ].map((size) => (pageTextScale(size) * 100).round()).toList(),
       [89, 100, 122, 144, 167],
     );
   });
@@ -94,11 +98,7 @@ void main() {
     );
     await tester.pumpWidget(
       MaterialApp(
-        home: TextScreen(
-          item: item,
-          favorite: false,
-          onFavorite: () async {},
-        ),
+        home: TextScreen(item: item, favorite: false, onFavorite: () async {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -352,11 +352,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
-        home: TextScreen(
-          item: item,
-          favorite: false,
-          onFavorite: () async {},
-        ),
+        home: TextScreen(item: item, favorite: false, onFavorite: () async {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -405,11 +401,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
-        home: TextScreen(
-          item: item,
-          favorite: false,
-          onFavorite: () async {},
-        ),
+        home: TextScreen(item: item, favorite: false, onFavorite: () async {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -423,6 +415,14 @@ void main() {
     expect(word.textDirection, TextDirection.rtl);
     expect(word.style!.fontFamily, 'Indopak');
     expect(word.style!.decoration, isNot(TextDecoration.underline));
+    // Les lignes d’arabe ne sont construites que près de l’écran.
+    final position = tester
+        .state<ScrollableState>(find.byType(Scrollable))
+        .position;
+    for (var i = 0; i < 4; i++) {
+      position.jumpTo(position.maxScrollExtent);
+      await tester.pumpAndSettle();
+    }
     expect(find.textContaining('نَادِ', skipOffstage: false), findsWidgets);
 
     await tester.tap(find.text('Traduction'));
@@ -455,11 +455,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
-        home: TextScreen(
-          item: item,
-          favorite: false,
-          onFavorite: () async {},
-        ),
+        home: TextScreen(item: item, favorite: false, onFavorite: () async {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -475,6 +471,16 @@ void main() {
     expect(word.textDirection, TextDirection.rtl);
     expect(word.style!.fontFamily, 'Indopak');
 
+    // Les lignes d’arabe ne sont construites que près de l’écran : la fin
+    // du texte n’existe qu’une fois la lecture descendue jusqu’à elle.
+    expect(find.text(instruction), findsNothing);
+    final position = tester
+        .state<ScrollableState>(find.byType(Scrollable))
+        .position;
+    for (var i = 0; i < 4; i++) {
+      position.jumpTo(position.maxScrollExtent);
+      await tester.pumpAndSettle();
+    }
     final caption = tester.widget<Text>(find.text(instruction));
     expect(caption.textAlign, TextAlign.center);
     expect(caption.textDirection, TextDirection.ltr);
@@ -497,17 +503,14 @@ void main() {
       references: [],
       audioIds: [],
     );
-    tester.view.physicalSize = const Size(390, 844);
+    // Assez haut pour que toutes les lignes, construites à la demande, le soient.
+    tester.view.physicalSize = const Size(390, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
-        home: TextScreen(
-          item: item,
-          favorite: false,
-          onFavorite: () async {},
-        ),
+        home: TextScreen(item: item, favorite: false, onFavorite: () async {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -554,11 +557,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
-        home: TextScreen(
-          item: item,
-          favorite: false,
-          onFavorite: () async {},
-        ),
+        home: TextScreen(item: item, favorite: false, onFavorite: () async {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -605,11 +604,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
-        home: TextScreen(
-          item: item,
-          favorite: false,
-          onFavorite: () async {},
-        ),
+        home: TextScreen(item: item, favorite: false, onFavorite: () async {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -644,11 +639,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
-        home: TextScreen(
-          item: item,
-          favorite: false,
-          onFavorite: () async {},
-        ),
+        home: TextScreen(item: item, favorite: false, onFavorite: () async {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -767,11 +758,7 @@ void main() {
     );
     await tester.pumpWidget(
       MaterialApp(
-        home: TextScreen(
-          item: item,
-          favorite: false,
-          onFavorite: () async {},
-        ),
+        home: TextScreen(item: item, favorite: false, onFavorite: () async {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -1179,11 +1166,8 @@ void main() {
         ),
         GoRoute(
           path: '/texte',
-          builder: (context, state) => TextScreen(
-            item: item,
-            favorite: false,
-            onFavorite: () async {},
-          ),
+          builder: (context, state) =>
+              TextScreen(item: item, favorite: false, onFavorite: () async {}),
         ),
       ],
     );
@@ -1228,11 +1212,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
-        home: TextScreen(
-          item: item,
-          favorite: false,
-          onFavorite: () async {},
-        ),
+        home: TextScreen(item: item, favorite: false, onFavorite: () async {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -1322,12 +1302,15 @@ Text _flowText(WidgetTester tester) {
   );
 }
 
+/// Tous les paquets de lignes d’arabe construits, dans l’ordre.
+final _flowChunks = find.byWidgetPredicate((widget) {
+  final key = widget.key;
+  return key is ValueKey<String> && key.value.startsWith('quran-flow');
+});
+
 String _flowPlain(WidgetTester tester) {
   final texts = tester.widgetList<Text>(
-    find.descendant(
-      of: find.byKey(const Key('quran-flow')),
-      matching: find.byType(Text),
-    ),
+    find.descendant(of: _flowChunks, matching: find.byType(Text)),
   );
   return texts
       .map((text) => text.data ?? '')
