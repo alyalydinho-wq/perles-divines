@@ -49,6 +49,17 @@ android {
             signingConfig = signingConfigs.getByName("phone")
         }
     }
+
+    // L'APK unique ne contient que l'ARM 32 et 64 bits (tous les téléphones).
+    // Un paquet Dart y ajoute quand même sa bibliothèque x86_64 : seule, sans
+    // le moteur Flutter, elle ferait planter un appareil x86_64 (Chromebook),
+    // qui lit sinon très bien la version ARM.
+    val targetPlatforms = (project.findProperty("target-platform") as String?)
+        ?.split(",")
+        .orEmpty()
+    if (targetPlatforms.isNotEmpty() && "android-x64" !in targetPlatforms) {
+        packaging.jniLibs.excludes += "lib/x86_64/**"
+    }
 }
 
 kotlin {

@@ -34,7 +34,9 @@ Les pages d'origine du site (textes dont l'arabe n'existe qu'en images) s'affich
 
 ```sh
 cd apps/mobile
-flutter build apk --release --split-per-abi
+flutter build apk --release --target-platform=android-arm,android-arm64
 ```
 
-Installer `app-arm64-v8a-release.apk` sur les téléphones récents et `app-armeabi-v7a-release.apk` sur les anciens. `app-x86_64-release.apk` ne sert qu'aux émulateurs.
+Un seul fichier, `app-release.apk` (environ 46 Mo), pour tous les téléphones Android à partir d'Android 7.0 (API 24) : il contient l'ARM 32 et 64 bits. Le x86_64 n'est pas inclus (22 Mo de plus) : il ne sert qu'aux émulateurs, et un Chromebook lit la version ARM. Pour l'émulateur, compiler à part avec `--target-platform=android-x64`. Certains téléphones récents d'entrée de gamme (Samsung Galaxy A13 par exemple) tournent sous un Android 32 bits malgré Android 14 et refusent un APK 64 bits seul comme « pas compatible ».
+
+Ne plus compiler avec `--split-per-abi`. Les APK séparés ajoutent 1000 ou 2000 au numéro de version interne : la 0.2.30 séparée valait 2032. Le numéro dans `pubspec.yaml` est donc reparti de 2033 avec la 0.2.31, pour que l'APK unique remplace les anciennes versions sans désinstaller. Il doit toujours augmenter d'une version à l'autre.
